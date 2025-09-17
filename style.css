@@ -3246,9 +3246,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
   object-fit: contain;
   border-radius: var(--radius-lg);
   /* Optional: Add a subtle shadow or background */
-  background: var(--bg-secondary);
   padding: 12px;
-  box-shadow: var(--shadow-md);
 }
 
 /* Remove the old tab-error-icon styles or keep for fallback */
