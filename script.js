@@ -472,33 +472,113 @@ function createTourControls() {
   const controlsDiv = document.createElement('div');
   controlsDiv.className = 'feature-tour-controls';
   controlsDiv.innerHTML = `
-    <div class="tour-header">
-      <h3>جولة الحدائق</h3>
-      <button class="icon-btn" onclick="closeTourControls()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-    <div class="tour-controls">
-      <button class="tour-btn" onclick="previousFeature()" title="السابق">
-        <i class="fas fa-chevron-left"></i>
-      </button>
-      <button class="tour-btn" id="tourPlayBtn" onclick="toggleFeatureTour()" title="تشغيل">
-        <i class="fas fa-play"></i>
-      </button>
-      <button class="tour-btn" onclick="nextFeature()" title="التالي">
-        <i class="fas fa-chevron-right"></i>
-      </button>
-    </div>
-    <div id="tourInfo" class="tour-info">
-      <!-- Feature info will be displayed here -->
-    </div>
-    <div class="tour-progress">
-      <span id="tourProgress">0 / 0</span>
-    </div>
-  `;
+    <header>
+        <small id="tourProgress">0 / 0</small>
+        <div class="map-actions">
+            <img class="backward-control" src="images/fluent_next-24-regular-back.svg" alt="" onclick="previousFeature()">
+            <div class="auto-control pause"></div>
+            <img class="forward-control" src="images/fluent_next-24-regular.svg" alt="" onclick="nextFeature()">
+        </div>
+        <div class="chevron">
+            <i class="bi bi-chevron-up"></i>
+            <!-- <i class="bi bi-chevron-down"></i> -->
+        </div>
+    </header>
+
+    <section class="overview">
+        <div>
+            <p class="name">حديقة 2</p>
+            <p class="area">154544515 متر مربع</p>
+        </div>
+        <div class="status">مستقبلي</div>
+    </section>
+
+    <section class="details">
+        <div class="item">
+            <p class="label">المساحة:</p>
+            <span class="value">154544515 متر مربع</span>
+        </div>
+        <div class="item">
+            <span class="label">الموقع:</span>
+            <span class="value">الرياض</span>
+        </div>
+                    <div class="item">
+            <span class="label">الموقع:</span>
+            <span class="value">الرياض</span>
+        </div>
+        <div class="item">
+            <span class="label">الموقع:</span>
+            <span class="value">الرياض</span>
+        </div>
+        <div class="item">
+            <span class="label">الموقع:</span>
+            <span class="value">الرياض</span>
+        </div>
+    </section>
+    `;
+    // <div class="tour-header">
+    //   <h3>جولة الحدائق</h3>
+    //   <button class="icon-btn" onclick="closeTourControls()">
+    //     <i class="fas fa-times"></i>
+    //   </button>
+    // </div>
+
+    // <div id="tourInfo" class="tour-info">
+    //   <!-- Feature info will be displayed here -->
+    // </div>
   
   document.body.appendChild(controlsDiv);
 }
+
+const details = document.querySelector('.feature-tour-controls .details');
+const chevronBtn = document.querySelector('.feature-tour-controls .chevron');
+const autoControl = document.querySelector('.feature-tour-controls .auto-control');
+
+function setDetailsVisible(visible) {
+    const chevronIcon = document.querySelector('.feature-tour-controls .chevron i');
+
+    // Guard - avoid "reading 'style' of null"
+    if (!details) return;
+
+    // show/hide using inline style and keep icon/classes in sync
+    details.style.display = visible ? 'flex' : 'none';
+
+    if (chevronIcon) {
+        chevronIcon.classList.toggle('bi-chevron-up', visible);
+        chevronIcon.classList.toggle('bi-chevron-down', !visible);
+    }
+
+    if (autoControl) {
+        autoControl.classList.toggle('pause', visible);
+        autoControl.classList.toggle('play', !visible);
+    }
+}
+
+// document.addEventListener('DOMContentLoaded', () => {
+//     // optional: initialize to visible state if needed
+//     setDetailsVisible(true);
+
+//     if (chevronBtn) {
+//         chevronBtn.addEventListener('click', () => {
+//             const details = document.querySelector('.feature-tour-controls .details');
+//             if (!details) return;
+//             const currentlyVisible = window.getComputedStyle(details).display !== 'none';
+//             setDetailsVisible(!currentlyVisible);
+//         });
+//     }
+
+//     if (autoControl) {
+//         autoControl.addEventListener('click', () => {
+//             // treat "pause" class as playing, "play" as paused
+//             const isPlaying = autoControl.classList.contains('pause');
+//             setDetailsVisible(!isPlaying);
+//             // toggle classes just in case
+//             autoControl.classList.toggle('pause', !isPlaying);
+//             autoControl.classList.toggle('play', isPlaying);
+//         });
+//     }
+// });
+
 
 // Start feature tour
 function startFeatureTour() {
