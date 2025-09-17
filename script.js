@@ -176,6 +176,141 @@ if (!hasSeenTour) {
 
 
 
+
+
+
+
+// Tab System
+const tabMessages = {
+  gardens: null, // No message for gardens tab
+  projects: "يلزم الربط بمنصة قرار لعرض المشروعات", 
+  assets: "يلزم الربط بالتشغيل و الصيانة لعرض الأصول", 
+};
+
+const tabButtonTexts = {
+  projects: {
+    text: "ربط بمنصة قرار",
+    url: "https://qarar2025.azurewebsites.net/"
+  },
+  assets: {
+    text: "ربط بالتشغيل و الصيانة",
+    url: "https://gt-ams.azurewebsites.net/"
+  }
+};
+
+// Initialize tabs
+function initializeMapTabs() {
+  const tabButtons = document.querySelectorAll('.tab-button');
+  const backdrop = document.getElementById('tabBackdrop');
+  const contentCard = backdrop.querySelector('.tab-content-card');
+  
+  tabButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const tabType = this.getAttribute('data-tab');
+      
+      // If it's gardens tab, just activate it and hide backdrop
+      if (tabType === 'gardens') {
+        // Remove active from all tabs
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        // Set this tab as active
+        this.classList.add('active');
+        // Hide backdrop
+        backdrop.classList.add('hidden');
+        return;
+      }
+      
+      // For other tabs, show the message
+      const message = tabMessages[tabType];
+      const buttonInfo = tabButtonTexts[tabType];
+      
+      if (message && buttonInfo) {
+        // Update content
+        contentCard.innerHTML = `
+          <div class="tab-icon-container">
+            <img src="10607569.gif" alt="Loading" class="tab-gif-icon" />
+          </div>
+          
+          <p class="tab-message-text">${message}</p>
+          
+          <button class="tab-action-button" onclick="redirectToTabPlatform('${tabType}')">
+            <span>${buttonInfo.text}</span>
+            <i class="fas fa-external-link-alt"></i>
+          </button>
+        `;
+        
+        // Show backdrop
+        backdrop.classList.remove('hidden');
+      }
+    });
+  });
+  
+  // Close backdrop when clicking outside
+  backdrop.addEventListener('click', function(e) {
+    if (e.target === this) {
+      this.classList.add('hidden');
+      // Return to gardens tab
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      document.querySelector('[data-tab="gardens"]').classList.add('active');
+    }
+  });
+}
+
+// Add this function to handle platform redirect
+function redirectToTabPlatform(tabType) {
+  const buttonInfo = tabButtonTexts[tabType];
+  if (buttonInfo && buttonInfo.url) {
+    showNotification(`جاري التوجيه إلى ${buttonInfo.text}...`, 'success');
+    
+    // Simulate loading state
+    const button = event.target.closest('.tab-action-button');
+    button.disabled = true;
+    button.innerHTML = `
+      <span>جاري التحميل...</span>
+      <i class="fas fa-spinner fa-spin"></i>
+    `;
+    
+    setTimeout(() => {
+      // In production, replace with: window.open(buttonInfo.url, '_blank');
+      window.open(buttonInfo.url, '_blank');
+      console.log(`Redirecting to: ${buttonInfo.url}`);
+      // showNotification(`سيتم التوجيه إلى: ${buttonInfo.url}`, 'success');
+      
+      // Close the backdrop
+      document.getElementById('tabBackdrop').classList.add('hidden');
+      
+      // Reset to gardens tab
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      document.querySelector('[data-tab="gardens"]').classList.add('active');
+    }, 1500);
+  }
+}
+
+// Export the function for onclick handler
+window.redirectToTabPlatform = redirectToTabPlatform;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 async function loadDefaultGeoJSON() {
   try {
     const [GeoJSONLayer] = await Promise.all([
@@ -236,6 +371,11 @@ async function loadDefaultGeoJSON() {
     await setupFeatureTour(geojsonLayer);
     
     console.log("Default GeoJSON layer loaded successfully");
+
+    // 🔹 Apply classification automatically on GARDENSTATUS
+    currentClassificationLayer = geojsonLayer;
+    await autoApplyDefaultClassification(geojsonLayer, "GARDENSTATUS");
+
     
   } catch (error) {
     console.error("Error loading default GeoJSON:", error);
@@ -243,6 +383,54 @@ async function loadDefaultGeoJSON() {
   }
 }
 
+async function autoApplyDefaultClassification(layer, fieldName) {
+  try {
+    const stats = await analyzeFieldForClassification(layer, fieldName);
+    if (!stats || stats.uniqueCount === 0) {
+      console.warn(`No valid values found in ${fieldName}`);
+      return;
+    }
+
+    const colors = generateClassificationColors(stats.sortedValues.length);
+    const geometryType = layer.geometryType;
+
+    const uniqueValueInfos = stats.sortedValues.map(([value, count], index) => {
+      const color = colors[index];
+      let symbol;
+      switch (geometryType) {
+        case 'point':
+          symbol = { type: "simple-marker", color, size: 10, outline: { color: [255,255,255], width: 1 } };
+          break;
+        case 'polyline':
+          symbol = { type: "simple-line", color, width: 2 };
+          break;
+        case 'polygon':
+          symbol = { type: "simple-fill", color: [...color, 0.7], outline: { color, width: 1 } };
+          break;
+      }
+      return { value, symbol, label: `${value} (${count})` };
+    });
+
+    // Default symbol
+    const defaultSymbol = createDefaultClassificationSymbol(geometryType);
+
+    // Apply renderer
+    layer.renderer = {
+      type: "unique-value",
+      field: fieldName,
+      uniqueValueInfos,
+      defaultSymbol,
+      defaultLabel: "Other"
+    };
+
+    // Show legend
+    createClassificationLegend(stats, colors, fieldName);
+
+    console.log(`Classification applied on ${fieldName}`);
+  } catch (err) {
+    console.error("Error auto-applying classification:", err);
+  }
+}
 
 
 
@@ -336,7 +524,7 @@ function startFeatureTour() {
   // Auto advance every 3 seconds
   featureTourInterval = setInterval(() => {
     nextFeature(false); // auto-play
-  }, 3000);
+  }, 7000);
 }
 
 // Stop feature tour
@@ -381,7 +569,7 @@ async function goToFeature(index) {
         // zoom: view.zoom // Keep current zoom level or adjust as needed
         zoom: 17 // Keep current zoom level or adjust as needed
       }, {
-        duration: 2000,
+        duration: 3000,
         easing: "ease-in-out"
       });
     } else {
@@ -391,7 +579,7 @@ async function goToFeature(index) {
         zoom: 16,
         tilt: 45
       }, {
-        duration: 2000,
+        duration: 3000,
         easing: "ease-in-out"
       });
     }
@@ -461,14 +649,27 @@ function showCustomPopupTour(graphic) {
   let html = '<div class="attribute-list">';
   
   if (attributes && Object.keys(attributes).length > 0) {
-    const sortedKeys = Object.keys(attributes).sort((a, b) => {
-      const endFields = ['shape_area','shape_length','fid'];
-      const aIsEnd = endFields.includes(a.toLowerCase());
-      const bIsEnd = endFields.includes(b.toLowerCase());
-      if (aIsEnd && !bIsEnd) return 1;
-      if (!aIsEnd && bIsEnd) return -1;
-      return a.localeCompare(b);
-    });
+const sortedKeys = Object.keys(attributes).sort((a, b) => {
+  const endFields = ['shape_area','shape_length','fid'];
+
+  // 1) Put end fields last
+  const aIsEnd = endFields.includes(a.toLowerCase());
+  const bIsEnd = endFields.includes(b.toLowerCase());
+  if (aIsEnd && !bIsEnd) return 1;
+  if (!aIsEnd && bIsEnd) return -1;
+
+  // 2) Arabic fields detection
+  const arabicRegex = /[\u0600-\u06FF]/;
+  const aIsArabic = arabicRegex.test(a);
+  const bIsArabic = arabicRegex.test(b);
+
+  if (aIsArabic && !bIsArabic) return -1; // Arabic first
+  if (!aIsArabic && bIsArabic) return 1;
+
+  // 3) Otherwise, alphabetical
+  return a.localeCompare(b);
+});
+
     
     sortedKeys.forEach(key => {
       const value = attributes[key];
@@ -849,6 +1050,9 @@ function initializeUI() {
 
   // Initialize fullscreen listener
   initializeFullscreenListener();
+
+    // Initialize map tabs (ADD THIS LINE)
+  initializeMapTabs();
 }
 
 
