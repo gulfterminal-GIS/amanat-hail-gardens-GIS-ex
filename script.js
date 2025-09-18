@@ -462,9 +462,9 @@ function createTourControls() {
             <i class="bi bi-chevron-down"></i>
         </div>
         <div class="map-actions">
-            <img class="backward-control" src="/images/fluent_next-24-regular-back.svg" alt="" onclick="previousFeature()">
+            <img class="backward-control" src="images/fluent_next-24-regular-back.svg" alt="" onclick="previousFeature()">
             <div class="auto-control pause" onclick="toggleFeatureTour()"></div>
-            <img class="forward-control" src="/images/fluent_next-24-regular.svg" alt="" onclick="nextFeature()">
+            <img class="forward-control" src="images/fluent_next-24-regular.svg" alt="" onclick="nextFeature()">
         </div>
         <small class="feature-count" id="tourProgress">0 / 0</small>
     </header>
@@ -584,7 +584,6 @@ function stopFeatureTour() {
     featureTourInterval = null;
   }
   
-  console.log(autoControl);
   // Update play button
   if (autoControl) {
     autoControl.classList.toggle('pause');

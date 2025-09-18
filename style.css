@@ -3397,6 +3397,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
     border-radius: var(--radius-round);
     box-shadow: 0px 0px 4px 0px #00000040;
     cursor: pointer;
+    padding-inline: 0.5em;
 }
 
 .tour-header .chevron > i {
