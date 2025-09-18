@@ -336,8 +336,10 @@ body {
 }
 
 .toolbar-label {
-  font-size: 11px;
-  font-weight: 500;
+  white-space: nowrap;
+  font-family: 'Avenir Next';
+  font-size: 12px;
+  font-weight: bold;
 }
 
 /* Mobile Toolbar Toggle - Center the icon */
@@ -450,8 +452,10 @@ body {
 }
 
 .mobile-menu-item span {
-  font-size: 12px;
-  font-weight: 500;
+ white-space: nowrap;
+ font-family: 'Avenir Next';
+ font-size: 12px;
+ font-weight: bold;
 }
 
 /* Side Panel */
@@ -3538,6 +3542,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
   padding-bottom: 0.75em;
   border-bottom: 1px solid #E9EDF5;
 }
+
 
 
 
