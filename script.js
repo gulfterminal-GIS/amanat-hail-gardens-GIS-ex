@@ -352,12 +352,32 @@ async function loadDefaultGeoJSON() {
     await setupFeatureTour(geojsonLayer);
     chevronBtn = document.querySelector(".feature-tour-controls .chevron");
     chevronIcon = document.querySelector(".feature-tour-controls .chevron i");
-    autoControl = document.querySelector(
-      ".feature-tour-controls .auto-control"
-    );
-    featureDetails = document.querySelector(
-      ".feature-tour-controls .feature-details"
-    );
+    autoControl = document.querySelector(".feature-tour-controls .auto-control");
+    featureDetails = document.querySelector(".feature-tour-controls .feature-details");
+
+        // Toggle featureDetails when chevron is clicked
+    if (chevronBtn) {
+      chevronBtn.addEventListener("click", () => {
+        // lazy query in case DOM changed
+        // if (!featureDetails) {
+        //   featureDetails = document.querySelector(".feature-tour-controls .feature-details");
+        //   if (!featureDetails) return;
+        // }
+        if (!chevronIcon) {
+          chevronIcon = chevronBtn.querySelector("i");
+        }
+
+        const currentlyVisible = window.getComputedStyle(featureDetails).display !== "none";
+        const newVisible = !currentlyVisible;
+
+        featureDetails.style.display = newVisible ? "flex" : "none";
+
+        if (chevronIcon) {
+          chevronIcon.classList.toggle("bi-chevron-up", newVisible);
+          chevronIcon.classList.toggle("bi-chevron-down", !newVisible);
+        }
+      });
+    }
 
     console.log("Default GeoJSON layer loaded successfully");
 
@@ -475,26 +495,6 @@ function createTourControls() {
 
     <section class="feature-details"></section>
     `;
-  // <div class="item">
-  //     <p class="label">المساحة:</p>
-  //     <span class="value">154544515 متر مربع</span>
-  // </div>
-  // <div class="item">
-  //     <span class="label">الموقع:</span>
-  //     <span class="value">الرياض</span>
-  // </div>
-  //             <div class="item">
-  //     <span class="label">الموقع:</span>
-  //     <span class="value">الرياض</span>
-  // </div>
-  // <div class="item">
-  //     <span class="label">الموقع:</span>
-  //     <span class="value">الرياض</span>
-  // </div>
-  // <div class="item">
-  //     <span class="label">الموقع:</span>
-  //     <span class="value">الرياض</span>
-  // </div>
 
   document.body.appendChild(controlsDiv);
 }
@@ -664,42 +664,9 @@ async function goToFeature(index) {
 function showCustomPopupTour(graphic) {
   currentPopupFeature = graphic;
 
-  // Get or create popup container
-  let popup = document.getElementById("customPopup");
-  if (!popup) {
-    popup = document.createElement("div");
-    popup.id = "customPopup";
-    document.body.appendChild(popup);
-  }
-
-  // Always reset popup HTML
-  popup.className = "tour-popup custom-popup";
-  popup.innerHTML = `
-    <div class="popup-header">
-      <h3 id="popupTitle"></h3>
-      <button class="popup-close" onclick="closeCustomPopup()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-    <div id="popupContent" class="popup-content"></div>
-  `;
-
-  const content = document.getElementById("popupContent");
-  const title = document.getElementById("popupTitle");
-
-  // Title
-  const layerTitle = graphic.layer?.title || "Feature Information";
-  const featureName =
-    graphic.attributes?.name ||
-    graphic.attributes?.Name ||
-    graphic.attributes?.title ||
-    graphic.attributes?.Title ||
-    "";
-  title.textContent = featureName || layerTitle;
-
   // Attributes
   const attributes = graphic.attributes;
-  let html = '<div class="attribute-list">';
+  let html = '<div class="attributes-list">';
 
   if (attributes && Object.keys(attributes).length > 0) {
     const sortedKeys = Object.keys(attributes).sort((a, b) => {
@@ -730,17 +697,16 @@ function showCustomPopupTour(graphic) {
       let displayValue = formatAttributeValue(value, key);
       if (displayValue) {
         html += `
-          <div class="attribute-row">
-            <span class="attribute-label">${formatFieldName(key)}:</span>
-            <span class="attribute-value">${displayValue}</span>
-          </div>
-        `;
+            <div class="item">
+              <p class="label">${formatFieldName(key)}:</p>
+              <span class="value">${displayValue}</span>
+            </div>
+          `;
       }
     });
 
-    popup.classList.add("active");
   } else {
-    html += '<div class="no-attributes">No attributes available</div>';
+    html += '<div class="item">No attributes available</div>';
   }
 
   html += "</div>";
@@ -767,10 +733,7 @@ function showCustomPopupTour(graphic) {
     </div>
   `;
 
-  content.innerHTML = html;
-
-  // Show fixed-position popup
-  popup.classList.add("active");
+  featureDetails.innerHTML = html;
 
   if (graphic.geometry) {
     updateGeometryDetails(graphic.geometry);
@@ -3396,7 +3359,7 @@ async function updateGeometryDetails(geometry) {
 // // Add helper functions for formatting and calculations
 function formatAttributeValue(value, key) {
   if (value === null || value === undefined) {
-    return '<span class="null-value">N/A</span>';
+    return 'N/A';
   }
 
   // Check if it's a date field by name or value

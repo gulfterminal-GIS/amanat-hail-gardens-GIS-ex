@@ -3523,21 +3523,27 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
   border-radius: var(--radius-md);
   padding: 1em;
   font-size: 0.9rem;
-  max-height: 22rem;
+  max-height: 20rem;
   overflow-y: auto;
 }
 
-.feature-details .item {
+.feature-details .attributes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+}
+
+.attributes-list .item {
   display: flex;
   align-items: center;
   gap: 0.5em;
 }
 
-.feature-details .item:not(:last-child) {
+.attributes-list .item:not(:last-child) {
   padding-bottom: 0.75em;
   border-bottom: 1px solid #E9EDF5;
 }
 
-.feature-details .label {
-  width: 4.5em;
+.attributes-list .label {
+  width: 10em;
 }
