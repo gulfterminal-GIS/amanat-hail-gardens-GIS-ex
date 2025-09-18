@@ -155,13 +155,26 @@ async function initializeMap() {
     initializeUI();
     initializeEventHandlers();
 
-    setTimeout(() => {
-      const loadingScreen = document.getElementById("loadingScreen");
-      loadingScreen.classList.add("fade-out");
-      setTimeout(() => {
-        loadingScreen.style.display = "none";
-      }, 500);
-    }, 1000);
+    // Loading screen logic
+    const loadingScreen = document.getElementById("loadingScreen");
+    let loadingContent = document.querySelector(".loading-content");
+
+    function wait(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    console.log("Starting loading sequence...");
+    wait(0)
+      .then(() => {
+        loadingContent.innerHTML = `
+          <img class="loaded-gif" src="images/map-loading.gif" alt="">
+          <div class="loading-text">جاري مسح الخريطة...</div>
+        `;
+        return wait(3000);
+      })
+      .finally(() => {
+        loadingScreen.classList.add("fade-out");
+      });
 
     // Add this new code:
     // Check if it's the first visit
@@ -5785,7 +5798,7 @@ function createClassificationLegend(stats, colors, fieldName) {
     <div class="widget-header" style="margin: -12px -12px 12px; padding: 12px;">
       <h3 style="font-size: 16px; display: flex; align-items: center; gap: 8px;">
         <i class="fas fa-list" style="color: var(--primary-color);"></i>
-        ${formatFieldName(fieldName)}
+        ${fieldName === "GARDENSTATUS" ? "حالة الحديقة" : formatFieldName(fieldName)}
       </h3>
       <button class="widget-close" onclick="removeClassificationLegend()">
         <i class="fas fa-times"></i>

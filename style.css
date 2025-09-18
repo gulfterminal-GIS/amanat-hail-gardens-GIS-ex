@@ -95,49 +95,36 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-  display: flex;
+  background-color: #00172B;
   justify-content: center;
   align-items: center;
   z-index: 9999;
   transition: opacity var(--transition-slow);
+
 }
 
 .loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
   text-align: center;
   color: var(--text-white);
+  min-height: 100vh;
 }
 
-.loading-animation {
-  position: relative;
-  width: 120px;
-  height: 120px;
-  margin: 0 auto var(--spacing-lg);
+.initial-logo {
+  height: 6rem;
 }
 
-.loading-ring {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-top-color: var(--text-white);
-  border-radius: var(--radius-round);
-  animation: spin 1s linear infinite;
-}
-
-.loading-icon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 48px;
-  animation: pulse 2s ease-in-out infinite;
+.loaded-gif {
+  height: 20rem;
 }
 
 .loading-text {
-  font-size: 18px;
-  font-weight: 300;
-  opacity: 0.9;
+  font-size: 0.9rem;
+  direction: rtl;
 }
 
 .loading-screen.fade-out {
@@ -3533,19 +3520,17 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
   display: flex;
   flex-direction: column;
   gap: 0.25em;
+  direction: rtl;
 }
 
 .attributes-list .item {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.5em;
 }
 
 .attributes-list .item:not(:last-child) {
   padding-bottom: 0.75em;
   border-bottom: 1px solid #E9EDF5;
-}
-
-.attributes-list .label {
-  width: 10em;
 }
