@@ -2979,7 +2979,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 
 
 /* Feature Tour Controls */
-.feature-tour-controls {
+/* .feature-tour-controls {
   position: fixed;
   top: 140px;
   right: 20px;
@@ -2990,13 +2990,13 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
   z-index: var(--z-widget);
   display: none;
   min-width: 250px;
-}
+} */
 
-.feature-tour-controls.active {
+/* .feature-tour-controls.active {
   display: block;
-}
+} */
 
-.tour-header {
+/* .tour-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -3008,7 +3008,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
-}
+} */
 
 .tour-controls {
   display: flex;
@@ -3061,14 +3061,14 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 /* Tour Popup Static Position */
 .tour-popup {
   position: fixed;
-  left: 20px;
-  top: 50%;
+  left: 1rem;
+  top: 55%;
   transform: translateY(-50%);
   background: var(--bg-primary);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xl);
-  width: 350px;
-  max-height: 500px;
+  width: 22rem;
+  max-height: 30rem;
   z-index: var(--z-popup);
   display: none;
   overflow: hidden;
@@ -3337,7 +3337,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
     background: var(--bg-primary);
     box-shadow: var(--shadow-md);
     z-index: var(--z-widget);
-    display: flex;
+    display: none;
     flex-direction: column;
     align-items: center;
     gap: 0.5em;
@@ -3349,7 +3349,11 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
     width: 22rem;
 }
 
-.feature-tour-controls header {
+.feature-tour-controls.active {
+  display: flex;
+}
+
+.feature-tour-controls .tour-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -3359,7 +3363,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
     width: 100%;
 }
 
-.feature-tour-controls .map-actions {
+.tour-header .map-actions {
     display: flex;
     align-items: center;
     gap: 0.75em;
@@ -3383,7 +3387,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
     background: url('images/pause-btn.svg') no-repeat center;
 }
 
-.feature-tour-controls .chevron {
+.tour-header .chevron {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3395,12 +3399,17 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
     cursor: pointer;
 }
 
-.chevron > i {
+.tour-header .chevron > i {
     color: var(--text-secondary);
 }
 
-.feature-tour-controls .chevron:hover {
+.tour-header .chevron:hover {
     background: var(--bg-secondary);
+}
+
+.tour-header .feature-count {
+    min-width: 25%;
+    text-align: end;
 }
 
 .feature-tour-controls .overview {
@@ -3409,6 +3418,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
     gap: 1em;
     width: 100%;
     margin-top: 0.5em;
+    direction: rtl;
 }
 
 .overview .name {
@@ -3429,7 +3439,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
     height: 2em;
 }
 
-.feature-tour-controls .details {
+.feature-tour-controls .feature-details {
     display: none;
     flex-direction: column;
     gap: 0.25em;
@@ -3441,20 +3451,19 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
     font-size: 0.9rem;
     max-height: 22rem;
     overflow-y: auto;
-
 }
 
-.details .item {
+.feature-details .item {
     display: flex;
     align-items: center;
     gap: 0.5em;
 }
 
-.details .item:not(:last-child) {
+.feature-details .item:not(:last-child) {
     padding-bottom: 0.75em;
     border-bottom: 1px solid #E9EDF5;
 }
 
-.details .label {
+.feature-details .label {
     width: 4.5em;
 }
