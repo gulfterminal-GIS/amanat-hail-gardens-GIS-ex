@@ -3235,9 +3235,9 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 }
 
 .tab-button.active {
-  background: var(--bg-secondary);
+/*   background: var(--bg-secondary); */
   color: var(--text-primary);
-  box-shadow: var(--shadow-sm);
+/*   box-shadow: var(--shadow-sm); */
 }
 
 .tab-text {
@@ -3249,7 +3249,8 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: var(--success-color);
+/*   background: var(--success-color); */
+  background: #17BBB1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3257,7 +3258,8 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 }
 
 .tab-indicator.disabled {
-  background: var(--text-light);
+/*   background: var(--text-light); */
+  background: #DEE7E9;
 }
 
 .tab-indicator .checkmark {
@@ -3348,7 +3350,8 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 }
 
 .tab-action-button {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+/*   background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%); */
+  background: #17BBB1
   color: white;
   border: none;
   border-radius: var(--radius-lg);
@@ -3534,3 +3537,4 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
   padding-bottom: 0.75em;
   border-bottom: 1px solid #E9EDF5;
 }
+
