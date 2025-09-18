@@ -40,8 +40,6 @@ let drawnFeatures = {
   intersect2: null
 };
 
-
-
 // Feature Tour System
 let featureTourActive = false;
 let featureTourInterval = null;
@@ -49,9 +47,22 @@ let currentFeatureIndex = 0;
 let tourFeatures = [];
 let tourLayer = null;
 
-
-
 let highlightHandle = null;
+
+let autoControl = null;
+let chevronIcon = null;
+let chevronBtn = null;
+let featureDetails = null;
+
+// Initialize application
+initializeMap()
+  .then(() => {
+    console.log("Application initialized successfully");
+  })
+  .catch((error) => {
+    console.error("Failed to initialize application:", error);
+    showNotification('Failed to initialize map. Please refresh the page.', 'error');
+  });
 
 
 // Utility function to load ArcGIS modules
@@ -73,18 +84,20 @@ function loadModule(moduleName) {
 // Update initializeMap to store home extent
 async function initializeMap() {
   try {
-    const [esriConfig, Map, MapView, GraphicsLayer, reactiveUtils] = await Promise.all([
-      loadModule("esri/config"),
-      loadModule("esri/Map"),
-      loadModule("esri/views/MapView"),
-      loadModule("esri/layers/GraphicsLayer"),
-      loadModule("esri/core/reactiveUtils")  // Add this
-    ]);
+    const [esriConfig, Map, MapView, GraphicsLayer, reactiveUtils] =
+      await Promise.all([
+        loadModule("esri/config"),
+        loadModule("esri/Map"),
+        loadModule("esri/views/MapView"),
+        loadModule("esri/layers/GraphicsLayer"),
+        loadModule("esri/core/reactiveUtils"), // Add this
+      ]);
 
-    esriConfig.apiKey = "AAPK67a9b2041fcc449d90ab91d6bae4a156HTaBtzlYSKLe8L-zBuIgrSGvxOopzVQEtdwVrlp6RKN9Rrq_y2qkTax7Do1cHqm9";
+    esriConfig.apiKey =
+      "AAPK67a9b2041fcc449d90ab91d6bae4a156HTaBtzlYSKLe8L-zBuIgrSGvxOopzVQEtdwVrlp6RKN9Rrq_y2qkTax7Do1cHqm9";
 
     displayMap = new Map({
-      basemap: "hybrid"
+      basemap: "hybrid",
     });
 
     view = new MapView({
@@ -95,13 +108,13 @@ async function initializeMap() {
       highlightOptions: {
         color: "#39ff14",
         haloOpacity: 0.9,
-        fillOpacity: 0.2
-      }
+        fillOpacity: 0.2,
+      },
     });
 
     drawLayer = new GraphicsLayer({
       title: "Drawings",
-      listMode: "show"
+      listMode: "show",
     });
     displayMap.add(drawLayer);
 
@@ -110,19 +123,16 @@ async function initializeMap() {
     view.ui.remove(["compass", "zoom"]);
 
     // Store home extent
-homeExtent = view.extent.clone();
+    homeExtent = view.extent.clone();
 
-// Load default GeoJSON layer
-await loadDefaultGeoJSON();
-
+    // Load default GeoJSON layer
+    await loadDefaultGeoJSON();
 
     // Initialize countries layer for click feature
     await initializeCountriesLayer();
 
-
     // Store home extent
     homeExtent = view.extent.clone();
-
 
     // Initialize zoom watcher for heatmap using reactiveUtils
     reactiveUtils.watch(
@@ -132,42 +142,42 @@ await loadDefaultGeoJSON();
           // Adjust radius based on zoom level for better visualization
           const baseRadius = window.currentHeatmapSettings.radius;
           const zoomFactor = Math.max(1, Math.min(3, zoom / 10));
-          
-          if (window.heatmapLayer.renderer && window.heatmapLayer.renderer.type === 'heatmap') {
+
+          if (
+            window.heatmapLayer.renderer &&
+            window.heatmapLayer.renderer.type === "heatmap"
+          ) {
             window.heatmapLayer.renderer.radius = baseRadius * zoomFactor;
           }
         }
       }
     );
 
-
     initializeUI();
     initializeEventHandlers();
-    
+
     setTimeout(() => {
-      const loadingScreen = document.getElementById('loadingScreen');
-      loadingScreen.classList.add('fade-out');
+      const loadingScreen = document.getElementById("loadingScreen");
+      loadingScreen.classList.add("fade-out");
       setTimeout(() => {
-        loadingScreen.style.display = 'none';
+        loadingScreen.style.display = "none";
       }, 500);
     }, 1000);
 
     // Add this new code:
-// Check if it's the first visit
-const hasSeenTour = localStorage.getItem('gisStudioTourCompleted');
-if (!hasSeenTour) {
-  // Start tour after a short delay
-  setTimeout(() => {
-    startAppTour();
-    // Mark tour as seen
-    localStorage.setItem('gisStudioTourCompleted', 'true');
-  }, 1500);
-}
-
+    // Check if it's the first visit
+    const hasSeenTour = localStorage.getItem("gisStudioTourCompleted");
+    if (!hasSeenTour) {
+      // Start tour after a short delay
+      setTimeout(() => {
+        startAppTour();
+        // Mark tour as seen
+        localStorage.setItem("gisStudioTourCompleted", "true");
+      }, 1500);
+    }
 
     console.log("Map initialized successfully", displayMap, view);
     return [view, displayMap];
-    
   } catch (error) {
     console.error("Error initializing map:", error);
     throw error;
@@ -289,28 +299,6 @@ function redirectToTabPlatform(tabType) {
 window.redirectToTabPlatform = redirectToTabPlatform;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 async function loadDefaultGeoJSON() {
   try {
     const [GeoJSONLayer] = await Promise.all([
@@ -369,7 +357,11 @@ async function loadDefaultGeoJSON() {
 
     // Setup feature tour after layer loads
     await setupFeatureTour(geojsonLayer);
-    
+    chevronBtn = document.querySelector('.feature-tour-controls .chevron');
+    chevronIcon = document.querySelector('.feature-tour-controls .chevron i');
+    autoControl = document.querySelector('.feature-tour-controls .auto-control');
+    featureDetails = document.querySelector('.feature-tour-controls .feature-details');
+
     console.log("Default GeoJSON layer loaded successfully");
 
     // 🔹 Apply classification automatically on GARDENSTATUS
@@ -433,13 +425,6 @@ async function autoApplyDefaultClassification(layer, fieldName) {
 }
 
 
-
-
-
-
-
-
-
 // Setup feature tour
 async function setupFeatureTour(layer) {
   try {
@@ -472,36 +457,97 @@ function createTourControls() {
   const controlsDiv = document.createElement('div');
   controlsDiv.className = 'feature-tour-controls';
   controlsDiv.innerHTML = `
-    <div class="tour-header">
-      <h3>جولة الحدائق</h3>
-      <button class="icon-btn" onclick="closeTourControls()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-    <div class="tour-controls">
-      <button class="tour-btn" onclick="previousFeature()" title="السابق">
-        <i class="fas fa-chevron-left"></i>
-      </button>
-      <button class="tour-btn" id="tourPlayBtn" onclick="toggleFeatureTour()" title="تشغيل">
-        <i class="fas fa-play"></i>
-      </button>
-      <button class="tour-btn" onclick="nextFeature()" title="التالي">
-        <i class="fas fa-chevron-right"></i>
-      </button>
-    </div>
-    <div id="tourInfo" class="tour-info">
-      <!-- Feature info will be displayed here -->
-    </div>
-    <div class="tour-progress">
-      <span id="tourProgress">0 / 0</span>
-    </div>
-  `;
+    <header class="tour-header">
+        <div class="chevron">
+            <i class="bi bi-chevron-down"></i>
+        </div>
+        <div class="map-actions">
+            <img class="backward-control" src="images/fluent_next-24-regular-back.svg" alt="" onclick="previousFeature()">
+            <div class="auto-control pause" onclick="toggleFeatureTour()"></div>
+            <img class="forward-control" src="images/fluent_next-24-regular.svg" alt="" onclick="nextFeature()">
+        </div>
+        <small class="feature-count" id="tourProgress">0 / 0</small>
+    </header>
+
+    <section class="overview" id="tourOverview"></section>
+
+    <section class="feature-details"></section>
+    `;
+    // <div class="item">
+    //     <p class="label">المساحة:</p>
+    //     <span class="value">154544515 متر مربع</span>
+    // </div>
+    // <div class="item">
+    //     <span class="label">الموقع:</span>
+    //     <span class="value">الرياض</span>
+    // </div>
+    //             <div class="item">
+    //     <span class="label">الموقع:</span>
+    //     <span class="value">الرياض</span>
+    // </div>
+    // <div class="item">
+    //     <span class="label">الموقع:</span>
+    //     <span class="value">الرياض</span>
+    // </div>
+    // <div class="item">
+    //     <span class="label">الموقع:</span>
+    //     <span class="value">الرياض</span>
+    // </div>
   
   document.body.appendChild(controlsDiv);
 }
 
+
+
+// function setDetailsVisible(visible) {
+//     const chevronIcon = document.querySelector('.feature-tour-controls .chevron i');
+
+//     // Guard - avoid "reading 'style' of null"
+//     if (!feature-details) return;
+
+//     // show/hide using inline style and keep icon/classes in sync
+//     feature-details.style.display = visible ? 'flex' : 'none';
+
+//     if (chevronIcon) {
+//         chevronIcon.classList.toggle('bi-chevron-up', visible);
+//         chevronIcon.classList.toggle('bi-chevron-down', !visible);
+//     }
+
+//     if (autoControl) {
+//         autoControl.classList.toggle('pause', visible);
+//         autoControl.classList.toggle('play', !visible);
+//     }
+// }
+
+// document.addEventListener('DOMContentLoaded', () => {
+//     // optional: initialize to visible state if needed
+//     setDetailsVisible(true);
+
+//     if (chevronBtn) {
+//         chevronBtn.addEventListener('click', () => {
+//             const feature-details = document.querySelector('.feature-tour-controls .feature-details');
+//             if (!feature-details) return;
+//             const currentlyVisible = window.getComputedStyle(feature-details).display !== 'none';
+//             setDetailsVisible(!currentlyVisible);
+//         });
+//     }
+
+//     if (autoControl) {
+//         autoControl.addEventListener('click', () => {
+//             // treat "pause" class as playing, "play" as paused
+//             const isPlaying = autoControl.classList.contains('pause');
+//             setDetailsVisible(!isPlaying);
+//             // toggle classes just in case
+//             autoControl.classList.toggle('pause', !isPlaying);
+//             autoControl.classList.toggle('play', isPlaying);
+//         });
+//     }
+// });
+
+
 // Start feature tour
 function startFeatureTour() {
+
   if (tourFeatures.length === 0) {
     showNotification('No features to tour', 'warning');
     return;
@@ -514,9 +560,11 @@ function startFeatureTour() {
   document.querySelector('.feature-tour-controls').classList.add('active');
   
   // Update play button
-  const playBtn = document.getElementById('tourPlayBtn');
-  playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-  playBtn.parentElement.classList.add('active');
+  if (autoControl) {
+    autoControl.classList.toggle('pause');
+    autoControl.classList.toggle('play');
+  }
+
   
   // Start touring
   goToFeature(currentFeatureIndex);
@@ -536,10 +584,12 @@ function stopFeatureTour() {
     featureTourInterval = null;
   }
   
+  console.log(autoControl);
   // Update play button
-  const playBtn = document.getElementById('tourPlayBtn');
-  playBtn.innerHTML = '<i class="fas fa-play"></i>';
-  playBtn.parentElement.classList.remove('active');
+  if (autoControl) {
+    autoControl.classList.toggle('pause');
+    autoControl.classList.toggle('play');
+  }
 }
 
 // Toggle tour play/pause
@@ -614,17 +664,17 @@ view.whenLayerView(tourLayer).then(layerView => {
 
 function showCustomPopupTour(graphic) {
   currentPopupFeature = graphic;
-  
+
   // Get or create popup container
-  let popup = document.getElementById('customPopup');
+  let popup = document.getElementById("customPopup");
   if (!popup) {
-    popup = document.createElement('div');
-    popup.id = 'customPopup';
+    popup = document.createElement("div");
+    popup.id = "customPopup";
     document.body.appendChild(popup);
   }
-  
+
   // Always reset popup HTML
-  popup.className = 'tour-popup custom-popup';
+  popup.className = "tour-popup custom-popup";
   popup.innerHTML = `
     <div class="popup-header">
       <h3 id="popupTitle"></h3>
@@ -634,47 +684,50 @@ function showCustomPopupTour(graphic) {
     </div>
     <div id="popupContent" class="popup-content"></div>
   `;
-  
-  const content = document.getElementById('popupContent');
-  const title = document.getElementById('popupTitle');
-  
+
+  const content = document.getElementById("popupContent");
+  const title = document.getElementById("popupTitle");
+
   // Title
-  const layerTitle = graphic.layer?.title || 'Feature Information';
-  const featureName = graphic.attributes?.name || graphic.attributes?.Name || 
-                     graphic.attributes?.title || graphic.attributes?.Title || '';
+  const layerTitle = graphic.layer?.title || "Feature Information";
+  const featureName =
+    graphic.attributes?.name ||
+    graphic.attributes?.Name ||
+    graphic.attributes?.title ||
+    graphic.attributes?.Title ||
+    "";
   title.textContent = featureName || layerTitle;
-  
+
   // Attributes
   const attributes = graphic.attributes;
   let html = '<div class="attribute-list">';
-  
+
   if (attributes && Object.keys(attributes).length > 0) {
-const sortedKeys = Object.keys(attributes).sort((a, b) => {
-  const endFields = ['shape_area','shape_length','fid'];
+    const sortedKeys = Object.keys(attributes).sort((a, b) => {
+      const endFields = ["shape_area", "shape_length", "fid"];
 
-  // 1) Put end fields last
-  const aIsEnd = endFields.includes(a.toLowerCase());
-  const bIsEnd = endFields.includes(b.toLowerCase());
-  if (aIsEnd && !bIsEnd) return 1;
-  if (!aIsEnd && bIsEnd) return -1;
+      // 1) Put end fields last
+      const aIsEnd = endFields.includes(a.toLowerCase());
+      const bIsEnd = endFields.includes(b.toLowerCase());
+      if (aIsEnd && !bIsEnd) return 1;
+      if (!aIsEnd && bIsEnd) return -1;
 
-  // 2) Arabic fields detection
-  const arabicRegex = /[\u0600-\u06FF]/;
-  const aIsArabic = arabicRegex.test(a);
-  const bIsArabic = arabicRegex.test(b);
+      // 2) Arabic fields detection
+      const arabicRegex = /[\u0600-\u06FF]/;
+      const aIsArabic = arabicRegex.test(a);
+      const bIsArabic = arabicRegex.test(b);
 
-  if (aIsArabic && !bIsArabic) return -1; // Arabic first
-  if (!aIsArabic && bIsArabic) return 1;
+      if (aIsArabic && !bIsArabic) return -1; // Arabic first
+      if (!aIsArabic && bIsArabic) return 1;
 
-  // 3) Otherwise, alphabetical
-  return a.localeCompare(b);
-});
+      // 3) Otherwise, alphabetical
+      return a.localeCompare(b);
+    });
 
-    
-    sortedKeys.forEach(key => {
+    sortedKeys.forEach((key) => {
       const value = attributes[key];
-      if (key.startsWith('_') || key === 'ObjectID' || key === 'FID') return;
-      
+      if (key.startsWith("_") || key === "ObjectID" || key === "FID") return;
+
       let displayValue = formatAttributeValue(value, key);
       if (displayValue) {
         html += `
@@ -685,14 +738,14 @@ const sortedKeys = Object.keys(attributes).sort((a, b) => {
         `;
       }
     });
-      
-  popup.classList.add('active');
+
+    popup.classList.add("active");
   } else {
     html += '<div class="no-attributes">No attributes available</div>';
   }
-  
-  html += '</div>';
-  
+
+  html += "</div>";
+
   // Geometry info (async update)
   if (graphic.geometry) {
     html += `
@@ -702,7 +755,7 @@ const sortedKeys = Object.keys(attributes).sort((a, b) => {
       </div>
     `;
   }
-  
+
   // Action buttons
   html += `
     <div class="popup-actions">
@@ -714,12 +767,12 @@ const sortedKeys = Object.keys(attributes).sort((a, b) => {
       </button>
     </div>
   `;
-  
+
   content.innerHTML = html;
-  
+
   // Show fixed-position popup
-  popup.classList.add('active');
-  
+  popup.classList.add("active");
+
   if (graphic.geometry) {
     updateGeometryDetails(graphic.geometry);
   }
@@ -746,7 +799,7 @@ window.closeTourPopup = closeTourPopup;
 // Update tour info panel
 // Update tour info panel
 function updateTourInfo(feature) {
-  const infoDiv = document.getElementById('tourInfo');
+  const tourOverview = document.getElementById('tourOverview');
   const attrs = feature.attributes;
   
   // Try to find name field
@@ -765,34 +818,20 @@ function updateTourInfo(feature) {
     featureName = `حديقه ${currentFeatureIndex + 1}`;
   }
   
-  // Display the name prominently
-  let html = `
-    <div style="text-align: center; margin-bottom: 12px;">
-      <h4 style="margin: 0; color: var(--primary-color); font-size: 18px;">
-        ${featureName}
-      </h4>
-    </div>
-  `;
-  
-  // Add other important fields
-  if (attrs.GARDENSTATUS) {
-    html += `
-      <div style="margin-bottom: 6px;">
-        <strong>الحالة:</strong> ${attrs.GARDENSTATUS}
+    // Only show if is a truthy value
+  const areaValue = attrs.GARDENAREA || attrs.gardenarea || '';
+  const areaHtml = areaValue ? `<p class="area">${areaValue} متر مربع</p>` : '';
+
+  const statusValue = attrs.GARDENSTATUS || attrs.gardenstatus || '';
+  const statusHtml = statusValue ? `<div class="status">${statusValue}</div>` : '';
+
+  tourOverview.innerHTML = `
+      <div>
+          <p class="name">${featureName}</p>
+          ${areaHtml}
       </div>
-    `;
-  }
-  
-  if (attrs.GARDENAREA) {
-    const area = parseFloat(attrs.GARDENAREA).toFixed(2);
-    html += `
-      <div style="margin-bottom: 6px;">
-        <strong>المساحة:</strong> <span dir="ltr">${area} م²</span>
-      </div>
-    `;
-  }
-  
-  infoDiv.innerHTML = html;
+      ${statusHtml}
+  `; 
 }
 
 // Navigation functions
@@ -3157,21 +3196,25 @@ async function getSuggestions(searchTerm) {
 // Replace showCustomPopup with this enhanced version
 function showCustomPopup(graphic, mapPoint) {
   currentPopupFeature = graphic;
-  const popup = document.getElementById('customPopup');
-  const content = document.getElementById('popupContent');
-  const title = document.getElementById('popupTitle');
-  
+  const popup = document.getElementById("customPopup");
+  const content = document.getElementById("popupContent");
+  const title = document.getElementById("popupTitle");
+
   // Set title - use layer title or feature name if available
-  const layerTitle = graphic.layer?.title || 'Feature Information';
-  const featureName = graphic.attributes?.name || graphic.attributes?.Name || 
-                     graphic.attributes?.title || graphic.attributes?.Title || '';
-  
+  const layerTitle = graphic.layer?.title || "Feature Information";
+  const featureName =
+    graphic.attributes?.name ||
+    graphic.attributes?.Name ||
+    graphic.attributes?.title ||
+    graphic.attributes?.Title ||
+    "";
+
   title.textContent = featureName || layerTitle;
-  
+
   // Build comprehensive attribute table
   const attributes = graphic.attributes;
   let html = '<div class="attribute-list">';
-  
+
   if (attributes && Object.keys(attributes).length > 0) {
     // Get all attributes and sort them
     // const sortedKeys = Object.keys(attributes).sort((a, b) => {
@@ -3179,50 +3222,66 @@ function showCustomPopup(graphic, mapPoint) {
     //   const priorityFields = ['name', 'title', 'id', 'type', 'category'];
     //   const aPriority = priorityFields.findIndex(f => a.toLowerCase().includes(f));
     //   const bPriority = priorityFields.findIndex(f => b.toLowerCase().includes(f));
-      
+
     //   if (aPriority !== -1 && bPriority !== -1) return aPriority - bPriority;
     //   if (aPriority !== -1) return -1;
     //   if (bPriority !== -1) return 1;
-      
+
     //   return a.localeCompare(b);
     // });
 
     const sortedKeys = Object.keys(attributes).sort((a, b) => {
       // Fields to show at the end
-      const endFields = ['shape_area', 'shape__area', 'shape_length', 'shape__length', 'shape_leng', 'fid'];
-      const aIsEnd = endFields.some(f => a.toLowerCase() === f.toLowerCase());
-      const bIsEnd = endFields.some(f => b.toLowerCase() === f.toLowerCase());
-      
+      const endFields = [
+        "shape_area",
+        "shape__area",
+        "shape_length",
+        "shape__length",
+        "shape_leng",
+        "fid",
+      ];
+      const aIsEnd = endFields.some((f) => a.toLowerCase() === f.toLowerCase());
+      const bIsEnd = endFields.some((f) => b.toLowerCase() === f.toLowerCase());
+
       if (aIsEnd && !bIsEnd) return 1;
       if (!aIsEnd && bIsEnd) return -1;
-      
+
       // Put important fields first
-      const priorityFields = ['name', 'title', 'id', 'type', 'category', 'objectid'];
-      const aPriority = priorityFields.findIndex(f => a.toLowerCase().includes(f));
-      const bPriority = priorityFields.findIndex(f => b.toLowerCase().includes(f));
-      
+      const priorityFields = [
+        "name",
+        "title",
+        "id",
+        "type",
+        "category",
+        "objectid",
+      ];
+      const aPriority = priorityFields.findIndex((f) =>
+        a.toLowerCase().includes(f)
+      );
+      const bPriority = priorityFields.findIndex((f) =>
+        b.toLowerCase().includes(f)
+      );
+
       if (aPriority !== -1 && bPriority !== -1) return aPriority - bPriority;
       if (aPriority !== -1) return -1;
       if (bPriority !== -1) return 1;
-      
+
       return a.localeCompare(b);
     });
 
-
-    
     // Display each attribute
-    sortedKeys.forEach(key => {
+    sortedKeys.forEach((key) => {
       const value = attributes[key];
-      
+
       // Skip internal fields
-      if (key.startsWith('_') || key === 'ObjectID' || key === 'FID') {
+      if (key.startsWith("_") || key === "ObjectID" || key === "FID") {
         return;
       }
-      
+
       // Format the value based on type
       let displayValue = formatAttributeValue(value, key);
-      
-      if (displayValue !== null && displayValue !== '') {
+
+      if (displayValue !== null && displayValue !== "") {
         html += `
           <div class="attribute-row">
             <span class="attribute-label">${formatFieldName(key)}:</span>
@@ -3234,19 +3293,19 @@ function showCustomPopup(graphic, mapPoint) {
   } else {
     html += '<div class="no-attributes">No attributes available</div>';
   }
-  
-  html += '</div>';
-  
+
+  html += "</div>";
+
   // Add geometry information
   if (graphic.geometry) {
     html += '<div class="geometry-info">';
-    html += '<h4>Geometry Information</h4>';
-    
+    html += "<h4>Geometry Information</h4>";
+
     // Create a container for async geometry calculations
     html += '<div id="geometryDetails">Loading...</div>';
-    html += '</div>';
+    html += "</div>";
   }
-  
+
   // Add action buttons
   html += `
     <div class="popup-actions">
@@ -3258,16 +3317,16 @@ function showCustomPopup(graphic, mapPoint) {
       </button>
     </div>
   `;
-  
+
   content.innerHTML = html;
-  
+
   // Position popup
   positionPopup(popup, mapPoint);
-  
-  // Show popup
-  popup.classList.remove('hidden');
 
-    // Now calculate geometry details asynchronously
+  // Show popup
+  popup.classList.remove("hidden");
+
+  // Now calculate geometry details asynchronously
   if (graphic.geometry) {
     updateGeometryDetails(graphic.geometry);
   }
@@ -3781,15 +3840,6 @@ window.addEventListener('resize', () => {
   }, 250);
 });
 
-// Initialize application
-initializeMap()
-  .then(() => {
-    console.log("Application initialized successfully");
-  })
-  .catch((error) => {
-    console.error("Failed to initialize application:", error);
-    showNotification('Failed to initialize map. Please refresh the page.', 'error');
-  });
 
 // Export global functions for inline handlers
 window.toggleLayer = toggleLayer;
