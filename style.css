@@ -3351,7 +3351,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 
 .tab-action-button {
 /*   background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%); */
-  background: #17BBB1
+  background: #17BBB1;
   color: white;
   border: none;
   border-radius: var(--radius-lg);
@@ -3537,4 +3537,5 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
   padding-bottom: 0.75em;
   border-bottom: 1px solid #E9EDF5;
 }
+
 
