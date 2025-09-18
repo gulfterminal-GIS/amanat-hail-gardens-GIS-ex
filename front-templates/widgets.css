@@ -179,11 +179,11 @@ body {
 }
 
 .map-actions .auto-control.pause {
-    background: url('images/play-btn.svg') no-repeat center;
+    background: url('/images/play-btn.svg') no-repeat center;
 }
 
 .map-actions .auto-control.play {
-    background: url('images/pause-btn.svg') no-repeat center;
+    background: url('/images/pause-btn.svg') no-repeat center;
 }
 
 .feature-tour-controls .chevron {
