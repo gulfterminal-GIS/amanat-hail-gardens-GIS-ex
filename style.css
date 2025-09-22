@@ -3402,7 +3402,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 
 .feature-tour-controls {
   position: absolute;
-  top: 4.5rem;
+  top: 9rem;
   inset-inline-end: 1rem;
   background: var(--bg-primary);
   box-shadow: var(--shadow-md);

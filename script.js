@@ -198,12 +198,18 @@ async function initializeMap() {
 
 // Tab System
 const tabMessages = {
-  gardens: null, // No message for gardens tab
+  // gardens: null, // No message for gardens tab
+  gardens: "التوجه الى منصة الحدائق الذكية", // No message for gardens tab
   projects: "يلزم الربط بمنصة قرار لعرض المشروعات",
   assets: "يلزم الربط بالتشغيل و الصيانة لعرض الأصول",
+  smartEye: "يلزم الربط بمنصة العين الذكية"
 };
 
 const tabButtonTexts = {
+  gardens: {
+    text: "ربط بمنصة الحدائق الذكية",
+    url: "https://intelli.it.com/",
+  },
   projects: {
     text: "ربط بمنصة قرار",
     url: "https://qarar2025.azurewebsites.net/",
@@ -211,6 +217,10 @@ const tabButtonTexts = {
   assets: {
     text: "ربط بالتشغيل و الصيانة",
     url: "https://gt-ams.azurewebsites.net/",
+  },
+  smartEye: {
+    text: "ربط بمنصة العين الذكية ",
+    url: "http://hayel.dtsit.net/dashboard",
   },
 };
 
@@ -224,16 +234,16 @@ function initializeMapTabs() {
     button.addEventListener("click", function () {
       const tabType = this.getAttribute("data-tab");
 
-      // If it's gardens tab, just activate it and hide backdrop
-      if (tabType === "gardens") {
-        // Remove active from all tabs
-        tabButtons.forEach((btn) => btn.classList.remove("active"));
-        // Set this tab as active
-        this.classList.add("active");
-        // Hide backdrop
-        backdrop.classList.add("hidden");
-        return;
-      }
+      // // If it's gardens tab, just activate it and hide backdrop
+      // if (tabType === "gardens") {
+      //   // Remove active from all tabs
+      //   tabButtons.forEach((btn) => btn.classList.remove("active"));
+      //   // Set this tab as active
+      //   this.classList.add("active");
+      //   // Hide backdrop
+      //   backdrop.classList.add("hidden");
+      //   return;
+      // }
 
       // For other tabs, show the message
       const message = tabMessages[tabType];
