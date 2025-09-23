@@ -3543,9 +3543,10 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
   border-bottom: 1px solid #E9EDF5;
 }
 
-.esri-ui .esri-attribution {
+.esri-attribution {
    display: none;
 }
+
 
 
 
