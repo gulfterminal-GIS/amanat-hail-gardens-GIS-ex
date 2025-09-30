@@ -13,10 +13,10 @@ This feature involves modularizing the existing browser-based ArcGIS web applica
 #### Acceptance Criteria
 
 1. WHEN the application loads THEN the system SHALL maintain all existing functionality without any breaking changes throughout the entire modularization process
-2. WHEN modularizing JavaScript THEN the system SHALL extract modules one at a time, starting with the least coupled functions and gradually moving to more complex interdependent code
-3. WHEN examining the JavaScript structure THEN the system SHALL have separate modules for map initialization, UI components, layer management, drawing tools, analysis functions, and utility functions
-4. WHEN a module is extracted THEN the system SHALL preserve all global variable dependencies and function signatures until all modules are successfully separated
-5. WHEN importing modules THEN the system SHALL use ES6 module syntax with proper import/export statements only after ensuring compatibility with ArcGIS API requirements
+2. WHEN modularizing JavaScript THEN the system SHALL convert script.js to an ES6 module first, then extract specific functionality modules that import from the main script module
+3. WHEN examining the JavaScript structure THEN the system SHALL have script.js as the main ES6 module with separate specialized modules for UI components, layer management, drawing tools, analysis functions, and utility functions
+4. WHEN a module is extracted THEN the system SHALL import required functions directly from script.js module rather than creating global variables
+5. WHEN importing modules THEN the system SHALL use ES6 module syntax with proper import/export statements, with script.js serving as the core module that other modules import from
 
 ### Requirement 2
 
@@ -36,11 +36,23 @@ This feature involves modularizing the existing browser-based ArcGIS web applica
 
 #### Acceptance Criteria
 
-1. WHEN examining the HTML structure THEN the system SHALL separate template components from the main HTML file
+1. WHEN examining the HTML structure THEN the system SHALL separate template components from the main HTML file only after JavaScript modularization is complete
 2. WHEN components are rendered THEN the system SHALL maintain all existing DOM structure and element IDs for JavaScript compatibility
 3. WHEN templates are used THEN the system SHALL support dynamic content injection for widgets, panels, and modal dialogs
 4. WHEN the application loads THEN the system SHALL assemble all components into the complete interface without visual glitches
 5. WHEN link elements are processed THEN the system SHALL preserve the exact order and attributes of all CSS and JavaScript link elements in the HTML head
+
+### Requirement 4
+
+**User Story:** As a developer, I want script.js to be converted to an ES6 module as the first step, so that I can maintain all existing functionality while enabling modular imports.
+
+#### Acceptance Criteria
+
+1. WHEN converting script.js THEN the system SHALL add export statements for all functions that need to be accessible to other modules
+2. WHEN script.js is converted THEN the system SHALL maintain all existing global variables within the script.js module scope
+3. WHEN other modules need script.js functionality THEN the system SHALL import specific functions rather than accessing global variables
+4. WHEN the conversion is complete THEN the system SHALL verify that all existing functionality works exactly as before
+5. WHEN script.js is loaded as a module THEN the system SHALL ensure all ArcGIS API integrations continue to work without modification
 
 
 

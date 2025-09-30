@@ -2,20 +2,19 @@
 
 ## Overview
 
-This design outlines the modularization approach for the browser-based ArcGIS web application. The design focuses on incrementally breaking down the monolithic JavaScript file (8225+ lines) into logical ES6 modules while preserving all existing functionality. The approach prioritizes minimal disruption to the complex ArcGIS integrations and maintains the current CSS and HTML structure with only necessary component separation.
+This design outlines the modularization approach for the browser-based ArcGIS web application. The design focuses on first converting script.js to an ES6 module, then incrementally extracting specialized functionality into separate modules that import from the main script module. This approach preserves all existing functionality and complex ArcGIS integrations while enabling proper modular architecture. The approach prioritizes minimal disruption and maintains the current CSS and HTML structure.
 
 ## Architecture
 
 ### Module Structure
 
-The application will be restructured into the following module hierarchy using a **gradual extraction approach** that preserves script.js functionality during the transition:
+The application will be restructured using a **script.js-as-core-module approach** that converts script.js to ES6 module first, then extracts specialized modules:
 
 ```
 js/
 ├── main.js                 # Entry point and module orchestration
-├── script.js               # Original monolithic file (preserved during refactoring)
+├── script.js               # Core ES6 module with all main functionality (converted first)
 ├── core/
-│   ├── map-manager.js      # Map initialization and core ArcGIS setup
 │   └── config.js           # Configuration constants and settings
 ├── ui/
 │   ├── toolbar.js          # Main toolbar and mobile toolbar functionality
@@ -44,52 +43,54 @@ js/
 ```
 
 **Key Design Principles:**
-- **script.js remains intact** during the entire refactoring process to avoid breaking dependencies
-- **Utility functions stay in script.js** until all other modules are successfully extracted
-- **Global functions are duplicated** in modules when needed, then cleaned up at the end
-- **No utils.js extraction** until the final cleanup phase
+- **script.js becomes the core ES6 module** with export statements for functions needed by other modules
+- **All global variables remain in script.js** - no globalization to window object
+- **Other modules import specific functions** from script.js rather than accessing globals
+- **No duplication of functions** - single source of truth in script.js
 
 ### Module Dependencies and Refactoring Strategy
 
-The modules will follow this **gradual extraction approach** to minimize breaking changes:
+The modules will follow this **script.js-as-core-module approach** to minimize breaking changes:
 
-1. **Phase 1: Core Infrastructure** (Minimal dependencies)
-   - `config.js` - Pure configuration constants
-   - `map-manager.js` - Map initialization (depends on script.js globals)
+1. **Phase 1: Core Module Conversion**
+   - Convert `script.js` to ES6 module with export statements
+   - Create `config.js` with configuration constants
+   - Update `main.js` to import and initialize script.js module
+   - Verify all functionality works with script.js as ES6 module
 
-2. **Phase 2: UI Components** (Depends on script.js + Core)
-   - `toolbar.js` - Toolbar functionality (uses script.js functions)
-   - `panels.js` - Panel management (uses script.js functions)
-   - `search.js` - Search functionality (uses script.js functions)
+2. **Phase 2: UI Components** (Import from script.js)
+   - `toolbar.js` - Imports toolbar functions from script.js
+   - `panels.js` - Imports panel functions from script.js
+   - `search.js` - Imports search functions from script.js
 
-3. **Phase 3: Layer Management** (Depends on script.js + Core + UI)
-   - `layer-manager.js` - Layer operations (uses script.js globals)
-   - `upload-handler.js` - File upload (uses script.js functions)
-   - `basemap-switcher.js` - Basemap switching (uses script.js functions)
+3. **Phase 3: Layer Management** (Import from script.js)
+   - `layer-manager.js` - Imports layer functions from script.js
+   - `upload-handler.js` - Imports file upload functions from script.js
+   - `basemap-switcher.js` - Imports basemap functions from script.js
 
-4. **Phase 4: Tools and Features** (Depends on script.js + all previous)
-   - `drawing-tools.js` - Drawing functionality
-   - `analysis-tools.js` - Spatial analysis
-   - `measurement.js` - Measurement tools
-   - `visualization.js` - Data visualization
-   - `popup-manager.js` - Feature information display
-   - `attribute-table.js` - Data table functionality
-   - `tour-system.js` - Feature tour system
-   - `classification.js` - Data classification
+4. **Phase 4: Tools and Features** (Import from script.js)
+   - `drawing-tools.js` - Imports drawing functions from script.js
+   - `analysis-tools.js` - Imports analysis functions from script.js
+   - `measurement.js` - Imports measurement functions from script.js
+   - `visualization.js` - Imports visualization functions from script.js
+   - `popup-manager.js` - Imports popup functions from script.js
+   - `attribute-table.js` - Imports table functions from script.js
+   - `tour-system.js` - Imports tour functions from script.js
+   - `classification.js` - Imports classification functions from script.js
 
-5. **Phase 5: Event System** (Depends on all modules)
-   - `event-handlers.js` - Event coordination
-   - `notifications.js` - User feedback system
+5. **Phase 5: Event System** (Import from script.js)
+   - `event-handlers.js` - Imports event functions from script.js
+   - `notifications.js` - Imports notification functions from script.js
 
-6. **Phase 6: Final Cleanup** (Extract utilities and remove script.js)
-   - `utils.js` - Extract utility functions from script.js
-   - Remove script.js dependencies from all modules
-   - Clean up global variables and duplicated functions
+6. **Phase 6: Final Cleanup** (Optional - only if needed)
+   - Extract utility functions to `utils.js` if desired
+   - Keep script.js as the main module or refactor further as needed
 
 **Transition Strategy:**
-- Each module initially imports and uses functions from script.js
-- Modules gradually become self-contained as dependencies are resolved
-- script.js is only removed in the final phase after all extractions are complete
+- script.js becomes an ES6 module but retains all its internal structure
+- Other modules import specific functions from script.js
+- No global variables are created - everything stays within module scope
+- Each extraction step maintains the working application
 
 ## Components and Interfaces
 
@@ -117,27 +118,42 @@ export const CONFIG = {
 }
 ```
 
-#### Script.js Integration (Temporary)
+#### Script.js as Core Module
 
-During the refactoring process, modules will access script.js functions through:
+script.js will be converted to an ES6 module with export statements:
 
 ```javascript
-// Modules access script.js functions during transition
-// These will be replaced with proper imports in the final phase
-window.loadModule(moduleName)
-window.formatAttributeValue(value, key)
-window.formatFieldName(key)
-window.showNotification(message, type)
+// script.js as ES6 module
+export { loadModule, initializeMap, initializeUI, initializeEventHandlers };
+export { openSidePanel, closeSidePanel, showNotification };
+export { loadGeoJSON, loadCSV, handleFiles };
+export { startDrawingWithTool, clearAll, toggleLayer };
+// ... other functions as needed
+
+// All global variables remain within script.js module scope
+var displayMap;
+let view;
+let uploadedLayers = [];
+// ... other variables
 ```
 
-#### Utilities (`utils/utils.js`) - Final Phase Only
+#### Module Import Pattern
+
+Other modules will import specific functions from script.js:
 
 ```javascript
-// Only created in the final cleanup phase
-export function loadModule(moduleName)
-export function formatAttributeValue(value, key)
-export function formatFieldName(key)
-export function showNotification(message, type)
+// Example: ui/toolbar.js
+import { openSidePanel, showNotification } from '../script.js';
+
+export class ToolbarManager {
+  constructor() {
+    // Use imported functions directly
+  }
+  
+  handleUploadClick() {
+    openSidePanel("Upload Files", "uploadPanelTemplate");
+  }
+}
 ```
 
 ### UI Components
@@ -329,47 +345,39 @@ function getUserFriendlyMessage(error) {
 
 ## Migration Strategy
 
-### Phase 1: Core Infrastructure
-1. Extract configuration constants to `config.js`
-2. Create basic module loading system in `main.js`
-3. **Keep script.js intact** - do not extract utilities yet
-4. Test core functionality with script.js still loaded
+### Phase 1: Convert script.js to ES6 Module
+1. Add export statements to script.js for all functions that will be used by other modules
+2. Create `config.js` with configuration constants
+3. Update `main.js` to import script.js as a module and call its initialization functions
+4. Test that all functionality works with script.js as an ES6 module
 
-### Phase 2: Map Foundation
-1. Extract map initialization to `map-manager.js`
-2. **Preserve all global variables** and script.js dependencies
-3. Update main.js to use MapManager alongside script.js
-4. Verify map loads correctly with both systems
+### Phase 2: Extract UI Components
+1. Create `toolbar.js` that imports toolbar-related functions from script.js
+2. Create `panels.js` that imports panel-related functions from script.js
+3. Create `search.js` that imports search-related functions from script.js
+4. Test all UI interactions work with the new module structure
 
-### Phase 3: UI Components
-1. Extract toolbar functionality to `toolbar.js` (uses script.js functions)
-2. Extract panel management to `panels.js` (uses script.js functions)
-3. Extract search functionality to `search.js` (uses script.js functions)
-4. Test all UI interactions with script.js still providing utilities
+### Phase 3: Extract Layer Management
+1. Create `layer-manager.js` that imports layer-related functions from script.js
+2. Create `upload-handler.js` that imports file upload functions from script.js
+3. Create `basemap-switcher.js` that imports basemap functions from script.js
+4. Test layer loading and management functionality
 
-### Phase 4: Layer Management
-1. Extract layer operations to `layer-manager.js` (uses script.js globals)
-2. Extract file upload to `upload-handler.js` (uses script.js functions)
-3. Extract basemap switching to `basemap-switcher.js` (uses script.js functions)
-4. Test layer loading with script.js providing utility functions
+### Phase 4: Extract Tools and Features
+1. Create drawing, analysis, measurement, and visualization modules
+2. Create popup, table, tour, and classification modules
+3. Each module imports required functions from script.js
+4. Test all tool functionality
 
-### Phase 5: Tools and Features
-1. Extract drawing tools to `drawing-tools.js` (uses script.js functions)
-2. Extract analysis tools to `analysis-tools.js` (uses script.js functions)
-3. Extract remaining features (popup, table, tour, etc.) (uses script.js functions)
-4. Test all tool functionality with script.js utilities still available
+### Phase 5: Extract Event System
+1. Create `event-handlers.js` that imports event-related functions from script.js
+2. Create `notifications.js` that imports notification functions from script.js
+3. Test event handling and notifications
 
-### Phase 6: Event System Integration
-1. Extract event coordination to `event-handlers.js`
-2. Extract notification system to `notifications.js`
-3. Test event flow with script.js still providing base functions
-
-### Phase 7: Final Cleanup and Utility Extraction
-1. **Extract utility functions** from script.js to `utils/utils.js`
-2. **Replace script.js dependencies** in all modules with proper imports
-3. **Remove script.js** from the application
-4. Clean up global variables and duplicated functions
-5. Final testing and optimization
+### Phase 6: Optional Cleanup
+1. Optionally extract utility functions to `utils.js` if desired
+2. Keep script.js as the core module or refactor further based on needs
+3. Final testing and optimization
 
 ## Browser Compatibility
 
