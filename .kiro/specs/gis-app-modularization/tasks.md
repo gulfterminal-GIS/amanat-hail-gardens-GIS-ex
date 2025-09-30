@@ -7,19 +7,19 @@
   - Update index.html to load main.js as ES6 module instead of script.js
   - _Requirements: 1.2, 1.4, 3.1, 3.5_
 
-- [-] 2. Convert script.js to ES6 module and update main.js
+- [x] 2. Convert script.js to ES6 module and update main.js
 
-  - [-] 2.1 Convert script.js to ES6 module with export statements
 
-    - Add export statements at the end of script.js for all functions that will be used by other modules
-    - Export key functions: initializeMap, initializeUI, initializeEventHandlers, loadModule, showNotification, openSidePanel, closeSidePanel
-    - Export layer functions: loadGeoJSON, loadCSV, handleFiles, toggleLayer, removeLayer, updateLayerList
-    - Export drawing functions: startDrawingWithTool, clearAll, initializeSketchViewModel
-    - Export other utility functions as needed by future modules
-    - **Keep all global variables within script.js** - do not modify the internal structure
-    - _Requirements: 1.2, 1.3, 4.1, 4.2_
+  - Add export statements at the end of script.js for all functions that will be used by other modules
+  - Export key functions: initializeMap, initializeUI, initializeEventHandlers, loadModule, showNotification, openSidePanel, closeSidePanel
+  - Export layer functions: loadGeoJSON, loadCSV, handleFiles, toggleLayer, removeLayer, updateLayerList
+  - Export drawing functions: startDrawingWithTool, clearAll, initializeSketchViewModel
+  - Export other utility functions as needed by future modules
+  - **Keep all global variables within script.js** - do not modify the internal structure
+  - _Requirements: 1.2, 1.3, 4.1, 4.2_
   
-  - [ ] 2.2 Update main.js to import and use script.js as ES6 module
+  - [x] 2.2 Update main.js to import and use script.js as ES6 module
+
     - Remove the current global variable assignments from main.js
     - Import the initializeMap function from script.js
     - Call initializeMap directly instead of through window object
@@ -27,7 +27,8 @@
     - Ensure main.js is clean and only handles application initialization
     - _Requirements: 1.1, 4.3, 4.4_
   
-  - [ ] 2.3 Verify all functionality works with script.js as ES6 module
+  - [x] 2.3 Verify all functionality works with script.js as ES6 module
+
     - Test that the map initializes correctly
     - Verify all toolbar buttons and panels work
     - Test file upload, layer management, and drawing tools

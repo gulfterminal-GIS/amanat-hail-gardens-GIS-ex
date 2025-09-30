@@ -8214,5 +8214,29 @@ window.startAppTour = startAppTour;
 // Make initializeMap available globally for main.js
 window.initializeMap = initializeMap;
 
-// Export functions for module system
-export { initializeMap };
+// Export functions for module system - ES6 module exports
+export { 
+  // Core initialization functions
+  initializeMap,
+  initializeUI,
+  initializeEventHandlers,
+  loadModule,
+  
+  // Notification and UI functions
+  showNotification,
+  openSidePanel,
+  closeSidePanel,
+  
+  // Layer management functions
+  loadGeoJSON,
+  loadCSV,
+  handleFiles,
+  toggleLayer,
+  removeLayer,
+  updateLayerList,
+  
+  // Drawing functions
+  startDrawingWithTool,
+  clearAll,
+  initializeSketchViewModel
+};
