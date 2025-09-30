@@ -8,15 +8,15 @@ This design outlines the modularization approach for the browser-based ArcGIS we
 
 ### Module Structure
 
-The application will be restructured into the following module hierarchy:
+The application will be restructured into the following module hierarchy using a **gradual extraction approach** that preserves script.js functionality during the transition:
 
 ```
 js/
 ├── main.js                 # Entry point and module orchestration
+├── script.js               # Original monolithic file (preserved during refactoring)
 ├── core/
 │   ├── map-manager.js      # Map initialization and core ArcGIS setup
-│   ├── config.js           # Configuration constants and settings
-│   └── utils.js            # Utility functions and helpers
+│   └── config.js           # Configuration constants and settings
 ├── ui/
 │   ├── toolbar.js          # Main toolbar and mobile toolbar functionality
 │   ├── search.js           # Search widget and address lookup
@@ -36,37 +36,60 @@ js/
 │   ├── attribute-table.js  # Data table functionality
 │   ├── tour-system.js      # Feature tour and navigation
 │   └── classification.js   # Data classification and styling
-└── events/
-    ├── event-handlers.js   # Global event handling and coordination
-    └── notifications.js    # Notification system and user feedback
+├── events/
+│   ├── event-handlers.js   # Global event handling and coordination
+│   └── notifications.js    # Notification system and user feedback
+└── utils/
+    └── utils.js            # Utility functions (extracted LAST after all modules)
 ```
 
-### Module Dependencies
+**Key Design Principles:**
+- **script.js remains intact** during the entire refactoring process to avoid breaking dependencies
+- **Utility functions stay in script.js** until all other modules are successfully extracted
+- **Global functions are duplicated** in modules when needed, then cleaned up at the end
+- **No utils.js extraction** until the final cleanup phase
 
-The modules will follow this dependency hierarchy to minimize coupling:
+### Module Dependencies and Refactoring Strategy
 
-1. **Core Layer** (No dependencies on other modules)
-   - `config.js` - Pure configuration
-   - `utils.js` - Pure utility functions
-   - `map-manager.js` - Depends only on ArcGIS API
+The modules will follow this **gradual extraction approach** to minimize breaking changes:
 
-2. **Foundation Layer** (Depends only on Core)
-   - `event-handlers.js` - Event coordination
-   - `notifications.js` - User feedback system
+1. **Phase 1: Core Infrastructure** (Minimal dependencies)
+   - `config.js` - Pure configuration constants
+   - `map-manager.js` - Map initialization (depends on script.js globals)
 
-3. **Feature Layer** (Depends on Core + Foundation)
-   - `layer-manager.js` - Layer operations
-   - `popup-manager.js` - Feature information display
-   - `panels.js` - UI panel management
+2. **Phase 2: UI Components** (Depends on script.js + Core)
+   - `toolbar.js` - Toolbar functionality (uses script.js functions)
+   - `panels.js` - Panel management (uses script.js functions)
+   - `search.js` - Search functionality (uses script.js functions)
 
-4. **Tool Layer** (Depends on Core + Foundation + Feature)
+3. **Phase 3: Layer Management** (Depends on script.js + Core + UI)
+   - `layer-manager.js` - Layer operations (uses script.js globals)
+   - `upload-handler.js` - File upload (uses script.js functions)
+   - `basemap-switcher.js` - Basemap switching (uses script.js functions)
+
+4. **Phase 4: Tools and Features** (Depends on script.js + all previous)
    - `drawing-tools.js` - Drawing functionality
    - `analysis-tools.js` - Spatial analysis
    - `measurement.js` - Measurement tools
    - `visualization.js` - Data visualization
+   - `popup-manager.js` - Feature information display
+   - `attribute-table.js` - Data table functionality
+   - `tour-system.js` - Feature tour system
+   - `classification.js` - Data classification
 
-5. **Integration Layer** (Depends on all layers)
-   - `main.js` - Application orchestration
+5. **Phase 5: Event System** (Depends on all modules)
+   - `event-handlers.js` - Event coordination
+   - `notifications.js` - User feedback system
+
+6. **Phase 6: Final Cleanup** (Extract utilities and remove script.js)
+   - `utils.js` - Extract utility functions from script.js
+   - Remove script.js dependencies from all modules
+   - Clean up global variables and duplicated functions
+
+**Transition Strategy:**
+- Each module initially imports and uses functions from script.js
+- Modules gradually become self-contained as dependencies are resolved
+- script.js is only removed in the final phase after all extractions are complete
 
 ## Components and Interfaces
 
@@ -94,8 +117,23 @@ export const CONFIG = {
 }
 ```
 
-#### Utilities (`core/utils.js`)
+#### Script.js Integration (Temporary)
+
+During the refactoring process, modules will access script.js functions through:
+
 ```javascript
+// Modules access script.js functions during transition
+// These will be replaced with proper imports in the final phase
+window.loadModule(moduleName)
+window.formatAttributeValue(value, key)
+window.formatFieldName(key)
+window.showNotification(message, type)
+```
+
+#### Utilities (`utils/utils.js`) - Final Phase Only
+
+```javascript
+// Only created in the final cleanup phase
 export function loadModule(moduleName)
 export function formatAttributeValue(value, key)
 export function formatFieldName(key)
@@ -293,39 +331,45 @@ function getUserFriendlyMessage(error) {
 
 ### Phase 1: Core Infrastructure
 1. Extract configuration constants to `config.js`
-2. Extract utility functions to `utils.js`
-3. Create basic module loading system in `main.js`
-4. Test core functionality
+2. Create basic module loading system in `main.js`
+3. **Keep script.js intact** - do not extract utilities yet
+4. Test core functionality with script.js still loaded
 
 ### Phase 2: Map Foundation
 1. Extract map initialization to `map-manager.js`
-2. Preserve all global variables temporarily
-3. Update main.js to use MapManager
-4. Verify map loads correctly
+2. **Preserve all global variables** and script.js dependencies
+3. Update main.js to use MapManager alongside script.js
+4. Verify map loads correctly with both systems
 
 ### Phase 3: UI Components
-1. Extract toolbar functionality to `toolbar.js`
-2. Extract panel management to `panels.js`
-3. Extract search functionality to `search.js`
-4. Test all UI interactions
+1. Extract toolbar functionality to `toolbar.js` (uses script.js functions)
+2. Extract panel management to `panels.js` (uses script.js functions)
+3. Extract search functionality to `search.js` (uses script.js functions)
+4. Test all UI interactions with script.js still providing utilities
 
 ### Phase 4: Layer Management
-1. Extract layer operations to `layer-manager.js`
-2. Extract file upload to `upload-handler.js`
-3. Extract basemap switching to `basemap-switcher.js`
-4. Test layer loading and management
+1. Extract layer operations to `layer-manager.js` (uses script.js globals)
+2. Extract file upload to `upload-handler.js` (uses script.js functions)
+3. Extract basemap switching to `basemap-switcher.js` (uses script.js functions)
+4. Test layer loading with script.js providing utility functions
 
 ### Phase 5: Tools and Features
-1. Extract drawing tools to `drawing-tools.js`
-2. Extract analysis tools to `analysis-tools.js`
-3. Extract remaining features (popup, table, tour, etc.)
-4. Test all tool functionality
+1. Extract drawing tools to `drawing-tools.js` (uses script.js functions)
+2. Extract analysis tools to `analysis-tools.js` (uses script.js functions)
+3. Extract remaining features (popup, table, tour, etc.) (uses script.js functions)
+4. Test all tool functionality with script.js utilities still available
 
-### Phase 6: Integration and Cleanup
-1. Remove global variable dependencies
-2. Implement proper module interfaces
-3. Clean up unused code
-4. Final testing and optimization
+### Phase 6: Event System Integration
+1. Extract event coordination to `event-handlers.js`
+2. Extract notification system to `notifications.js`
+3. Test event flow with script.js still providing base functions
+
+### Phase 7: Final Cleanup and Utility Extraction
+1. **Extract utility functions** from script.js to `utils/utils.js`
+2. **Replace script.js dependencies** in all modules with proper imports
+3. **Remove script.js** from the application
+4. Clean up global variables and duplicated functions
+5. Final testing and optimization
 
 ## Browser Compatibility
 
