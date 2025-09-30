@@ -253,7 +253,7 @@ function initializeMapTabs() {
         // Update content
         contentCard.innerHTML = `
           <div class="tab-icon-container">
-            <img src="images/10607569.gif" alt="Loading" class="tab-gif-icon" />
+            <img src="images/plug.gif" alt="Loading" class="tab-gif-icon" />
           </div>
           
           <p class="tab-message-text">${message}</p>
