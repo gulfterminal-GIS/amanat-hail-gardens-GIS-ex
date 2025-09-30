@@ -52,18 +52,7 @@ let chevronIcon = null;
 let chevronBtn = null;
 let featureDetails = null;
 
-// Initialize application
-initializeMap()
-  .then(() => {
-    console.log("Application initialized successfully");
-  })
-  .catch((error) => {
-    console.error("Failed to initialize application:", error);
-    showNotification(
-      "Failed to initialize map. Please refresh the page.",
-      "error"
-    );
-  });
+// Application initialization is now handled by main.js
 
 // Utility function to load ArcGIS modules
 function loadModule(moduleName) {
@@ -8222,3 +8211,8 @@ function startAppTour() {
 
 // Export the tour function
 window.startAppTour = startAppTour;
+// Make initializeMap available globally for main.js
+window.initializeMap = initializeMap;
+
+// Export functions for module system
+export { initializeMap };
