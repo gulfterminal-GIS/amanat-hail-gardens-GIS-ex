@@ -503,22 +503,29 @@ function createTourControls() {
   const controlsDiv = document.createElement("div");
   controlsDiv.className = "feature-tour-controls";
   controlsDiv.innerHTML = `
-    <header class="tour-header">
-        <div class="chevron">
+    <div class="liquidGlass-wrapper">
+      <div class="liquidGlass-effect"></div>
+      <div class="liquidGlass-tint"></div>
+      <div class="liquidGlass-shine"></div>
+      <div class="liquidGlass-content">
+        <header class="tour-header">
+          <div class="chevron">
             <i class="bi bi-chevron-down"></i>
-        </div>
-        <div class="map-actions">
+          </div>
+          <div class="map-actions">
             <img class="backward-control" src="images/fluent_next-24-regular-back.svg" alt="" onclick="previousFeature()">
             <div class="auto-control pause" onclick="toggleFeatureTour()"></div>
             <img class="forward-control" src="images/fluent_next-24-regular.svg" alt="" onclick="nextFeature()">
-        </div>
-        <small class="feature-count" id="tourProgress">0 / 0</small>
-    </header>
+          </div>
+          <small class="feature-count" id="tourProgress">0 / 0</small>
+        </header>
 
-    <section class="overview" id="tourOverview"></section>
+        <section class="overview" id="tourOverview"></section>
 
-    <section class="feature-details"></section>
-    `;
+        <section class="feature-details"></section>
+      </div>
+    </div>
+  `;
 
   document.body.appendChild(controlsDiv);
 }

@@ -1,81 +1,45 @@
 /* LIQUID GLASS STYLES */
 
 :root {
-  --shadow-liquid: 0 6px 6px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.1);
+    --shadow-liquid: 0 6px 6px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.1);
 }
 
 .liquidGlass-wrapper {
-  position: relative;
-  display: flex;
-  font-weight: 600;
-  overflow: hidden;
-  box-shadow: var(--shadow-liquid);
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 2.2);
+    position: relative;
+    display: flex;
+    font-weight: 600;
+    overflow: hidden;
+    box-shadow: var(--shadow-liquid);
+    transition: padding 0.5s cubic-bezier(0.175, 0.885, 0.32, 2.2);
+    border-radius: 1rem;
 }
 
 .liquidGlass-effect {
-  position: absolute;
-  z-index: 0;
-  inset: 0;
-  backdrop-filter: blur(3px);
-  filter: url(#glass-distortion);
-  overflow: hidden;
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    backdrop-filter: blur(3px);
+    filter: url(#glass-distortion); /* SVG filter for distortion effect, embedded in HTML */
+    overflow: hidden;
 }
 
 .liquidGlass-tint {
-  z-index: 1;
-  position: absolute;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.1);
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .liquidGlass-shine {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  overflow: hidden;
-  box-shadow: inset 1px 1px 1px 0 rgba(255, 255, 255, 0.5),
-    inset 0 0 1px 1px rgba(255, 255, 255, 0.5);
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    overflow: hidden;
+    box-shadow: inset 1px 1px 1px 0 rgba(255, 255, 255, 0.5),
+        inset 0 0 1px 1px rgba(255, 255, 255, 0.5);
 }
 
-.liquidGlass-text {
-  z-index: 3;
-  font-size: 2rem;
-  color: black;
+.liquidGlass-content {
+    z-index: 3;
+    width: 100%;
 }
-
-.dock {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1em;
-  border-radius: 2rem;
-  padding: 0.6rem;
-}
-
-/* NOTE: You need to duplicate styles onto the child `div`s (`> div`) so that the glass wrapper and all the layers are affected in the same way.  */
-.dock,
-.dock > .elements-list {
-  border-radius: 2rem;
-}
-
-.dock:hover {
-  padding: 0.5em;
-  border-radius: 2.5rem;
-}
-
-.dock:hover > .elements-list {
-  border-radius: 2.5rem;
-}
-
-/* .dock img {
-  width: 75px;
-  padding: 0;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
-  cursor: pointer;
-}
-
-.dock img:hover {
-  transform: scale(0.95);
-  transform-origin: center center;
-} */
