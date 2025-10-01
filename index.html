@@ -13,6 +13,7 @@
   <script src="https://cdn.jsdelivr.net/npm/shepherd.js@11.2.0/dist/js/shepherd.min.js"></script>
 
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="liquid.css" />
   <link href="https://fonts.googleapis.com/css?family=Gruppo|Orbitron&display=swap" rel="stylesheet">
   <script src="https://js.arcgis.com/4.32/"></script>
 </head>
@@ -49,31 +50,39 @@
       <div id="searchSuggestions" class="search-suggestions"></div>
     </div>
   </header>
-
   <!-- Ends Header -->
 
   <!-- Top Toolbar -->
   <div class="top-toolbar">
-    <label class="toolbar-label" for="smartEye" data-tab="smartEye">
-      منصة العين الذكية (نظام ربط ومتابعة كاميرات المطاعم والكافيهات باستخدام الذكاء الاصطناعي)
-      <input type="radio" name="top-toolbar-btn" id="smartEye" checked>
-    </label>
-    <label class="toolbar-label" for="assets" data-tab="assets">
-      منصة إدارة الصيانة والتشغيل وحصر الأصول
-      <input type="radio" name="top-toolbar-btn" id="assets">
-    </label>
-    <label class="toolbar-label" for="projects" data-tab="projects">
-      منصة قرار لإدارة المشاريع
-      <input type="radio" name="top-toolbar-btn" id="projects">
-    </label>
-    <label class="toolbar-label" for="gardens" data-tab="gardens">
-      منصة الحدائق الذكية
-      <input type="radio" name="top-toolbar-btn" id="gardens">
-    </label>
+    <div class="liquidGlass-wrapper dock">
+      <div class="liquidGlass-effect"></div>
+      <div class="liquidGlass-tint"></div>
+      <div class="liquidGlass-shine"></div>
+      <div class="liquidGlass-text">
+        <div class="dock elements-list">
+          <label class="toolbar-label" for="smartEye" data-tab="smartEye">
+            منصة العين الذكية (نظام ربط ومتابعة كاميرات المطاعم والكافيهات باستخدام الذكاء الاصطناعي)
+            <input type="radio" name="top-toolbar-btn" id="smartEye" checked>
+          </label>
+          <label class="toolbar-label" for="assets" data-tab="assets">
+            منصة إدارة الصيانة والتشغيل وحصر الأصول
+            <input type="radio" name="top-toolbar-btn" id="assets">
+          </label>
+          <label class="toolbar-label" for="projects" data-tab="projects">
+            منصة قرار لإدارة المشاريع
+            <input type="radio" name="top-toolbar-btn" id="projects">
+          </label>
+          <label class="toolbar-label" for="gardens" data-tab="gardens">
+            منصة الحدائق الذكية
+            <input type="radio" name="top-toolbar-btn" id="gardens">
+          </label>
+        </div>
+      </div>
+    </div>
   </div>
   <!-- Ends Top Toolbar -->
 
-  
+
   <!-- Tab Content Modal -->
   <div id="tabBackdrop" class="tab-backdrop hidden">
     <div class="tab-content-card">
@@ -973,6 +982,34 @@
       </div>
     </div>
   </div>
+
+
+  <!-- Glass Liquid Distortion effect -->
+  <svg style="display: none">
+    <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%" filterUnits="objectBoundingBox">
+      <feTurbulence type="fractalNoise" baseFrequency="0.01 0.01" numOctaves="1" seed="5" result="turbulence" />
+      <!-- Seeds: 14, 17,  -->
+
+      <feComponentTransfer in="turbulence" result="mapped">
+        <feFuncR type="gamma" amplitude="1" exponent="10" offset="0.5" />
+        <feFuncG type="gamma" amplitude="0" exponent="1" offset="0" />
+        <feFuncB type="gamma" amplitude="0" exponent="1" offset="0.5" />
+      </feComponentTransfer>
+
+      <feGaussianBlur in="turbulence" stdDeviation="3" result="softMap" />
+
+      <feSpecularLighting in="softMap" surfaceScale="5" specularConstant="1" specularExponent="100"
+        lighting-color="white" result="specLight">
+        <fePointLight x="-200" y="-200" z="300" />
+      </feSpecularLighting>
+
+      <feComposite in="specLight" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="litImage" />
+
+      <feDisplacementMap in="SourceGraphic" in2="softMap" scale="150" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </svg>
+  <!-- Ends Glass Liquid Distortion effect -->
+
 
   <script type="module" src="script.js"></script>
   <!-- <script type="module" src="foreignLogic.js"></script> -->
