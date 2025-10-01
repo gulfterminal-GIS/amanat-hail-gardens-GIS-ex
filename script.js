@@ -226,7 +226,8 @@ const tabButtonTexts = {
 
 // Initialize tabs
 function initializeMapTabs() {
-  const tabButtons = document.querySelectorAll(".tab-button");
+  const tabButtons = document.querySelectorAll(".top-toolbar .toolbar-label");
+  // const tabButtons = document.querySelectorAll(".tab-button");
   const backdrop = document.getElementById("tabBackdrop");
   const contentCard = backdrop.querySelector(".tab-content-card");
 
