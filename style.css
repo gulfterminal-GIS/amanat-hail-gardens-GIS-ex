@@ -282,14 +282,20 @@ body {
   bottom: var(--spacing-lg);
   left: 50%;
   transform: translateX(-50%);
-  background: var(--bg-primary);
+  background: transparent;
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
+  z-index: var(--z-toolbar);
+}
+
+.main-toolbar:hover .liquidGlass-wrapper {
+    padding: 0.2em 1em;
+}
+
+.main-toolbar .liquidGlass-content {
   display: flex;
   align-items: center;
   padding: var(--spacing-sm);
   gap: var(--spacing-sm);
-  z-index: var(--z-toolbar);
 }
 
 .toolbar-group {
@@ -316,7 +322,7 @@ body {
   padding: var(--spacing-sm) var(--spacing-md);
   cursor: pointer;
   transition: all var(--transition-fast);
-  color: var(--text-secondary);
+  color: white;
   position: relative;
   min-width: 64px;
 }
@@ -343,30 +349,41 @@ body {
 }
 
 /* Mobile Toolbar Toggle - Center the icon */
-.mobile-toolbar-toggle {
-  display: none;
+.liquid-glass-wrapper {
   position: fixed;
   bottom: var(--spacing-lg);
-  right: var(--spacing-lg);
+  left: var(--spacing-lg);
+  background: transparent;
+  z-index: calc(var(--z-toolbar) + 10);
+}
+
+.liquid-glass-wrapper .liquidGlass-wrapper {
+    border-radius: var(--radius-round);
+    border: 1px solid white;
+}
+
+.liquid-glass-wrapper:hover .liquidGlass-wrapper {
+  transform: scale(1.1);
+}
+
+.liquid-glass-wrapper .liquidGlass-shine {
+  box-shadow: none;
+}
+
+.mobile-toolbar-toggle {
   width: 56px;
   height: 56px;
-  background: var(--primary-color);
+  background: transparent;
   color: var(--text-white);
   border: none;
-  border-radius: var(--radius-round);
-  box-shadow: var(--shadow-lg);
+  /* border-radius: var(--radius-round); */
+  /* box-shadow: var(--shadow-lg); */
   cursor: pointer;
-  z-index: calc(var(--z-toolbar) + 10);
   transition: all var(--transition-normal);
   /* Center the icon */
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.mobile-toolbar-toggle:hover {
-  background: var(--primary-dark);
-  transform: scale(1.05);
 }
 
 .mobile-toolbar-toggle i {
@@ -530,33 +547,46 @@ body {
   position: fixed;
   bottom: calc(var(--spacing-lg) + 80px);
   /* Above toolbar */
-  right: var(--spacing-lg);
+  left: var(--spacing-lg);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
   z-index: var(--z-toolbar);
 }
 
+.quick-actions .liquidGlass-wrapper {
+  border-radius: var(--radius-round);
+  border: 1px solid white;
+}
+
+.liquidGlass-wrapper:has(.quick-action-btn:hover) {
+  transform: scale(1.1);
+}
+
+.quick-actions .liquidGlass-shine {
+  box-shadow: none;
+}
+
 .quick-action-btn {
   width: 48px;
   height: 48px;
-  background: var(--bg-primary);
+  background: transparent;
   border: none;
   border-radius: var(--radius-round);
   box-shadow: var(--shadow-md);
   cursor: pointer;
   transition: all var(--transition-fast);
-  color: var(--text-secondary);
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.quick-action-btn:hover {
+/* .quick-action-btn:hover {
   background: var(--primary-color);
   color: var(--text-white);
   transform: scale(1.1);
-}
+} */
 
 .quick-action-btn i {
   font-size: 20px;
@@ -565,22 +595,30 @@ body {
 /* Coordinates Display - Centered above toolbar */
 .coordinates-display {
   position: fixed;
-  bottom: calc(var(--spacing-lg) + 80px);
+  bottom: calc(var(--spacing-lg) + 5.5rem);
   /* Above toolbar */
   left: 50%;
   transform: translateX(-50%);
-  background: var(--bg-primary);
-  padding: var(--spacing-sm) var(--spacing-md);
+  background: transparent;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
   font-size: 12px;
-  color: var(--text-secondary);
+  color: white;
   z-index: var(--z-toolbar);
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
   white-space: nowrap;
 }
+
+.coordinates-display .liquidGlass-wrapper {
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.coordinates-display:hover .liquidGlass-wrapper {
+  padding-inline: 2em;
+}
+
 
 .copy-coords-btn {
   background: none;
@@ -1173,7 +1211,7 @@ body {
 /* Custom Widgets */
 .widget-container {
   position: fixed;
-  top: 160px;
+  top: 18rem;
   right: var(--spacing-lg);
   display: flex;
   flex-direction: column;
@@ -1183,7 +1221,7 @@ body {
 }
 
 .custom-widget {
-  background: var(--bg-primary);
+  background: transparent;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
@@ -1232,6 +1270,24 @@ body {
   padding: var(--spacing-md);
   max-height: 400px;
   overflow-y: auto;
+  color: white !important;
+}
+
+/* Legend Widget */
+.legend-widget {
+  position: fixed;
+  top: 10rem;
+  left: var(--spacing-lg);
+  z-index: var(--z-widget);
+  width: fit-content;
+}
+
+.legend-widget .widget-content {
+  padding: 0.5rem 0 0;
+}
+
+.legend-widget:hover .liquidGlass-wrapper {
+  padding: 0.25rem;
 }
 
 /* Custom Popup */
@@ -2116,7 +2172,7 @@ body {
   /* Ensure mobile toolbar toggle doesn't overlap */
   .mobile-toolbar-toggle {
     bottom: var(--spacing-lg);
-    right: var(--spacing-lg);
+    left: var(--spacing-lg);
     /* Keep it above toolbar items */
     z-index: calc(var(--z-toolbar) + 10);
   }

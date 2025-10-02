@@ -532,7 +532,7 @@ export class ClassificationManager {
       };
 
       // Show legend
-      this.createClassificationLegend(stats, colors, fieldName);
+      // this.createClassificationLegend(stats, colors, fieldName);
 
       console.log(`Classification applied on ${fieldName}`);
     } catch (err) {

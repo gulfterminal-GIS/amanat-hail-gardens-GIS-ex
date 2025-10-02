@@ -26,6 +26,7 @@ import { CoordinateDisplay } from "./events/coordinate-display.js";
 import { WindowEventHandler } from "./events/window-event-handler.js";
 import { WidgetManager } from "./widgets/widget-manager.js";
 import { bindWindowFunctions } from "./window-bindings.js";
+import "./ui/liquid-glass-effect.js"; // Custom element auto-registers
 
 // Make CONFIG available globally for backward compatibility
 window.CONFIG = CONFIG;

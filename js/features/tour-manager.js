@@ -65,21 +65,23 @@ export class TourManager {
 
     // Create tour controls DOM
     controlsDiv.innerHTML = `
-      <header class="tour-header">
+      <liquid-glass-effect>
+        <header class="tour-header">
           <div class="chevron">
-              <i class="bi bi-chevron-down"></i>
-              </div>
+            <i class="bi bi-chevron-down"></i>
+          </div>
           <div class="map-actions">
-              <img class="backward-control" src="images/fluent_next-24-regular-back.svg" alt="" onclick="previousFeature()">
-              <div class="auto-control pause" onclick="toggleFeatureTour()"></div>
-              <img class="forward-control" src="images/fluent_next-24-regular.svg" alt="" onclick="nextFeature()">
+            <img class="backward-control" src="images/fluent_next-24-regular-back.svg" alt="" onclick="previousFeature()">
+            <div class="auto-control pause" onclick="toggleFeatureTour()"></div>
+            <img class="forward-control" src="images/fluent_next-24-regular.svg" alt="" onclick="nextFeature()">
           </div>
           <small class="feature-count" id="tourProgress">0 / 0</small>
-      </header>
+        </header>
 
-      <section class="overview" id="tourOverview"></section>
+        <section class="overview" id="tourOverview"></section>
 
-      <section class="feature-details"></section>
+        <section class="feature-details"></section>
+      </liquid-glass-effect>
     `;
 
     // Append to body

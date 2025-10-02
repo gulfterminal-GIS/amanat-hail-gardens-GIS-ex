@@ -40,7 +40,7 @@ export class TabSystem {
    * Initialize map tabs with event handlers
    */
   initializeMapTabs() {
-    const tabButtons = document.querySelectorAll(".tab-button");
+    const tabButtons = document.querySelectorAll(".top-toolbar .toolbar-label");
     const backdrop = document.getElementById("tabBackdrop");
     const contentCard = backdrop?.querySelector(".tab-content-card");
 

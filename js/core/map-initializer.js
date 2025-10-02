@@ -245,6 +245,7 @@ export class MapInitializer {
       })
       .finally(() => {
         loadingScreen.classList.add("fade-out");
+        window.toggleWidget("legend");
       });
   }
 
