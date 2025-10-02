@@ -12,101 +12,122 @@ The application will be restructured using a **script.js-as-core-module approach
 
 ```
 js/
-├── main.js                 # Entry point and module orchestration
-├── script.js               # Core ES6 module with all main functionality (converted first)
+├── main.js                      # Entry point and module orchestration
+├── script.js                    # Core ES6 module (converted first, gradually emptied)
 ├── core/
-│   └── config.js           # Configuration constants and settings
+│   ├── config.js                # ✅ Configuration constants and settings
+│   ├── state-manager.js         # Global state management (all global variables)
+│   ├── map-initializer.js       # Map setup, ArcGIS config, loading screen
+│   └── module-loader.js         # ArcGIS module loading utility wrapper
 ├── ui/
-│   ├── toolbar.js          # Main toolbar and mobile toolbar functionality
-│   ├── search.js           # Search widget and address lookup
-│   ├── panels.js           # Side panel management and templates
-│   └── widgets.js          # Custom widgets (legend, bookmarks, print)
+│   ├── notification-manager.js  # Toast notifications (EXTRACT FIRST - used by all)
+│   ├── panel-manager.js         # Side panel system (openSidePanel, closeSidePanel)
+│   ├── toolbar-manager.js       # Desktop & mobile toolbar functionality
+│   ├── tab-system.js            # Platform integration tabs (Gardens, Projects, etc.)
+│   └── search-manager.js        # Search widget and address lookup
 ├── layers/
-│   ├── layer-manager.js    # Layer loading, management, and visibility
-│   ├── upload-handler.js   # File upload and GeoJSON processing
-│   └── basemap-switcher.js # Basemap gallery and switching
+│   ├── layer-manager.js         # Layer CRUD, visibility, zoom, layer list UI
+│   ├── upload-handler.js        # File upload (CSV/GeoJSON) processing
+│   └── basemap-manager.js       # Basemap gallery and switching
 ├── tools/
-│   ├── drawing-tools.js    # Sketch functionality and drawing controls
-│   ├── analysis-tools.js   # Spatial analysis functions
-│   ├── measurement.js      # Distance and area measurement
-│   └── visualization.js    # Heatmap and time animation
+│   ├── drawing-manager.js       # Sketch tools, symbology, drawing controls
+│   ├── analysis-manager.js      # Buffer, intersect, distance, area analysis
+│   ├── measurement-manager.js   # Distance and area measurement tools
+│   └── visualization-manager.js # Heatmap and time animation
 ├── features/
-│   ├── popup-manager.js    # Custom popup and feature info display
-│   ├── attribute-table.js  # Data table functionality
-│   ├── tour-system.js      # Feature tour and navigation
-│   └── classification.js   # Data classification and styling
+│   ├── popup-manager.js         # Custom popups and feature info display
+│   ├── attribute-table.js       # Data grid with search, pagination, export
+│   ├── tour-manager.js          # Feature tour system with auto-play
+│   ├── classification-manager.js # Data classification and styling
+│   └── country-info.js          # Country click feature and flash animation
+├── widgets/
+│   ├── widget-manager.js        # Widget lifecycle and positioning
+│   ├── legend-widget.js         # Legend widget
+│   ├── bookmarks-widget.js      # Bookmarks widget
+│   └── print-widget.js          # Print widget
 ├── events/
-│   ├── event-handlers.js   # Global event handling and coordination
-│   └── notifications.js    # Notification system and user feedback
+│   ├── map-event-handler.js     # Map click, pointer-move, feature selection
+│   └── coordinate-display.js    # Coordinate tracking and display
 └── utils/
-    └── utils.js            # Utility functions (extracted LAST after all modules)
+    ├── format-utils.js          # Formatting helpers (dates, numbers, attributes)
+    ├── geometry-utils.js        # Geometry calculations and conversions
+    └── export-utils.js          # CSV/GeoJSON/Excel export utilities
 ```
 
 **Key Design Principles:**
-- **script.js becomes the core ES6 module** with export statements for functions needed by other modules
-- **All global variables remain in script.js** - no globalization to window object
-- **Other modules import specific functions** from script.js rather than accessing globals
-- **No duplication of functions** - single source of truth in script.js
+- **script.js is converted to ES6 module** to enable the transition
+- **Functionality is extracted incrementally** and original code is commented out in script.js
+- **Dependencies are carefully managed** - extract foundation modules first (state, notifications)
+- **Global state is centralized** in state-manager.js instead of scattered variables
+- **Each module is self-contained** with clear responsibilities and minimal coupling
+- **Commented code remains** in script.js until entire refactoring is complete
 
 ### Module Dependencies and Refactoring Strategy
 
 The modules will follow this **script.js-as-core-module approach** to minimize breaking changes:
 
-1. **Phase 1: Core Module Conversion**
-   - Convert `script.js` to ES6 module with export statements
-   - Create `config.js` with configuration constants
-   - Update `main.js` to import and initialize script.js module
+1. **Phase 1: Foundation Setup** (Core infrastructure)
+   - ✅ Convert `script.js` to ES6 module with export statements
+   - ✅ Create `config.js` with configuration constants
+   - ✅ Update `main.js` to import and initialize script.js module
+   - Create `state-manager.js` to centralize all global variables
+   - Create `module-loader.js` to wrap ArcGIS module loading
    - Verify all functionality works with script.js as ES6 module
 
-2. **Phase 2: UI Components** (Import from script.js)
-   - `toolbar.js` - Imports toolbar functions from script.js
-   - `panels.js` - Imports panel functions from script.js
-   - `search.js` - Imports search functions from script.js
+2. **Phase 2: Core Services** (Foundation modules used by everything)
+   - `notification-manager.js` - Extract notification system (used by all modules)
+   - `map-initializer.js` - Extract map initialization and loading screen
+   - Update state-manager to provide access to map, view, and core state
 
-3. **Phase 3: Layer Management** (Import from script.js)
-   - `layer-manager.js` - Imports layer functions from script.js
-   - `upload-handler.js` - Imports file upload functions from script.js
-   - `basemap-switcher.js` - Imports basemap functions from script.js
+3. **Phase 3: UI Foundation** (Panel system and basic UI)
+   - `panel-manager.js` - Extract side panel system (openSidePanel, closeSidePanel)
+   - `toolbar-manager.js` - Extract desktop and mobile toolbar
+   - `tab-system.js` - Extract platform integration tabs
+   - `search-manager.js` - Extract search functionality
 
-4. **Phase 4: Tools and Features** (Import from script.js)
-   - `drawing-tools.js` - Imports drawing functions from script.js
-   - `analysis-tools.js` - Imports analysis functions from script.js
-   - `measurement.js` - Imports measurement functions from script.js
-   - `visualization.js` - Imports visualization functions from script.js
-   - `popup-manager.js` - Imports popup functions from script.js
-   - `attribute-table.js` - Imports table functions from script.js
-   - `tour-system.js` - Imports tour functions from script.js
-   - `classification.js` - Imports classification functions from script.js
+4. **Phase 4: Layer Management** (Data loading and management)
+   - `layer-manager.js` - Extract layer CRUD, visibility, layer list UI
+   - `upload-handler.js` - Extract file upload (CSV/GeoJSON) processing
+   - `basemap-manager.js` - Extract basemap switching
 
-5. **Phase 5: Event System** (Import from script.js)
-   - `event-handlers.js` - Imports event functions from script.js
-   - `notifications.js` - Imports notification functions from script.js
+5. **Phase 5: Drawing and Analysis Tools**
+   - `drawing-manager.js` - Extract sketch tools and symbology
+   - `analysis-manager.js` - Extract buffer, intersect, distance, area
+   - `measurement-manager.js` - Extract measurement tools
+   - `visualization-manager.js` - Extract heatmap and time animation
 
-6. **Phase 6: Final Cleanup** (Optional - only if needed)
-   - Extract utility functions to `utils.js` if desired
-   - Keep script.js as the main module or refactor further as needed
+6. **Phase 6: Feature Management**
+   - `popup-manager.js` - Extract custom popups and feature info
+   - `attribute-table.js` - Extract data grid with all features
+   - `classification-manager.js` - Extract data classification
+   - `tour-manager.js` - Extract feature tour system
+   - `country-info.js` - Extract country click feature
+
+7. **Phase 7: Widgets and Events**
+   - `widget-manager.js` - Extract widget lifecycle management
+   - `legend-widget.js`, `bookmarks-widget.js`, `print-widget.js` - Extract widgets
+   - `map-event-handler.js` - Extract map event handling
+   - `coordinate-display.js` - Extract coordinate tracking
+
+8. **Phase 8: Utilities and Cleanup**
+   - `format-utils.js` - Extract formatting helpers
+   - `geometry-utils.js` - Extract geometry calculations
+   - `export-utils.js` - Extract export functionality
+   - Remove all commented code from script.js
+   - Optionally delete script.js entirely
+   - Final testing and optimization
 
 **Transition Strategy:**
 - script.js becomes an ES6 module but retains all its internal structure
-- Other modules import specific functions from script.js
+- When functionality is extracted to new modules, the original code in script.js is commented out (not deleted)
+- Other modules import specific functions from script.js initially, then transition to use the new modules
 - No global variables are created - everything stays within module scope
 - Each extraction step maintains the working application
+- Original script.js code remains commented until the entire refactoring is complete
 
 ## Components and Interfaces
 
 ### Core Components
-
-#### Map Manager (`core/map-manager.js`)
-```javascript
-export class MapManager {
-  constructor(config)
-  async initializeMap()
-  getView()
-  getMap()
-  addLayer(layer)
-  removeLayer(layer)
-}
-```
 
 #### Configuration (`core/config.js`)
 ```javascript
@@ -114,77 +135,115 @@ export const CONFIG = {
   ARCGIS_API_KEY: "...",
   DEFAULT_CENTER: [-95.7129, 37.0902],
   DEFAULT_ZOOM: 4,
-  DEFAULT_BASEMAP: "hybrid"
+  DEFAULT_BASEMAP: "hybrid",
+  // ... all configuration constants
 }
 ```
 
-#### Script.js as Core Module
-
-script.js will be converted to an ES6 module with export statements:
-
+#### State Manager (`core/state-manager.js`)
 ```javascript
-// script.js as ES6 module
-export { loadModule, initializeMap, initializeUI, initializeEventHandlers };
-export { openSidePanel, closeSidePanel, showNotification };
-export { loadGeoJSON, loadCSV, handleFiles };
-export { startDrawingWithTool, clearAll, toggleLayer };
-// ... other functions as needed
-
-// All global variables remain within script.js module scope
-var displayMap;
-let view;
-let uploadedLayers = [];
-// ... other variables
-```
-
-#### Module Import Pattern
-
-Other modules will import specific functions from script.js:
-
-```javascript
-// Example: ui/toolbar.js
-import { openSidePanel, showNotification } from '../script.js';
-
-export class ToolbarManager {
-  constructor() {
-    // Use imported functions directly
-  }
+// Centralized state management for all global variables
+export class StateManager {
+  constructor()
   
-  handleUploadClick() {
-    openSidePanel("Upload Files", "uploadPanelTemplate");
-  }
+  // Map and view
+  getMap()
+  setMap(map)
+  getView()
+  setView(view)
+  
+  // Layers
+  getUploadedLayers()
+  addUploadedLayer(layer)
+  removeUploadedLayer(index)
+  
+  // Drawing state
+  getDrawLayer()
+  setDrawLayer(layer)
+  getSketchViewModel()
+  setSketchViewModel(vm)
+  
+  // Tour state
+  getTourState()
+  setTourState(state)
+  
+  // Other state getters/setters
+  // Replaces all global variables from script.js
 }
+```
+
+#### Map Initializer (`core/map-initializer.js`)
+```javascript
+export class MapInitializer {
+  constructor(stateManager, config)
+  async initializeMap()
+  async loadDefaultGeoJSON()
+  async initializeCountriesLayer()
+  showLoadingScreen()
+  hideLoadingScreen()
+}
+```
+
+#### Module Loader (`core/module-loader.js`)
+```javascript
+// Wrapper for ArcGIS module loading
+export async function loadModule(moduleName)
+export async function loadModules(moduleNames)
 ```
 
 ### UI Components
 
-#### Toolbar Manager (`ui/toolbar.js`)
+#### Notification Manager (`ui/notification-manager.js`)
 ```javascript
-export class ToolbarManager {
-  constructor(mapManager, eventHandler)
-  initializeDesktopToolbar()
-  initializeMobileToolbar()
-  toggleTool(toolName)
-  setActiveButton(buttonId)
+// EXTRACT FIRST - Used by all other modules
+export class NotificationManager {
+  constructor()
+  showNotification(message, type = 'info')
+  clearNotification(notificationId)
+  clearAllNotifications()
 }
 ```
 
-#### Panel Manager (`ui/panels.js`)
+#### Panel Manager (`ui/panel-manager.js`)
 ```javascript
 export class PanelManager {
-  constructor(eventHandler)
+  constructor(stateManager, notificationManager)
   openSidePanel(title, templateId)
   closeSidePanel()
+  clearToolbarActiveStates()
   loadPanelTemplate(templateId)
-  updatePanelContent(content)
+  initializeUploadPanel()
+  initializeBasemapPanel()
 }
 ```
 
-#### Search Manager (`ui/search.js`)
+#### Toolbar Manager (`ui/toolbar-manager.js`)
+```javascript
+export class ToolbarManager {
+  constructor(stateManager, panelManager, notificationManager)
+  initializeDesktopToolbar()
+  initializeMobileToolbar()
+  setActiveButton(buttonId)
+  handleToolbarAction(action)
+}
+```
+
+#### Tab System (`ui/tab-system.js`)
+```javascript
+export class TabSystem {
+  constructor(notificationManager)
+  initializeMapTabs()
+  redirectToTabPlatform(tabType)
+  showTabContent(tabType)
+}
+```
+
+#### Search Manager (`ui/search-manager.js`)
 ```javascript
 export class SearchManager {
-  constructor(mapView, eventHandler)
+  constructor(stateManager, notificationManager)
   initializeSearch()
+  initializeCoordinateDisplay()
   handleSearchInput(query)
   showSuggestions(suggestions)
   clearSearch()
@@ -196,84 +255,317 @@ export class SearchManager {
 #### Layer Manager (`layers/layer-manager.js`)
 ```javascript
 export class LayerManager {
-  constructor(map, eventHandler)
+  constructor(stateManager, notificationManager)
   addLayer(layer)
-  removeLayer(layerId)
-  toggleLayerVisibility(layerId)
+  removeLayer(index)
+  toggleLayer(index)
+  zoomToLayer(index)
   updateLayerList()
   getLayerById(id)
+  getUploadedLayers()
 }
 ```
 
 #### Upload Handler (`layers/upload-handler.js`)
 ```javascript
 export class UploadHandler {
-  constructor(layerManager, eventHandler)
+  constructor(stateManager, layerManager, notificationManager)
+  initializeFileUpload()
   initializeDropZone()
-  handleFileUpload(files)
-  processGeoJSON(data, filename)
-  processCSV(data, filename)
+  handleFiles(files)
+  loadGeoJSON(content, filename)
+  loadCSV(content, filename)
+  parseCSVLine(line)
+}
+```
+
+#### Basemap Manager (`layers/basemap-manager.js`)
+```javascript
+export class BasemapManager {
+  constructor(stateManager, notificationManager)
+  initializeBasemapGallery()
+  switchBasemap(basemapId)
+  getCurrentBasemap()
 }
 ```
 
 ### Tool Components
 
-#### Drawing Tools (`tools/drawing-tools.js`)
+#### Drawing Manager (`tools/drawing-manager.js`)
 ```javascript
-export class DrawingTools {
-  constructor(mapView, eventHandler)
-  initializeSketch()
-  setActiveTool(toolType)
-  updateDrawingSettings(settings)
-  clearDrawings()
+export class DrawingManager {
+  constructor(stateManager, notificationManager)
+  initializeSketchViewModel()
+  initializeDrawingPanel()
+  initializeDrawingToolButtons()
+  startDrawingWithTool(tool)
+  applyCustomSymbology(graphic)
+  updateActiveGraphicsSymbology()
+  clearAll()
+  stopDrawing()
 }
 ```
 
-#### Analysis Tools (`tools/analysis-tools.js`)
+#### Analysis Manager (`tools/analysis-manager.js`)
 ```javascript
-export class AnalysisTools {
-  constructor(mapView, layerManager, eventHandler)
+export class AnalysisManager {
+  constructor(stateManager, notificationManager)
   startBufferAnalysis()
   startIntersectAnalysis()
+  startDistanceAnalysis()
+  startAreaAnalysis()
+  performBuffer(geometry, distance, unit)
+  performIntersect(geometry1, geometry2)
   calculateDistance(feature1, feature2)
   calculateArea(polygon)
 }
 ```
 
+#### Measurement Manager (`tools/measurement-manager.js`)
+```javascript
+export class MeasurementManager {
+  constructor(stateManager, notificationManager)
+  toggleMeasurement()
+  updateMeasurementResults(measurement)
+  closeMeasurementResults()
+  closeDistancePanel()
+  clearDistanceMeasurement()
+}
+```
+
+#### Visualization Manager (`tools/visualization-manager.js`)
+```javascript
+export class VisualizationManager {
+  constructor(stateManager, notificationManager)
+  toggleHeatmap()
+  updateHeatmapLayerSelect()
+  showHeatmapSettings()
+  closeHeatmapSettings()
+  initializeHeatmapSliders()
+  applyHeatmap(layer, settings)
+  toggleTimeControls()
+  playTimeAnimation()
+  stopTimeAnimation()
+}
+```
+
+### Feature Components
+
+#### Popup Manager (`features/popup-manager.js`)
+```javascript
+export class PopupManager {
+  constructor(stateManager, notificationManager)
+  showCustomPopup(graphic, mapPoint)
+  showCustomPopupTour(graphic)
+  closeCustomPopup()
+  updateGeometryDetails(geometry)
+  zoomToFeature()
+  copyFeatureInfo()
+}
+```
+
+#### Attribute Table (`features/attribute-table.js`)
+```javascript
+export class AttributeTable {
+  constructor(stateManager, notificationManager)
+  toggleAttributeTable()
+  initializeTableLayerSelect()
+  loadTableData(layerIndex)
+  renderTable()
+  searchTable(query)
+  updatePagination()
+  nextPage()
+  previousPage()
+  showExportOptions()
+  exportData(format)
+  showTableStatistics()
+}
+```
+
+#### Tour Manager (`features/tour-manager.js`)
+```javascript
+export class TourManager {
+  constructor(stateManager, notificationManager, popupManager)
+  setupFeatureTour(layer)
+  createTourControls()
+  startFeatureTour()
+  stopFeatureTour()
+  toggleFeatureTour()
+  goToFeature(index)
+  nextFeature()
+  previousFeature()
+  updateTourInfo(feature)
+  closeTourControls()
+  manuallyStartTour()
+}
+```
+
+#### Classification Manager (`features/classification-manager.js`)
+```javascript
+export class ClassificationManager {
+  constructor(stateManager, notificationManager)
+  initializeClassificationPanel()
+  analyzeFieldForClassification(layer, field)
+  applyClassification()
+  resetClassification()
+  showClassificationStatistics(stats)
+  generateClassificationColors(count)
+  autoApplyDefaultClassification(layer, fieldName)
+}
+```
+
+#### Country Info (`features/country-info.js`)
+```javascript
+export class CountryInfo {
+  constructor(stateManager, notificationManager)
+  initializeCountriesLayer()
+  showCountryInfo(countryName, details)
+  hideCountryInfo()
+  flashCountryBoundary(geometry)
+}
+```
+
+### Widget Components
+
+#### Widget Manager (`widgets/widget-manager.js`)
+```javascript
+export class WidgetManager {
+  constructor(stateManager, notificationManager)
+  toggleWidget(widgetName)
+  showWidget(widgetName)
+  hideWidget(widgetName)
+  positionWidget(widgetName, position)
+}
+```
+
+#### Legend Widget (`widgets/legend-widget.js`)
+```javascript
+export class LegendWidget {
+  constructor(stateManager)
+  initialize()
+  updateLegend()
+  createClassificationLegend(stats, colors, fieldName)
+}
+```
+
+#### Bookmarks Widget (`widgets/bookmarks-widget.js`)
+```javascript
+export class BookmarksWidget {
+  constructor(stateManager, notificationManager)
+  initialize()
+  addBookmark()
+  goToBookmark(bookmarkId)
+  deleteBookmark(bookmarkId)
+}
+```
+
+#### Print Widget (`widgets/print-widget.js`)
+```javascript
+export class PrintWidget {
+  constructor(stateManager)
+  initialize()
+  printMap(options)
+}
+```
+
+### Event Components
+
+#### Map Event Handler (`events/map-event-handler.js`)
+```javascript
+export class MapEventHandler {
+  constructor(stateManager, popupManager, notificationManager)
+  initializeEventHandlers()
+  handleMapClick(event)
+  handlePointerMove(event)
+  handleFeatureClick(graphic, mapPoint)
+}
+```
+
+#### Coordinate Display (`events/coordinate-display.js`)
+```javascript
+export class CoordinateDisplay {
+  constructor(stateManager)
+  initializeCoordinateDisplay()
+  updateCoordinates(lat, lon)
+  copyCoordinates()
+  formatCoordinates(lat, lon, format)
+}
+```
+
+### Utility Components
+
+#### Format Utils (`utils/format-utils.js`)
+```javascript
+export function formatAttributeValue(value, key)
+export function formatFieldName(fieldName)
+export function formatCoordinates(lat, lon, format)
+export function formatDate(date)
+export function formatNumber(number, decimals)
+```
+
+#### Geometry Utils (`utils/geometry-utils.js`)
+```javascript
+export async function calculateArea(geometry)
+export async function calculateLength(geometry)
+export async function bufferGeometry(geometry, distance, unit)
+export async function intersectGeometries(geometry1, geometry2)
+export function getGeometryCenter(geometry)
+```
+
+#### Export Utils (`utils/export-utils.js`)
+```javascript
+export function exportToCSV(features, filename)
+export function exportToGeoJSON(features, filename)
+export function exportToExcel(features, filename)
+export function downloadFile(content, filename, mimeType)
+```
+
 ## Data Models
 
-### Application State
+### Application State (Managed by StateManager)
 ```javascript
-const AppState = {
-  map: null,
-  view: null,
-  layers: new Map(),
-  activeTools: new Set(),
-  currentPanel: null,
-  tourActive: false,
-  notifications: []
-}
-```
-
-### Layer Information
-```javascript
-const LayerInfo = {
-  id: string,
-  title: string,
-  layer: esri.Layer,
-  visible: boolean,
-  type: string, // 'geojson', 'feature', 'graphics'
-  source: string // 'upload', 'default', 'service'
-}
-```
-
-### Event Structure
-```javascript
-const AppEvent = {
-  type: string,
-  source: string,
-  data: any,
-  timestamp: Date
+// All global variables centralized in StateManager
+{
+  // Core map objects
+  map: esri.Map,
+  view: esri.MapView,
+  homeExtent: esri.Extent,
+  
+  // Layers
+  uploadedLayers: Array<esri.Layer>,
+  drawLayer: esri.GraphicsLayer,
+  countriesLayer: esri.FeatureLayer,
+  flashGraphicsLayer: esri.GraphicsLayer,
+  tourLayer: esri.Layer,
+  
+  // Widgets and tools
+  searchWidget: esri.Search,
+  sketchViewModel: esri.SketchViewModel,
+  measurementWidget: esri.Measurement,
+  
+  // Drawing state
+  activeDrawingTool: string,
+  
+  // Tour state
+  featureTourActive: boolean,
+  featureTourInterval: number,
+  currentFeatureIndex: number,
+  tourFeatures: Array<esri.Graphic>,
+  highlightHandle: esri.Handle,
+  
+  // Analysis state
+  analysisDrawing: boolean,
+  analysisDrawType: string,
+  drawnFeatures: Object,
+  
+  // Classification state
+  currentClassificationLayer: esri.Layer,
+  originalRenderers: Map,
+  
+  // UI state
+  currentPopupFeature: esri.Graphic,
+  activeNotifications: Array,
+  countryInfoTimeout: number
 }
 ```
 

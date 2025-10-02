@@ -13,10 +13,10 @@ This feature involves modularizing the existing browser-based ArcGIS web applica
 #### Acceptance Criteria
 
 1. WHEN the application loads THEN the system SHALL maintain all existing functionality without any breaking changes throughout the entire modularization process
-2. WHEN modularizing JavaScript THEN the system SHALL convert script.js to an ES6 module first, then extract specific functionality modules that import from the main script module
+2. WHEN modularizing JavaScript THEN the system SHALL convert script.js to an ES6 module first, then extract specific functionality to separate modules while commenting out (not deleting) the original code in script.js
 3. WHEN examining the JavaScript structure THEN the system SHALL have script.js as the main ES6 module with separate specialized modules for UI components, layer management, drawing tools, analysis functions, and utility functions
-4. WHEN a module is extracted THEN the system SHALL import required functions directly from script.js module rather than creating global variables
-5. WHEN importing modules THEN the system SHALL use ES6 module syntax with proper import/export statements, with script.js serving as the core module that other modules import from
+4. WHEN a module is extracted THEN the system SHALL move the functionality to the new module and comment out the original code in script.js for safety during the transition
+5. WHEN importing modules THEN the system SHALL use ES6 module syntax with proper import/export statements, with commented code remaining in script.js until the entire refactoring process is complete
 
 ### Requirement 2
 
