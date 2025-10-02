@@ -80,6 +80,32 @@ function loadModule(moduleName) {
   });
 }
 
+
+// Custom Element: Liquid Glass Effect
+class LiquidGlassEffect extends HTMLElement {
+  constructor() {
+    super();
+  }
+
+  connectedCallback() {
+    const content = this.innerHTML;
+
+    this.innerHTML = `
+      <div class="liquidGlass-wrapper">
+        <div class="liquidGlass-effect"></div>
+        <div class="liquidGlass-tint"></div>
+        <div class="liquidGlass-shine"></div>
+        <div class="liquidGlass-content">
+            ${content}
+        </div>
+      </div>
+    `;
+  }
+}
+
+customElements.define('liquid-glass-effect', LiquidGlassEffect);
+
+
 // Update initializeMap to store home extent
 async function initializeMap() {
   try {
@@ -174,6 +200,7 @@ async function initializeMap() {
       })
       .finally(() => {
         loadingScreen.classList.add("fade-out");
+        toggleWidget('legend');
       });
 
     // Add this new code:
@@ -464,7 +491,7 @@ async function autoApplyDefaultClassification(layer, fieldName) {
     };
 
     // Show legend
-    createClassificationLegend(stats, colors, fieldName);
+    // createClassificationLegend(stats, colors, fieldName);
 
     console.log(`Classification applied on ${fieldName}`);
   } catch (err) {
@@ -503,28 +530,23 @@ function createTourControls() {
   const controlsDiv = document.createElement("div");
   controlsDiv.className = "feature-tour-controls";
   controlsDiv.innerHTML = `
-    <div class="liquidGlass-wrapper">
-      <div class="liquidGlass-effect"></div>
-      <div class="liquidGlass-tint"></div>
-      <div class="liquidGlass-shine"></div>
-      <div class="liquidGlass-content">
-        <header class="tour-header">
-          <div class="chevron">
-            <i class="bi bi-chevron-down"></i>
-          </div>
-          <div class="map-actions">
-            <img class="backward-control" src="images/fluent_next-24-regular-back.svg" alt="" onclick="previousFeature()">
-            <div class="auto-control pause" onclick="toggleFeatureTour()"></div>
-            <img class="forward-control" src="images/fluent_next-24-regular.svg" alt="" onclick="nextFeature()">
-          </div>
-          <small class="feature-count" id="tourProgress">0 / 0</small>
-        </header>
+    <liquid-glass-effect>
+      <header class="tour-header">
+        <div class="chevron">
+          <i class="bi bi-chevron-down"></i>
+        </div>
+        <div class="map-actions">
+          <img class="backward-control" src="images/fluent_next-24-regular-back.svg" alt="" onclick="previousFeature()">
+          <div class="auto-control pause" onclick="toggleFeatureTour()"></div>
+          <img class="forward-control" src="images/fluent_next-24-regular.svg" alt="" onclick="nextFeature()">
+        </div>
+        <small class="feature-count" id="tourProgress">0 / 0</small>
+      </header>
 
-        <section class="overview" id="tourOverview"></section>
+      <section class="overview" id="tourOverview"></section>
 
-        <section class="feature-details"></section>
-      </div>
-    </div>
+      <section class="feature-details"></section>
+    </liquid-glass-effect>
   `;
 
   document.body.appendChild(controlsDiv);
@@ -3842,7 +3864,6 @@ async function toggleWidget(widgetName) {
     showNotification(`Error loading ${widgetName} widget`, "error");
   }
 }
-
 // Replace Legend Widget with fixed version
 async function toggleLegend() {
   const legendDiv = document.getElementById("legendWidget");
