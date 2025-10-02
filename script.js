@@ -1,37 +1,44 @@
-// Global variables
+// ============================================================================
+// GLOBAL VARIABLES - NOW MANAGED BY StateManager (js/core/state-manager.js)
+// ============================================================================
+// These global variables are kept for backward compatibility during the transition.
+// They are automatically synchronized with StateManager through its setters.
+// Once all modules are refactored, these can be removed entirely.
+// ============================================================================
+
+// Core map objects
 var displayMap;
 let view;
-let uploadedLayers = [];
-let measurementWidget;
-let searchWidget;
-let currentPopupFeature = null;
-
-// Global variables for sketch functionality (update these at the top)
-let sketchViewModel = null;
-let drawLayer = null;
-let activeDrawingTool = null;
-
-// Store initial extent for home button
 let homeExtent = null;
 
-// Add these global variables for country feature
+// Layers
+let uploadedLayers = [];
+let drawLayer = null;
 let countriesLayer = null;
-let countryInfoTimeout = null;
-
-// Country flash animation
 let flashGraphicsLayer = null;
+let tourLayer = null;
 
-// Add this global variable at the top of your script (around line 10)
+// Widgets and tools
+let measurementWidget;
+let searchWidget;
+let sketchViewModel = null;
+
+// Drawing state
+let activeDrawingTool = null;
+
+// Popup state
+let currentPopupFeature = null;
+
+// Notification state
 let activeNotifications = [];
 
 // Classification variables
 let currentClassificationLayer = null;
-let originalRenderers = new Map(); // Reuse the existing one from heatmap
+let originalRenderers = new Map();
 
-// Enhanced Spatial Analysis using existing drawing system
+// Analysis state
 let analysisDrawing = false;
 let analysisDrawType = null;
-// Initialize this at the top of your script if not already done
 let drawnFeatures = {
   buffer: [],
   intersect1: null,
@@ -43,31 +50,29 @@ let featureTourActive = false;
 let featureTourInterval = null;
 let currentFeatureIndex = 0;
 let tourFeatures = [];
-let tourLayer = null;
-
 let highlightHandle = null;
-
 let autoControl = null;
 let chevronIcon = null;
 let chevronBtn = null;
 let featureDetails = null;
 
-// Application initialization is now handled by main.js
+// Other state
+let countryInfoTimeout = null;
 
-// Utility function to load ArcGIS modules
-function loadModule(moduleName) {
-  return new Promise((resolve, reject) => {
-    require([moduleName], (module) => {
-      if (module) {
-        resolve(module);
-      } else {
-        reject(new Error(`Module not found: ${moduleName}`));
-      }
-    }, (error) => {
-      reject(error);
-    });
-  });
-}
+// ============================================================================
+// Application initialization is now handled by main.js
+// StateManager is available globally as window.stateManager
+// ============================================================================
+
+// Import module loader utilities
+import { loadModule, loadModules } from './js/core/module-loader.js';
+
+// ============================================================================
+// COMMENTED OUT - Moved to js/core/module-loader.js
+// ============================================================================
+// Original loadModule function has been extracted to js/core/module-loader.js
+// and is now imported above for use in this module
+// ============================================================================
 
 // Update initializeMap to store home extent
 async function initializeMap() {
@@ -8215,28 +8220,80 @@ window.startAppTour = startAppTour;
 window.initializeMap = initializeMap;
 
 // Export functions for module system - ES6 module exports
+// ES6 Module Exports
+// NOTE: These exports will be gradually removed as functionality is extracted to separate modules
+// Each export will be commented out when its functionality is moved to a dedicated module
+
 export { 
-  // Core initialization functions
+  // Core initialization functions (will be moved to map-initializer.js)
   initializeMap,
   initializeUI,
   initializeEventHandlers,
+  
+  // Module loader (will be moved to module-loader.js)
   loadModule,
   
-  // Notification and UI functions
+  // Notification functions (will be moved to notification-manager.js)
   showNotification,
+  
+  // Panel functions (will be moved to panel-manager.js)
   openSidePanel,
   closeSidePanel,
+  clearToolbarActiveStates,
   
-  // Layer management functions
-  loadGeoJSON,
-  loadCSV,
-  handleFiles,
+  // Layer management functions (will be moved to layer-manager.js)
   toggleLayer,
   removeLayer,
   updateLayerList,
   
-  // Drawing functions
+  // File upload functions (will be moved to upload-handler.js)
+  loadGeoJSON,
+  loadCSV,
+  handleFiles,
+  
+  // Drawing functions (will be moved to drawing-manager.js)
   startDrawingWithTool,
   clearAll,
-  initializeSketchViewModel
+  initializeSketchViewModel,
+  initializeDrawingPanel,
+  
+  // Classification functions (will be moved to classification-manager.js)
+  initializeClassificationPanel,
+  
+  // Toolbar functions (will be moved to toolbar-manager.js)
+  locateUser,
+  
+  // Measurement functions (will be moved to measurement-manager.js)
+  toggleMeasurement
 };
+
+// Global variables - These will be moved to StateManager
+// var displayMap;
+// let view;
+// let uploadedLayers = [];
+// let measurementWidget;
+// let searchWidget;
+// let currentPopupFeature = null;
+// let sketchViewModel = null;
+// let drawLayer = null;
+// let activeDrawingTool = null;
+// let homeExtent = null;
+// let countriesLayer = null;
+// let countryInfoTimeout = null;
+// let flashGraphicsLayer = null;
+// let activeNotifications = [];
+// let currentClassificationLayer = null;
+// let originalRenderers = new Map();
+// let analysisDrawing = false;
+// let analysisDrawType = null;
+// let drawnFeatures = { buffer: [], intersect1: null, intersect2: null };
+// let featureTourActive = false;
+// let featureTourInterval = null;
+// let currentFeatureIndex = 0;
+// let tourFeatures = [];
+// let tourLayer = null;
+// let highlightHandle = null;
+// let autoControl = null;
+// let chevronIcon = null;
+// let chevronBtn = null;
+// let featureDetails = null;
