@@ -3584,7 +3584,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
   border-radius: var(--radius-md);
   padding: 1em;
   font-size: 0.9rem;
-  max-height: 20rem;
+  max-height: 28rem;
   overflow-y: auto;
 }
 

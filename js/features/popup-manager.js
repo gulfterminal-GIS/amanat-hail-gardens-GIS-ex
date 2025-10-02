@@ -202,26 +202,26 @@ export class PopupManager {
     html += "</div>";
 
     // Geometry info (async update)
-    if (graphic.geometry) {
-      html += `
-        <div class="geometry-info">
-          <h4>Geometry Information</h4>
-          <div id="geometryDetails">Loading...</div>
-        </div>
-      `;
-    }
+    // if (graphic.geometry) {
+    //   html += `
+    //     <div class="geometry-info">
+    //       <h4>Geometry Information</h4>
+    //       <div id="geometryDetails">Loading...</div>
+    //     </div>
+    //   `;
+    // }
 
     // Action buttons
-    html += `
-      <div class="popup-actions">
-        <button class="popup-action-btn" onclick="zoomToFeature()">
-          <i class="fas fa-search-plus"></i> Zoom to Feature
-        </button>
-        <button class="popup-action-btn" onclick="copyFeatureInfo()">
-          <i class="fas fa-copy"></i> Copy Info
-        </button>
-      </div>
-    `;
+    // html += `
+    //   <div class="popup-actions">
+    //     <button class="popup-action-btn" onclick="zoomToFeature()">
+    //       <i class="fas fa-search-plus"></i> Zoom to Feature
+    //     </button>
+    //     <button class="popup-action-btn" onclick="copyFeatureInfo()">
+    //       <i class="fas fa-copy"></i> Copy Info
+    //     </button>
+    //   </div>
+    // `;
 
     featureDetails.innerHTML = html;
 
