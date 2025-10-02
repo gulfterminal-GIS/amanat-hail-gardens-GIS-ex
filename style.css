@@ -1276,7 +1276,7 @@ body {
 /* Legend Widget */
 .legend-widget {
   position: fixed;
-  top: 10rem;
+  top: 6rem;
   left: var(--spacing-lg);
   z-index: var(--z-widget);
   width: fit-content;
@@ -3257,7 +3257,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 
 .top-toolbar {
     position: relative;
-    top: 4.25rem;
+    top: 1.25rem;
     background: transparent;
     box-shadow: var(--shadow-md);
     z-index: var(--z-toolbar);
@@ -3460,7 +3460,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 
 .feature-tour-controls {
   position: absolute;
-  top: 9rem;
+  top: 6rem;
   inset-inline-end: 1rem;
   background: transparent;
   z-index: var(--z-widget);
@@ -3610,5 +3610,6 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 .esri-attribution {
    display: none;
 }
+
 
 
