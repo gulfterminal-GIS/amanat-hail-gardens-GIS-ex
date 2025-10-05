@@ -107,7 +107,7 @@ export class PopupManager {
     // Add geometry information
     if (graphic.geometry) {
       html += '<div class="geometry-info">';
-      html += "<h4>Geometry Information</h4>";
+      html += "<p class='geometry-title'>Geometry Information</p>";
 
       // Create a container for async geometry calculations
       html += '<div id="geometryDetails">Loading...</div>';
