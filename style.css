@@ -1216,7 +1216,7 @@ body {
 /* Custom Widgets */
 .widget-container {
   position: fixed;
-  top: 18rem;
+  top: 6rem;
   right: var(--spacing-lg);
   display: flex;
   flex-direction: column;
@@ -1226,7 +1226,7 @@ body {
 }
 
 .custom-widget {
-  background: transparent;
+  background: rgba(0, 0, 0, 0.25);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
@@ -1237,8 +1237,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-md);
-  background: var(--bg-secondary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(0, 0, 0, 0.75);
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -1248,7 +1248,7 @@ body {
   gap: var(--spacing-sm);
   font-size: 16px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: white;
 }
 
 .widget-header h3 i {
@@ -1258,17 +1258,12 @@ body {
 .widget-close {
   background: none;
   border: none;
-  color: var(--text-secondary);
+  color: white;
   cursor: pointer;
   padding: var(--spacing-xs);
   font-size: 16px;
   border-radius: var(--radius-sm);
   transition: var(--transition-fast);
-}
-
-.widget-close:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: var(--text-primary);
 }
 
 .widget-content {
@@ -1928,8 +1923,8 @@ body {
 /* Empty States */
 .empty-state {
   text-align: center;
-  padding: var(--spacing-xl);
-  color: var(--text-light);
+  padding: var(--spacing-sm);
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .empty-state i {
@@ -1990,20 +1985,20 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-md);
-  background: var(--bg-secondary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(0, 0, 0, 0.5);
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .bookmark-item:hover {
-  background: rgba(25, 118, 210, 0.1);
+  color: gray;
+  background: rgba(0, 0, 0, 0.8);
 }
 
 .bookmark-name {
   font-weight: 500;
-  color: var(--text-primary);
 }
 
 .bookmark-delete {
@@ -2035,6 +2030,12 @@ body {
 
 .esri-print {
   background: transparent !important;
+}
+
+.custom-widget .esri-legend__layer-row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-sm);
 }
 
 /* Animations */
@@ -3440,13 +3441,19 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
   position: absolute;
   top: 6rem;
   inset-inline-end: 1rem;
-  background: transparent;
   z-index: var(--z-widget);
+  display: none;
+  background: transparent;
   font-size: 1rem;
   color: white;
   user-select: none;
   width: 22rem;
   color: white;
+}
+
+.feature-tour-controls.active {
+  display: block;
+  animation: slideInRight var(--transition-normal);
 }
   
 .feature-tour-controls .liquidGlass-wrapper {
