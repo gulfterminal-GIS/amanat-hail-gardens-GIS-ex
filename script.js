@@ -281,7 +281,7 @@ function initializeMapTabs() {
         // Update content
         contentCard.innerHTML = `
           <div class="tab-icon-container">
-            <img src="10607569.gif" alt="Loading" class="tab-gif-icon" />
+            <img src="images/plug.gif" alt="Loading" class="tab-gif-icon" />
           </div>
           
           <p class="tab-message-text">${message}</p>
@@ -3694,19 +3694,19 @@ function showNotification(message, type = "info") {
   `;
 
   // Add styles
-  notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: ${type === "success" ? "#4CAF50" : "#f44336"};
-    color: white;
-    padding: 12px 24px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 1000;
-    animation: slideIn 0.3s ease-out;
-  `;
+  // notification.style.cssText = `
+  //   position: fixed;
+  //   top: 20px;
+  //   left: 50%;
+  //   transform: translateX(-50%);
+  //   background: ${type === "success" ? "#4CAF50" : "#f44336"};
+  //   color: white;
+  //   padding: 12px 24px;
+  //   border-radius: 8px;
+  //   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  //   z-index: 1000;
+  //   animation: slideIn 0.3s ease-out;
+  // `;
 
   document.body.appendChild(notification);
 
