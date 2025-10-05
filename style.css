@@ -478,11 +478,10 @@ body {
 /* Side Panel */
 .side-panel {
   position: fixed;
-  top: 60px;
+  inset-block: 0;
   right: 0;
-  bottom: 0;
   width: 400px;
-  background: var(--bg-primary);
+  background: rgba(0, 0, 0, 0.7);
   box-shadow: var(--shadow-xl);
   transform: translateX(100%);
   transition: transform var(--transition-normal);
@@ -500,21 +499,21 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-lg);
+  padding: var(--spacing-sm) var(--spacing-lg);
   border-bottom: 1px solid var(--border-color);
-  background: var(--bg-secondary);
+  background: rgba(0, 0, 0, 0.75);
 }
 
 .side-panel-header h2 {
   font-size: 20px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: white;
 }
 
 .side-panel-close {
   background: none;
   border: none;
-  color: var(--text-secondary);
+  color: white;
   cursor: pointer;
   padding: var(--spacing-sm);
   font-size: 20px;
@@ -523,8 +522,8 @@ body {
 }
 
 .side-panel-close:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: var(--text-primary);
+  /* background: rgba(0, 0, 0, 0.05); */
+  color: gray;
 }
 
 .side-panel-content {
@@ -1165,7 +1164,7 @@ body {
 .icon-btn {
   background: none;
   border: none;
-  color: var(--text-secondary);
+  color: white;
   cursor: pointer;
   padding: var(--spacing-sm);
   border-radius: var(--radius-sm);
@@ -1420,9 +1419,9 @@ body {
   left: 0;
   right: 0;
   height: 400px;
-  background: var(--bg-primary);
+  background: rgba(0, 0, 0, 0.25);
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-  z-index: var(--z-widget);
+  z-index: 350;
   display: flex;
   flex-direction: column;
   transform: translateY(100%);
@@ -1438,9 +1437,17 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-md);
-  background: var(--bg-secondary);
+  background: black;
   border-bottom: 2px solid var(--border-color);
-  min-height: 56px;
+  min-height: 2.5rem;
+}
+
+.attribute-table-header i {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.attribute-table-header i:hover {
+  color: white
 }
 
 .table-title {
@@ -1452,12 +1459,12 @@ body {
 .table-title h3 {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: white;
   margin: 0;
 }
 
 .table-title i {
-  color: var(--primary-color);
+  color: white;
   font-size: 20px;
 }
 
@@ -1522,21 +1529,21 @@ body {
 }
 
 .attribute-data-table th {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  font-weight: 600;
-  padding: var(--spacing-sm) var(--spacing-md);
-  text-align: left;
   position: sticky;
   top: 0;
   z-index: 10;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-weight: 600;
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-align: left;
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
 }
 
 .attribute-data-table th:hover {
-  background: var(--bg-primary);
+  background: black;
 }
 
 .attribute-data-table th.sort-asc::after {
@@ -1552,11 +1559,13 @@ body {
 .attribute-data-table td {
   padding: var(--spacing-sm) var(--spacing-md);
   border-bottom: 1px solid var(--border-color);
-  color: var(--text-primary);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  white-space: nowrap;
 }
 
 .attribute-data-table tr:hover {
-  background: var(--bg-secondary);
+  background: rgba(0, 0, 0, 0.8);
 }
 
 .attribute-data-table tr.selected {
@@ -1569,12 +1578,12 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-md);
-  background: var(--bg-secondary);
+  background: black;
   border-top: 1px solid var(--border-color);
 }
 
 .pagination-info {
-  color: var(--text-secondary);
+  color: white;
   font-weight: 500;
 }
 
@@ -1607,7 +1616,7 @@ body {
 
 .page-info {
   font-weight: 500;
-  color: var(--text-primary);
+  color: white;
 }
 
 /* Modals */
@@ -2043,6 +2052,11 @@ body {
   font-size: 1.1rem;
   text-align: right;
   color: white;
+}
+
+.custom-widget .esri-legend__layer-cell--info {
+  text-align: right;
+  
 }
 
 /* Animations */
@@ -2765,7 +2779,7 @@ select:focus-visible {
   bottom: calc(var(--spacing-lg) + 140px);
   /* Above toolbar and coordinates */
   right: var(--spacing-lg);
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.6);
   color: var(--text-white);
   padding: var(--spacing-md) var(--spacing-lg);
   border-radius: var(--radius-lg);
