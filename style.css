@@ -311,6 +311,8 @@ body {
 }
 
 .toolbar-btn {
+  position: relative;
+  z-index: 10;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -323,18 +325,16 @@ body {
   cursor: pointer;
   transition: all var(--transition-fast);
   color: white;
-  position: relative;
   min-width: 64px;
+  outline: none;
 }
 
 .toolbar-btn:hover {
-  background: var(--bg-secondary);
-  color: var(--primary-color);
+  background: rgba(0, 0, 0, 0.25);
 }
 
 .toolbar-btn.active {
-  background: var(--primary-color);
-  color: var(--text-white);
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .toolbar-btn i {
@@ -619,6 +619,11 @@ body {
   padding-inline: 2em;
 }
 
+.coordinates-display .liquidGlass-content {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
 
 .copy-coords-btn {
   background: none;
@@ -1277,7 +1282,7 @@ body {
 .legend-widget {
   position: fixed;
   top: 6rem;
-  left: var(--spacing-lg);
+  left: 5.5rem;
   z-index: var(--z-widget);
   width: fit-content;
 }
@@ -2564,9 +2569,10 @@ select:focus-visible {
 /* Notification Styles (for showNotification function) */
 .notification {
   position: fixed;
-  top: 80px;
+  top: 20px;
   left: 50%;
   transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
   padding: var(--spacing-md) var(--spacing-lg);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
@@ -2575,27 +2581,24 @@ select:focus-visible {
   align-items: center;
   gap: var(--spacing-sm);
   font-weight: 500;
-  animation: slideDown var(--transition-normal);
+  animation: slideIn 0.3s ease-out;
 }
 
 .notification.success {
-  background: var(--success-color);
-  color: white;
+  color: var(--success-color);
 }
 
 .notification.error {
-  background: var(--danger-color);
-  color: white;
+  color: var(--danger-color);
 }
 
 .notification.info {
-  background: var(--primary-color);
-  color: white;
+  color: var(--primary-color);
 }
 
 .notification.warning {
-  background: var(--warning-color);
-  color: white;
+  /* background: ; */
+  color: var(--warning-color);
 }
 
 
@@ -3354,7 +3357,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 }
 
 .tab-content-card {
-  background: rgba(255, 255, 255, 1);
+  background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(20px);
   border-radius: var(--radius-xl);
   padding: 48px 40px;
@@ -3406,7 +3409,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 .tab-message-text {
   font-size: 18px;
   font-weight: 400;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.6);
   line-height: 1.6;
   margin: 0 0 32px 0;
   direction: rtl;
@@ -3414,7 +3417,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 
 .tab-action-button {
 /*   background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%); */
-  background: #17BBB1;
+  background: black;
   color: white;
   border: none;
   border-radius: var(--radius-lg);
@@ -3425,7 +3428,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
   cursor: pointer;
   transition: all var(--transition-normal);
   width: 100%;
-  box-shadow: 0 4px 20px rgba(25, 118, 210, 0.3);
+  /* box-shadow: 0 4px 20px rgba(25, 118, 210, 0.3); */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3435,7 +3438,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 
 .tab-action-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(25, 118, 210, 0.4);
+  box-shadow: 0 8px 16px rgba(200, 255, 255, 0.4);
 }
 
 /* Mobile responsive */
@@ -3586,6 +3589,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
   font-size: 0.9rem;
   max-height: 28rem;
   overflow-y: auto;
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .feature-details .attributes-list {
