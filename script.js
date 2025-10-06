@@ -30,7 +30,8 @@ let activeDrawingTool = null;
 let currentPopupFeature = null;
 
 // Notification state
-let activeNotifications = [];
+// COMMENTED OUT - Moved to js/ui/notification-manager.js
+// let activeNotifications = [];
 
 // Classification variables
 let currentClassificationLayer = null;
@@ -74,121 +75,140 @@ import { loadModule, loadModules } from './js/core/module-loader.js';
 // and is now imported above for use in this module
 // ============================================================================
 
-// Update initializeMap to store home extent
+// ============================================================================
+// COMMENTED OUT - Moved to js/core/map-initializer.js
+// ============================================================================
+// Original initializeMap function has been extracted to MapInitializer
+// Use window.mapInitializer.initializeMap() instead
+// ============================================================================
+
+// Wrapper function for backward compatibility
 async function initializeMap() {
-  try {
-    const [esriConfig, Map, MapView, GraphicsLayer, reactiveUtils] =
-      await Promise.all([
-        loadModule("esri/config"),
-        loadModule("esri/Map"),
-        loadModule("esri/views/MapView"),
-        loadModule("esri/layers/GraphicsLayer"),
-        loadModule("esri/core/reactiveUtils"), // Add this
-      ]);
-
-    esriConfig.apiKey =
-      "AAPK67a9b2041fcc449d90ab91d6bae4a156HTaBtzlYSKLe8L-zBuIgrSGvxOopzVQEtdwVrlp6RKN9Rrq_y2qkTax7Do1cHqm9";
-
-    displayMap = new Map({
-      basemap: "hybrid",
-    });
-
-    view = new MapView({
-      center: [-95.7129, 37.0902],
-      container: "displayMap",
-      map: displayMap,
-      zoom: 4,
-      highlightOptions: {
-        color: "#39ff14",
-        haloOpacity: 0.9,
-        fillOpacity: 0.2,
-      },
-    });
-
-    drawLayer = new GraphicsLayer({
-      title: "Drawings",
-      listMode: "show",
-    });
-    displayMap.add(drawLayer);
-
-    await view.when();
-
-    view.ui.remove(["compass", "zoom"]);
-
-    // Store home extent
-    homeExtent = view.extent.clone();
-
-    // Load default GeoJSON layer
-    await loadDefaultGeoJSON();
-
-    // Initialize countries layer for click feature
-    await initializeCountriesLayer();
-
-    // Store home extent
-    homeExtent = view.extent.clone();
-
-    // Initialize zoom watcher for heatmap using reactiveUtils
-    reactiveUtils.watch(
-      () => view.zoom,
-      (zoom) => {
-        if (window.heatmapEnabled && window.heatmapLayer) {
-          // Adjust radius based on zoom level for better visualization
-          const baseRadius = window.currentHeatmapSettings.radius;
-          const zoomFactor = Math.max(1, Math.min(3, zoom / 10));
-
-          if (
-            window.heatmapLayer.renderer &&
-            window.heatmapLayer.renderer.type === "heatmap"
-          ) {
-            window.heatmapLayer.renderer.radius = baseRadius * zoomFactor;
-          }
-        }
-      }
-    );
-
-    initializeUI();
-    initializeEventHandlers();
-
-    // Loading screen logic
-    const loadingScreen = document.getElementById("loadingScreen");
-    let loadingContent = document.querySelector(".loading-content");
-
-    function wait(ms) {
-      return new Promise((resolve) => setTimeout(resolve, ms));
-    }
-
-    console.log("Starting loading sequence...");
-    wait(0)
-      .then(() => {
-        loadingContent.innerHTML = `
-          <img class="loaded-gif" src="images/map-loading.gif" alt="">
-          <div class="loading-text">جاري مسح الخريطة...</div>
-        `;
-        return wait(3000);
-      })
-      .finally(() => {
-        loadingScreen.classList.add("fade-out");
-      });
-
-    // Add this new code:
-    // Check if it's the first visit
-    const hasSeenTour = localStorage.getItem("gisStudioTourCompleted");
-    if (!hasSeenTour) {
-      // Start tour after a short delay
-      setTimeout(() => {
-        startAppTour();
-        // Mark tour as seen
-        localStorage.setItem("gisStudioTourCompleted", "true");
-      }, 1500);
-    }
-
-    console.log("Map initialized successfully", displayMap, view);
-    return [view, displayMap];
-  } catch (error) {
-    console.error("Error initializing map:", error);
-    throw error;
+  if (window.mapInitializer) {
+    return await window.mapInitializer.initializeMap();
+  } else {
+    console.error("MapInitializer not initialized yet");
+    throw new Error("MapInitializer not available");
   }
 }
+
+// ============================================================================
+// ORIGINAL CODE (COMMENTED OUT)
+// ============================================================================
+// async function initializeMap() {
+//   try {
+//     const [esriConfig, Map, MapView, GraphicsLayer, reactiveUtils] =
+//       await Promise.all([
+//         loadModule("esri/config"),
+//         loadModule("esri/Map"),
+//         loadModule("esri/views/MapView"),
+//         loadModule("esri/layers/GraphicsLayer"),
+//         loadModule("esri/core/reactiveUtils"), // Add this
+//       ]);
+
+//     esriConfig.apiKey =
+//       "AAPK67a9b2041fcc449d90ab91d6bae4a156HTaBtzlYSKLe8L-zBuIgrSGvxOopzVQEtdwVrlp6RKN9Rrq_y2qkTax7Do1cHqm9";
+//
+//     displayMap = new Map({
+//       basemap: "hybrid",
+//     });
+//
+//     view = new MapView({
+//       center: [-95.7129, 37.0902],
+//       container: "displayMap",
+//       map: displayMap,
+//       zoom: 4,
+//       highlightOptions: {
+//         color: "#39ff14",
+//         haloOpacity: 0.9,
+//         fillOpacity: 0.2,
+//       },
+//     });
+//
+//     drawLayer = new GraphicsLayer({
+//       title: "Drawings",
+//       listMode: "show",
+//     });
+//     displayMap.add(drawLayer);
+//
+//     await view.when();
+//
+//     view.ui.remove(["compass", "zoom"]);
+//
+//     // Store home extent
+//     homeExtent = view.extent.clone();
+//
+//     // Load default GeoJSON layer
+//     await loadDefaultGeoJSON();
+//
+//     // Initialize countries layer for click feature
+//     await initializeCountriesLayer();
+//
+//     // Store home extent
+//     homeExtent = view.extent.clone();
+//
+//     // Initialize zoom watcher for heatmap using reactiveUtils
+//     reactiveUtils.watch(
+//       () => view.zoom,
+//       (zoom) => {
+//         if (window.heatmapEnabled && window.heatmapLayer) {
+//           // Adjust radius based on zoom level for better visualization
+//           const baseRadius = window.currentHeatmapSettings.radius;
+//           const zoomFactor = Math.max(1, Math.min(3, zoom / 10));
+//
+//           if (
+//             window.heatmapLayer.renderer &&
+//             window.heatmapLayer.renderer.type === "heatmap"
+//           ) {
+//             window.heatmapLayer.renderer.radius = baseRadius * zoomFactor;
+//           }
+//         }
+//       }
+//     );
+//
+//     initializeUI();
+//     initializeEventHandlers();
+//
+//     // Loading screen logic
+//     const loadingScreen = document.getElementById("loadingScreen");
+//     let loadingContent = document.querySelector(".loading-content");
+//
+//     function wait(ms) {
+//       return new Promise((resolve) => setTimeout(resolve, ms));
+//     }
+//
+//     console.log("Starting loading sequence...");
+//     wait(0)
+//       .then(() => {
+//         loadingContent.innerHTML = `
+//           <img class="loaded-gif" src="images/map-loading.gif" alt="">
+//           <div class="loading-text">جاري مسح الخريطة...</div>
+//         `;
+//         return wait(3000);
+//       })
+//       .finally(() => {
+//         loadingScreen.classList.add("fade-out");
+//       });
+//
+//     // Add this new code:
+//     // Check if it's the first visit
+//     const hasSeenTour = localStorage.getItem("gisStudioTourCompleted");
+//     if (!hasSeenTour) {
+//       // Start tour after a short delay
+//       setTimeout(() => {
+//         startAppTour();
+//         // Mark tour as seen
+//         localStorage.setItem("gisStudioTourCompleted", "true");
+//       }, 1500);
+//     }
+//
+//     console.log("Map initialized successfully", displayMap, view);
+//     return [view, displayMap];
+//   } catch (error) {
+//     console.error("Error initializing map:", error);
+//     throw error;
+//   }
+// }
 
 // Tab System
 const tabMessages = {
@@ -310,102 +330,91 @@ function redirectToTabPlatform(tabType) {
 // Export the function for onclick handler
 window.redirectToTabPlatform = redirectToTabPlatform;
 
-async function loadDefaultGeoJSON() {
-  try {
-    const [GeoJSONLayer] = await Promise.all([
-      loadModule("esri/layers/GeoJSONLayer"),
-    ]);
-
-    // Create the GeoJSON layer
-    const geojsonLayer = new GeoJSONLayer({
-      url: "Gardens.geojson", // Update this path to match your file location
-      title: "حدائق حائل", // Or whatever title you prefer
-      outFields: ["*"],
-      // renderer: {
-      //   type: "simple",
-      //   symbol: {
-      //     type: "simple-fill",
-      //     color: [51, 122, 183, 0.4],
-      //     outline: {
-      //       color: [51, 122, 183, 1],
-      //       width: 2
-      //     }
-      //   }
-      // }
-      renderer: {
-        type: "simple",
-        symbol: {
-          type: "simple-fill",
-          color: [34, 139, 34, 0.4], // Forest green with transparency
-          outline: {
-            color: [0, 100, 0, 1], // Dark green outline
-            width: 2,
-          },
-        },
-      },
-    });
-
-    // Add to map
-    displayMap.add(geojsonLayer);
-
-    // Add to uploaded layers array so it appears in layer list
-    uploadedLayers.push(geojsonLayer);
-
-    // Store for tour
-    tourLayer = geojsonLayer;
-
-    // Wait for layer to load
-    await geojsonLayer.load();
-
-    // Zoom to the layer extent
-    if (geojsonLayer.fullExtent) {
-      await view.goTo(geojsonLayer.fullExtent.expand(1.1));
-    }
-
-    // Update layer list UI
-    updateLayerList();
-
-    // Setup feature tour after layer loads
-    await setupFeatureTour(geojsonLayer);
-    chevronBtn = document.querySelector(".feature-tour-controls .chevron");
-    chevronIcon = document.querySelector(".feature-tour-controls .chevron i");
-    autoControl = document.querySelector(".feature-tour-controls .auto-control");
-    featureDetails = document.querySelector(".feature-tour-controls .feature-details");
-
-        // Toggle featureDetails when chevron is clicked
-    if (chevronBtn) {
-      chevronBtn.addEventListener("click", () => {
-        // lazy query in case DOM changed
-        // if (!featureDetails) {
-        //   featureDetails = document.querySelector(".feature-tour-controls .feature-details");
-        //   if (!featureDetails) return;
-        // }
-        if (!chevronIcon) {
-          chevronIcon = chevronBtn.querySelector("i");
-        }
-
-        const currentlyVisible = window.getComputedStyle(featureDetails).display !== "none";
-        const newVisible = !currentlyVisible;
-
-        featureDetails.style.display = newVisible ? "flex" : "none";
-
-        if (chevronIcon) {
-          chevronIcon.classList.toggle("bi-chevron-up", newVisible);
-          chevronIcon.classList.toggle("bi-chevron-down", !newVisible);
-        }
-      });
-    }
-
-    console.log("Default GeoJSON layer loaded successfully");
-
-    // 🔹 Apply classification automatically on GARDENSTATUS
-    currentClassificationLayer = geojsonLayer;
-    await autoApplyDefaultClassification(geojsonLayer, "GARDENSTATUS");
-  } catch (error) {
-    console.error("Error loading default GeoJSON:", error);
-    // Don't show error to user since this is a default layer
-  }
-}
+// ============================================================================
+// COMMENTED OUT - Moved to js/core/map-initializer.js
+// ============================================================================
+// Original loadDefaultGeoJSON function has been extracted to MapInitializer
+// ============================================================================
+// async function loadDefaultGeoJSON() {
+//   try {
+//     const [GeoJSONLayer] = await Promise.all([
+//       loadModule("esri/layers/GeoJSONLayer"),
+//     ]);
+//
+//     // Create the GeoJSON layer
+//     const geojsonLayer = new GeoJSONLayer({
+//       url: "Gardens.geojson", // Update this path to match your file location
+//       title: "حدائق حائل", // Or whatever title you prefer
+//       outFields: ["*"],
+//       renderer: {
+//         type: "simple",
+//         symbol: {
+//           type: "simple-fill",
+//           color: [34, 139, 34, 0.4], // Forest green with transparency
+//           outline: {
+//             color: [0, 100, 0, 1], // Dark green outline
+//             width: 2,
+//           },
+//         },
+//       },
+//     });
+//
+//     // Add to map
+//     displayMap.add(geojsonLayer);
+//
+//     // Add to uploaded layers array so it appears in layer list
+//     uploadedLayers.push(geojsonLayer);
+//
+//     // Store for tour
+//     tourLayer = geojsonLayer;
+//
+//     // Wait for layer to load
+//     await geojsonLayer.load();
+//
+//     // Zoom to the layer extent
+//     if (geojsonLayer.fullExtent) {
+//       await view.goTo(geojsonLayer.fullExtent.expand(1.1));
+//     }
+//
+//     // Update layer list UI
+//     updateLayerList();
+//
+//     // Setup feature tour after layer loads
+//     await setupFeatureTour(geojsonLayer);
+//     chevronBtn = document.querySelector(".feature-tour-controls .chevron");
+//     chevronIcon = document.querySelector(".feature-tour-controls .chevron i");
+//     autoControl = document.querySelector(".feature-tour-controls .auto-control");
+//     featureDetails = document.querySelector(".feature-tour-controls .feature-details");
+//
+//     // Toggle featureDetails when chevron is clicked
+//     if (chevronBtn) {
+//       chevronBtn.addEventListener("click", () => {
+//         if (!chevronIcon) {
+//           chevronIcon = chevronBtn.querySelector("i");
+//         }
+//
+//         const currentlyVisible = window.getComputedStyle(featureDetails).display !== "none";
+//         const newVisible = !currentlyVisible;
+//
+//         featureDetails.style.display = newVisible ? "flex" : "none";
+//
+//         if (chevronIcon) {
+//           chevronIcon.classList.toggle("bi-chevron-up", newVisible);
+//           chevronIcon.classList.toggle("bi-chevron-down", !newVisible);
+//         }
+//       });
+//     }
+//
+//     console.log("Default GeoJSON layer loaded successfully");
+//
+//     // 🔹 Apply classification automatically on GARDENSTATUS
+//     currentClassificationLayer = geojsonLayer;
+//     await autoApplyDefaultClassification(geojsonLayer, "GARDENSTATUS");
+//   } catch (error) {
+//     console.error("Error loading default GeoJSON:", error);
+//     // Don't show error to user since this is a default layer
+//   }
+// }
 
 async function autoApplyDefaultClassification(layer, fieldName) {
   try {
@@ -667,9 +676,8 @@ async function goToFeature(index) {
     updateTourInfo(feature);
 
     // Update progress
-    document.getElementById("tourProgress").textContent = `${index + 1} / ${
-      tourFeatures.length
-    }`;
+    document.getElementById("tourProgress").textContent = `${index + 1} / ${tourFeatures.length
+      }`;
 
     // Show popup in left-center position
     showTourPopup(feature);
@@ -864,32 +872,37 @@ function manuallyStartTour() {
 
 window.manuallyStartTour = manuallyStartTour;
 
+// ============================================================================
+// COMMENTED OUT - Moved to js/core/map-initializer.js
+// ============================================================================
+// Original initializeCountriesLayer function has been extracted to MapInitializer
+// ============================================================================
 // Initialize countries layer for click info display
-async function initializeCountriesLayer() {
-  try {
-    const [FeatureLayer, GraphicsLayer] = await Promise.all([
-      loadModule("esri/layers/FeatureLayer"),
-      loadModule("esri/layers/GraphicsLayer"),
-    ]);
-
-    // Create graphics layer for flash animation
-    flashGraphicsLayer = new GraphicsLayer({
-      title: "Flash Animation",
-      listMode: "hide",
-    });
-    displayMap.add(flashGraphicsLayer);
-
-    // Create countries layer but don't display it (only for queries)
-    countriesLayer = new FeatureLayer({
-      url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/World_Countries_(Generalized)/FeatureServer/0",
-      visible: false, // Hidden layer, only for queries
-    });
-
-    displayMap.add(countriesLayer);
-  } catch (error) {
-    console.error("Error loading countries layer:", error);
-  }
-}
+// async function initializeCountriesLayer() {
+//   try {
+//     const [FeatureLayer, GraphicsLayer] = await Promise.all([
+//       loadModule("esri/layers/FeatureLayer"),
+//       loadModule("esri/layers/GraphicsLayer"),
+//     ]);
+//
+//     // Create graphics layer for flash animation
+//     flashGraphicsLayer = new GraphicsLayer({
+//       title: "Flash Animation",
+//       listMode: "hide",
+//     });
+//     displayMap.add(flashGraphicsLayer);
+//
+//     // Create countries layer but don't display it (only for queries)
+//     countriesLayer = new FeatureLayer({
+//       url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/World_Countries_(Generalized)/FeatureServer/0",
+//       visible: false, // Hidden layer, only for queries
+//     });
+//
+//     displayMap.add(countriesLayer);
+//   } catch (error) {
+//     console.error("Error loading countries layer:", error);
+//   }
+// }
 
 // Initialize UI components
 function initializeUI() {
@@ -1726,9 +1739,8 @@ function updateLayerList() {
         (layer, index) => `
       <div class="layer-item">
         <input type="checkbox" class="layer-checkbox" id="layer-${index}" 
-               ${
-                 layer.visible ? "checked" : ""
-               } onchange="toggleLayer(${index})">
+               ${layer.visible ? "checked" : ""
+          } onchange="toggleLayer(${index})">
         <label for="layer-${index}" class="layer-name">${layer.title}</label>
         <div class="layer-actions">
           <button onclick="zoomToLayer(${index})" title="Zoom to layer">
@@ -2266,10 +2278,10 @@ function hexToRgb(hex) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? [
-        parseInt(result[1], 16),
-        parseInt(result[2], 16),
-        parseInt(result[3], 16),
-      ]
+      parseInt(result[1], 16),
+      parseInt(result[2], 16),
+      parseInt(result[3], 16),
+    ]
     : [33, 150, 243];
 }
 
@@ -2613,9 +2625,8 @@ function initializeEventHandlers() {
         if (graphic.layer && graphic.layer.queryFeatures) {
           try {
             const query = graphic.layer.createQuery();
-            query.where = `${graphic.layer.objectIdField} = ${
-              graphic.attributes[graphic.layer.objectIdField]
-            }`;
+            query.where = `${graphic.layer.objectIdField} = ${graphic.attributes[graphic.layer.objectIdField]
+              }`;
             query.outFields = ["*"];
             query.returnGeometry = true;
 
@@ -3312,8 +3323,8 @@ async function updateGeometryDetails(geometry) {
           <div class="attribute-row">
             <span class="attribute-label">Longitude:</span>
             <span class="attribute-value">${geometry.longitude.toFixed(
-              6
-            )}</span>
+          6
+        )}</span>
           </div>
           <div class="attribute-row">
             <span class="attribute-label">Latitude:</span>
@@ -3646,41 +3657,56 @@ function debounce(func, wait) {
   };
 }
 
+// ============================================================================
+// COMMENTED OUT - Moved to js/ui/notification-manager.js
+// ============================================================================
+// Original showNotification function has been extracted to NotificationManager
+// Use window.notificationManager.showNotification() instead
+// ============================================================================
+// function showNotification(message, type = "info") {
+//   // Create notification element
+//   const notification = document.createElement("div");
+//   notification.className = `notification ${type}`;
+//   notification.innerHTML = `
+//     <i class="fas ${
+//       type === "success" ? "fa-check-circle" : "fa-exclamation-circle"
+//     }"></i>
+//     <span>${message}</span>
+//   `;
+//
+//   // Add styles
+//   notification.style.cssText = `
+//     position: fixed;
+//     top: 20px;
+//     left: 50%;
+//     transform: translateX(-50%);
+//     background: ${type === "success" ? "#4CAF50" : "#f44336"};
+//     color: white;
+//     padding: 12px 24px;
+//     border-radius: 8px;
+//     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+//     z-index: 1000;
+//     animation: slideIn 0.3s ease-out;
+//   `;
+//
+//   document.body.appendChild(notification);
+//
+//   // Remove after 3 seconds
+//   setTimeout(() => {
+//     notification.style.animation = "slideOut 0.3s ease-out";
+//     setTimeout(() => {
+//       document.body.removeChild(notification);
+//     }, 300);
+//   }, 3000);
+// }
+
+// Wrapper function for backward compatibility
 function showNotification(message, type = "info") {
-  // Create notification element
-  const notification = document.createElement("div");
-  notification.className = `notification ${type}`;
-  notification.innerHTML = `
-    <i class="fas ${
-      type === "success" ? "fa-check-circle" : "fa-exclamation-circle"
-    }"></i>
-    <span>${message}</span>
-  `;
-
-  // Add styles
-  notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: ${type === "success" ? "#4CAF50" : "#f44336"};
-    color: white;
-    padding: 12px 24px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 1000;
-    animation: slideIn 0.3s ease-out;
-  `;
-
-  document.body.appendChild(notification);
-
-  // Remove after 3 seconds
-  setTimeout(() => {
-    notification.style.animation = "slideOut 0.3s ease-out";
-    setTimeout(() => {
-      document.body.removeChild(notification);
-    }, 300);
-  }, 3000);
+  if (window.notificationManager) {
+    window.notificationManager.showNotification(message, type);
+  } else {
+    console.warn("NotificationManager not initialized yet:", message);
+  }
 }
 
 // // Replace your showNotification function with this improved version:
@@ -4281,9 +4307,8 @@ function updateMeasurementResults(measurement) {
       <div class="measurement-item">
         <i class="fas fa-ruler-horizontal"></i>
         <span class="measurement-label">Distance:</span>
-        <span class="measurement-value">${measurement.distance.toFixed(2)} ${
-      measurement.distanceUnit
-    }</span>
+        <span class="measurement-value">${measurement.distance.toFixed(2)} ${measurement.distanceUnit
+      }</span>
       </div>
     `;
   } else if (measurement.area !== undefined) {
@@ -4292,16 +4317,14 @@ function updateMeasurementResults(measurement) {
       <div class="measurement-item">
         <i class="fas fa-vector-square"></i>
         <span class="measurement-label">Area:</span>
-        <span class="measurement-value">${measurement.area.toFixed(2)} ${
-      measurement.areaUnit
-    }</span>
+        <span class="measurement-value">${measurement.area.toFixed(2)} ${measurement.areaUnit
+      }</span>
       </div>
       <div class="measurement-item">
         <i class="fas fa-draw-polygon"></i>
         <span class="measurement-label">Perimeter:</span>
-        <span class="measurement-value">${measurement.perimeter.toFixed(2)} ${
-      measurement.perimeterUnit
-    }</span>
+        <span class="measurement-value">${measurement.perimeter.toFixed(2)} ${measurement.perimeterUnit
+      }</span>
       </div>
     `;
   }
@@ -4320,7 +4343,7 @@ async function toggleSwipe() {
 
     // Temporarily suppress console warnings for deprecated widget
     const originalWarn = console.warn;
-    console.warn = () => {};
+    console.warn = () => { };
 
     try {
       const [Swipe] = await Promise.all([loadModule("esri/widgets/Swipe")]);
@@ -4807,9 +4830,8 @@ async function flashFeature(feature) {
 function updatePagination() {
   const totalPages = Math.ceil(filteredData.length / recordsPerPage);
 
-  document.getElementById("tablePaginationInfo").textContent = `${
-    filteredData.length
-  } record${filteredData.length !== 1 ? "s" : ""}`;
+  document.getElementById("tablePaginationInfo").textContent = `${filteredData.length
+    } record${filteredData.length !== 1 ? "s" : ""}`;
   document.getElementById(
     "tablePageInfo"
   ).textContent = `Page ${currentPage} of ${totalPages}`;
@@ -7522,7 +7544,7 @@ function playTimeAnimation() {
           start: fullExtent.start,
           end: new Date(
             fullExtent.start.getTime() +
-              (currentEnd - timeSlider.timeExtent.start)
+            (currentEnd - timeSlider.timeExtent.start)
           ),
         };
       }
@@ -7572,8 +7594,7 @@ updateLayerList = function () {
       <input type="checkbox" class="layer-checkbox" 
              ${analysisLayer.visible ? "checked" : ""} 
              onchange="analysisLayer.visible = this.checked">
-      <label class="layer-name">Analysis Results (${
-        analysisLayer.graphics.length
+      <label class="layer-name">Analysis Results (${analysisLayer.graphics.length
       })</label>
       <div class="layer-actions">
         <button onclick="clearAnalysisResults()" title="Clear results">
@@ -7677,8 +7698,7 @@ window.toggleModalMinimize = function (modalId) {
     const indicator = document.createElement("div");
     indicator.className = "modal-minimized-indicator";
     indicator.innerHTML = `
-      <span>${
-        modalId === "bufferModal" ? "Buffer" : "Intersection"
+      <span>${modalId === "bufferModal" ? "Buffer" : "Intersection"
       } Analysis</span>
       <button onclick="toggleModalMinimize('${modalId}')">
         <i class="fas fa-window-maximize"></i>
@@ -7718,11 +7738,10 @@ async function startBufferDrawing(type) {
     `;
     indicator.innerHTML = `
       <i class="fas fa-pencil-alt"></i>
-      <span>Drawing ${type}. ${
-      type === "point"
+      <span>Drawing ${type}. ${type === "point"
         ? "Click to place point"
         : "Click to add vertices, double-click to complete"
-    }.</span>
+      }.</span>
       <button onclick="cancelBufferDrawing()" style="
         background: white;
         color: var(--primary-color);
@@ -8224,45 +8243,45 @@ window.initializeMap = initializeMap;
 // NOTE: These exports will be gradually removed as functionality is extracted to separate modules
 // Each export will be commented out when its functionality is moved to a dedicated module
 
-export { 
+export {
   // Core initialization functions (will be moved to map-initializer.js)
   initializeMap,
   initializeUI,
   initializeEventHandlers,
-  
+
   // Module loader (will be moved to module-loader.js)
   loadModule,
-  
+
   // Notification functions (will be moved to notification-manager.js)
   showNotification,
-  
+
   // Panel functions (will be moved to panel-manager.js)
   openSidePanel,
   closeSidePanel,
   clearToolbarActiveStates,
-  
+
   // Layer management functions (will be moved to layer-manager.js)
   toggleLayer,
   removeLayer,
   updateLayerList,
-  
+
   // File upload functions (will be moved to upload-handler.js)
   loadGeoJSON,
   loadCSV,
   handleFiles,
-  
+
   // Drawing functions (will be moved to drawing-manager.js)
   startDrawingWithTool,
   clearAll,
   initializeSketchViewModel,
   initializeDrawingPanel,
-  
+
   // Classification functions (will be moved to classification-manager.js)
   initializeClassificationPanel,
-  
+
   // Toolbar functions (will be moved to toolbar-manager.js)
   locateUser,
-  
+
   // Measurement functions (will be moved to measurement-manager.js)
   toggleMeasurement
 };

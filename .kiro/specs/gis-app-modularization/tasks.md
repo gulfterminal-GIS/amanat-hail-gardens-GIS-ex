@@ -77,8 +77,8 @@
     - Update all module loading calls to use new wrapper
     - _Requirements: 1.2, 1.5_
 
-- [ ] 4. Extract core services (foundation modules)
-  - [ ] 4.1 Create js/ui/notification-manager.js (EXTRACT FIRST)
+- [x] 4. Extract core services (foundation modules)
+  - [x] 4.1 Create js/ui/notification-manager.js (EXTRACT FIRST)
     - Extract showNotification function and activeNotifications array from script.js
     - Create NotificationManager class with notification lifecycle methods
     - Comment out original notification code in script.js
@@ -86,7 +86,7 @@
     - This module is used by ALL other modules - extract first!
     - _Requirements: 1.2, 1.5, 3.2_
   
-  - [ ] 4.2 Create js/core/map-initializer.js for map setup
+  - [x] 4.2 Create js/core/map-initializer.js for map setup
     - Extract initializeMap, loadDefaultGeoJSON, initializeCountriesLayer from script.js
     - Create MapInitializer class with map setup and loading screen logic
     - Comment out original map initialization code in script.js

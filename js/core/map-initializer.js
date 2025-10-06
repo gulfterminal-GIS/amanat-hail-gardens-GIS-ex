@@ -1,0 +1,295 @@
+/**
+ * MapInitializer - Handles map setup, loading screen, and initial layer loading
+ * Dependencies: StateManager, NotificationManager, module-loader
+ */
+
+import { loadModule, loadModules } from "./module-loader.js";
+
+export class MapInitializer {
+  constructor(stateManager, notificationManager, config) {
+    this.stateManager = stateManager;
+    this.notificationManager = notificationManager;
+    this.config = config;
+  }
+
+  /**
+   * Initialize the ArcGIS map and view
+   * @returns {Promise<Array>} [view, map]
+   */
+  async initializeMap() {
+    try {
+      const [esriConfig, Map, MapView, GraphicsLayer, reactiveUtils] =
+        await Promise.all([
+          loadModule("esri/config"),
+          loadModule("esri/Map"),
+          loadModule("esri/views/MapView"),
+          loadModule("esri/layers/GraphicsLayer"),
+          loadModule("esri/core/reactiveUtils"),
+        ]);
+
+      esriConfig.apiKey = this.config.ARCGIS_API_KEY;
+
+      const displayMap = new Map({
+        basemap: this.config.DEFAULT_BASEMAP || "hybrid",
+      });
+
+      const view = new MapView({
+        center: this.config.DEFAULT_CENTER || [-95.7129, 37.0902],
+        container: "displayMap",
+        map: displayMap,
+        zoom: this.config.DEFAULT_ZOOM || 4,
+        highlightOptions: {
+          color: "#39ff14",
+          haloOpacity: 0.9,
+          fillOpacity: 0.2,
+        },
+      });
+
+      const drawLayer = new GraphicsLayer({
+        title: "Drawings",
+        listMode: "show",
+      });
+      displayMap.add(drawLayer);
+
+      await view.when();
+
+      view.ui.remove(["compass", "zoom"]);
+
+      // Store home extent
+      const homeExtent = view.extent.clone();
+
+      // Store in global variables for backward compatibility
+      // These will be managed by StateManager in future refactoring
+      window.displayMap = displayMap;
+      window.view = view;
+      window.drawLayer = drawLayer;
+      window.homeExtent = homeExtent;
+
+      // Load default GeoJSON layer
+      await this.loadDefaultGeoJSON(displayMap, view);
+
+      // Initialize countries layer for click feature
+      await this.initializeCountriesLayer(displayMap);
+
+      // Initialize zoom watcher for heatmap using reactiveUtils
+      reactiveUtils.watch(
+        () => view.zoom,
+        (zoom) => {
+          if (window.heatmapEnabled && window.heatmapLayer) {
+            // Adjust radius based on zoom level for better visualization
+            const baseRadius = window.currentHeatmapSettings.radius;
+            const zoomFactor = Math.max(1, Math.min(3, zoom / 10));
+
+            if (
+              window.heatmapLayer.renderer &&
+              window.heatmapLayer.renderer.type === "heatmap"
+            ) {
+              window.heatmapLayer.renderer.radius = baseRadius * zoomFactor;
+            }
+          }
+        }
+      );
+
+      // Initialize UI and event handlers (still in script.js)
+      if (window.initializeUI) {
+        window.initializeUI();
+      }
+      if (window.initializeEventHandlers) {
+        window.initializeEventHandlers();
+      }
+
+      // Handle loading screen
+      this.handleLoadingScreen();
+
+      // Check if it's the first visit and start tour
+      const hasSeenTour = localStorage.getItem("gisStudioTourCompleted");
+      if (!hasSeenTour && window.startAppTour) {
+        // Start tour after a short delay
+        setTimeout(() => {
+          window.startAppTour();
+          // Mark tour as seen
+          localStorage.setItem("gisStudioTourCompleted", "true");
+        }, 1500);
+      }
+
+      console.log("Map initialized successfully", displayMap, view);
+      return [view, displayMap];
+    } catch (error) {
+      console.error("Error initializing map:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Load the default GeoJSON layer
+   */
+  async loadDefaultGeoJSON(displayMap, view) {
+    try {
+      const [GeoJSONLayer] = await Promise.all([
+        loadModule("esri/layers/GeoJSONLayer"),
+      ]);
+
+      // Create the GeoJSON layer
+      const geojsonLayer = new GeoJSONLayer({
+        url: "Gardens.geojson",
+        title: "حدائق حائل",
+        outFields: ["*"],
+        renderer: {
+          type: "simple",
+          symbol: {
+            type: "simple-fill",
+            color: [34, 139, 34, 0.4], // Forest green with transparency
+            outline: {
+              color: [0, 100, 0, 1], // Dark green outline
+              width: 2,
+            },
+          },
+        },
+      });
+
+      // Add to map
+      displayMap.add(geojsonLayer);
+
+      // Add to uploaded layers array so it appears in layer list
+      if (!window.uploadedLayers) {
+        window.uploadedLayers = [];
+      }
+      window.uploadedLayers.push(geojsonLayer);
+
+      // Store for tour
+      window.tourLayer = geojsonLayer;
+
+      // Wait for layer to load
+      await geojsonLayer.load();
+
+      // Zoom to the layer extent
+      if (geojsonLayer.fullExtent) {
+        await view.goTo(geojsonLayer.fullExtent.expand(1.1));
+      }
+
+      // Update layer list UI (still in script.js)
+      if (window.updateLayerList) {
+        window.updateLayerList();
+      }
+
+      // Setup feature tour after layer loads (still in script.js)
+      if (window.setupFeatureTour) {
+        await window.setupFeatureTour(geojsonLayer);
+        
+        // Setup chevron button event listener
+        const chevronBtn = document.querySelector(".feature-tour-controls .chevron");
+        const featureDetails = document.querySelector(".feature-tour-controls .feature-details");
+        
+        if (chevronBtn && featureDetails) {
+          chevronBtn.addEventListener("click", () => {
+            const chevronIcon = chevronBtn.querySelector("i");
+            const currentlyVisible = window.getComputedStyle(featureDetails).display !== "none";
+            const newVisible = !currentlyVisible;
+
+            featureDetails.style.display = newVisible ? "flex" : "none";
+
+            if (chevronIcon) {
+              chevronIcon.classList.toggle("bi-chevron-up", newVisible);
+              chevronIcon.classList.toggle("bi-chevron-down", !newVisible);
+            }
+          });
+        }
+      }
+
+      console.log("Default GeoJSON layer loaded successfully");
+
+      // Apply classification automatically on GARDENSTATUS (still in script.js)
+      window.currentClassificationLayer = geojsonLayer;
+      if (window.autoApplyDefaultClassification) {
+        await window.autoApplyDefaultClassification(geojsonLayer, "GARDENSTATUS");
+      }
+    } catch (error) {
+      console.error("Error loading default GeoJSON:", error);
+      // Don't show error to user since this is a default layer
+    }
+  }
+
+  /**
+   * Initialize countries layer for click info display
+   */
+  async initializeCountriesLayer(displayMap) {
+    try {
+      const [FeatureLayer, GraphicsLayer] = await Promise.all([
+        loadModule("esri/layers/FeatureLayer"),
+        loadModule("esri/layers/GraphicsLayer"),
+      ]);
+
+      // Create graphics layer for flash animation
+      const flashGraphicsLayer = new GraphicsLayer({
+        title: "Flash Animation",
+        listMode: "hide",
+      });
+      displayMap.add(flashGraphicsLayer);
+
+      // Create countries layer but don't display it (only for queries)
+      const countriesLayer = new FeatureLayer({
+        url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/World_Countries_(Generalized)/FeatureServer/0",
+        visible: false, // Hidden layer, only for queries
+      });
+
+      displayMap.add(countriesLayer);
+
+      // Store in global variables for backward compatibility
+      window.flashGraphicsLayer = flashGraphicsLayer;
+      window.countriesLayer = countriesLayer;
+    } catch (error) {
+      console.error("Error loading countries layer:", error);
+    }
+  }
+
+  /**
+   * Handle the loading screen animation
+   */
+  handleLoadingScreen() {
+    const loadingScreen = document.getElementById("loadingScreen");
+    const loadingContent = document.querySelector(".loading-content");
+
+    if (!loadingScreen || !loadingContent) {
+      console.warn("Loading screen elements not found");
+      return;
+    }
+
+    function wait(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    console.log("Starting loading sequence...");
+    wait(0)
+      .then(() => {
+        loadingContent.innerHTML = `
+          <img class="loaded-gif" src="images/map-loading.gif" alt="">
+          <div class="loading-text">جاري مسح الخريطة...</div>
+        `;
+        return wait(3000);
+      })
+      .finally(() => {
+        loadingScreen.classList.add("fade-out");
+      });
+  }
+
+  /**
+   * Show the loading screen
+   */
+  showLoadingScreen() {
+    const loadingScreen = document.getElementById("loadingScreen");
+    if (loadingScreen) {
+      loadingScreen.classList.remove("fade-out");
+      loadingScreen.style.display = "flex";
+    }
+  }
+
+  /**
+   * Hide the loading screen
+   */
+  hideLoadingScreen() {
+    const loadingScreen = document.getElementById("loadingScreen");
+    if (loadingScreen) {
+      loadingScreen.classList.add("fade-out");
+    }
+  }
+}
