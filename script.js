@@ -5782,7 +5782,7 @@ async function applyClassification() {
     };
 
     // Create legend
-    createClassificationLegend(stats, colors, fieldName);
+    // createClassificationLegend(stats, colors, fieldName);
 
     // Close panel
     closeSidePanel();
@@ -7209,7 +7209,7 @@ async function calculateDistance() {
     }
 
     document.getElementById("distanceResult").innerHTML = `
-      <strong>Distance:</strong> ${distanceText}
+      <strong>Distance:</strong> &nbsp; ${distanceText}
     `;
 
     // Clear previous distance lines
