@@ -601,6 +601,24 @@
     </liquid-glass-effect>
   </div>
 
+  <!-- Distance Panel -->
+  <div id="distancePanel" class="custom-widget distance-widget hidden" data-widget-name="Distance">
+    <div class="widget-header">
+      <h3><i class="fas fa-ruler-horizontal"></i> Distance Measurement</h3>
+      <button class="widget-close" onclick="closeDistancePanel()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="widget-content">
+      <p class="help-text">Click on two features to measure distance</p>
+      <div id="distanceResult" class="analysis-result"></div>
+      <button class="action-btn secondary" onclick="clearDistanceMeasurement()">
+        Clear Measurement
+      </button>
+    </div>
+  </div>
+
+
   <!-- Widget Containers -->
   <div class="widget-container" id="widgetContainer">
     <!-- Bookmarks Widget -->
@@ -639,23 +657,6 @@
         </button>
       </div>
       <div id="measurementContent" class="widget-content"></div>
-    </div>
-
-    <!-- Distance Panel -->
-    <div id="distancePanel" class="custom-widget hidden" data-widget-name="Distance">
-      <div class="widget-header">
-        <h3><i class="fas fa-ruler-horizontal"></i> Distance Measurement</h3>
-        <button class="widget-close" onclick="closeDistancePanel()">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      <div class="widget-content">
-        <p class="help-text">Click on two features to measure distance</p>
-        <div id="distanceResult" class="analysis-result"></div>
-        <button class="action-btn secondary" onclick="clearDistanceMeasurement()">
-          Clear Measurement
-        </button>
-      </div>
     </div>
   </div>
 

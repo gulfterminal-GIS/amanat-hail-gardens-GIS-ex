@@ -1289,7 +1289,7 @@ body {
 
 .widget-content {
   padding: var(--spacing-md);
-  max-height: 400px;
+  max-height: 325px;
   overflow-y: auto;
   color: white !important;
 }
@@ -1304,11 +1304,19 @@ body {
 }
 
 .legend-widget .widget-content {
-  padding: 0.5rem 0 0;
+  padding-block: 0.5rem 0;
+  padding-inline: 0 0.5rem;
 }
 
 .legend-widget:hover .liquidGlass-wrapper {
   padding: 0.25rem;
+}
+
+.distance-widget {
+  position: fixed;
+  bottom: 7rem;
+  left: 5.5rem;
+  z-index: var(--z-widget);
 }
 
 /* Custom Popup */
@@ -2058,6 +2066,10 @@ body {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   padding: var(--spacing-sm);
+}
+
+.esri-legend__layer {
+  margin: unset;
 }
 
 .esri-legend {
