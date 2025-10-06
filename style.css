@@ -149,6 +149,16 @@ body {
   z-index: var(--z-toolbar);
 }
 
+.logo {
+    position: fixed;
+    bottom: 38px;
+    right: 3rem;
+    z-index: 50;
+    height: auto;
+    width: 5rem;
+    font-size: 24px;
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -658,13 +668,13 @@ body {
   text-align: center;
   transition: all var(--transition-normal);
   cursor: pointer;
-  background: var(--bg-secondary);
+  background: black;
 }
 
 .drop-zone:hover,
 .drop-zone.drag-over {
   border-color: var(--primary-color);
-  background: rgba(25, 118, 210, 0.05);
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .drop-zone-icon {
@@ -676,12 +686,12 @@ body {
 .drop-zone h3 {
   font-size: 18px;
   font-weight: 500;
-  color: var(--text-primary);
+  color: white;
   margin-bottom: var(--spacing-xs);
 }
 
 .drop-zone p {
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.7);
   margin-bottom: var(--spacing-md);
 }
 
@@ -704,6 +714,7 @@ body {
 .layer-list {
   max-height: 400px;
   overflow-y: auto;
+  padding-inline: 0.5em;
 }
 
 .layer-item {
@@ -712,12 +723,12 @@ body {
   padding: var(--spacing-md);
   border-radius: var(--radius-md);
   margin-bottom: var(--spacing-sm);
-  background: var(--bg-secondary);
+  background: rgba(0, 0, 0, 0.75);
   transition: all var(--transition-fast);
 }
 
 .layer-item:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: black;
   transform: translateX(4px);
 }
 
@@ -729,7 +740,7 @@ body {
 .layer-name {
   flex: 1;
   font-weight: 500;
-  color: var(--text-primary);
+  color: white;
 }
 
 .layer-actions {
@@ -762,6 +773,7 @@ body {
 .basemap-item {
   cursor: pointer;
   border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
   overflow: hidden;
   position: relative;
   transition: all var(--transition-fast);
@@ -976,7 +988,7 @@ body {
 
 /* Visualization Options */
 .viz-option {
-  background: var(--bg-secondary);
+  background: rgba(0, 0, 0, 0.5);
   border-radius: var(--radius-md);
   padding: var(--spacing-md);
   margin-bottom: var(--spacing-md);
@@ -995,13 +1007,13 @@ body {
   gap: var(--spacing-sm);
   font-size: 16px;
   font-weight: 500;
-  color: var(--text-primary);
+  color: white;
 }
 
 .viz-controls {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-md);
 }
 
 /* Toggle Switch */
@@ -1025,7 +1037,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--border-color);
+  background: gray;
   transition: var(--transition-fast);
   border-radius: 24px;
 }
@@ -1061,21 +1073,23 @@ body {
 
 .form-label {
   display: block;
-  font-weight: 500;
+  font-weight: bold;
   color: var(--text-primary);
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+  color: white;
 }
 
 .input-field,
 .select-input {
   width: 100%;
   padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--bg-primary);
+  background: black;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   font-size: 14px;
-  color: var(--text-primary);
+  color: white;
   transition: var(--transition-fast);
+  letter-spacing: 0.25px;
 }
 
 .input-field:focus,
@@ -1114,7 +1128,7 @@ body {
   justify-content: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-lg);
-  border: none;
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   font-size: 14px;
   font-weight: 500;
@@ -1124,20 +1138,18 @@ body {
 }
 
 .action-btn.primary {
-  background: var(--primary-color);
+  background: rgba(0, 133, 255, 0.6);
   color: var(--text-white);
 }
 
 .action-btn.primary:hover {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  background: var(--primary-color);
+  border-color: var(--primary-color);
 }
 
 .action-btn.secondary {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  background: black;
+  color: white;
 }
 
 .action-btn.secondary:hover {
@@ -1170,11 +1182,6 @@ body {
   border-radius: var(--radius-sm);
   transition: var(--transition-fast);
   font-size: 16px;
-}
-
-.icon-btn:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: var(--text-primary);
 }
 
 /* Button Groups */
@@ -1221,7 +1228,7 @@ body {
   flex-direction: column;
   gap: var(--spacing-md);
   max-width: 350px;
-  z-index: var(--z-widget);
+  z-index: 350;
 }
 
 .custom-widget {
@@ -1532,7 +1539,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.75);
   color: white;
   font-weight: 600;
   padding: var(--spacing-sm) var(--spacing-md);
@@ -1564,7 +1571,7 @@ body {
   white-space: nowrap;
 }
 
-.attribute-data-table tr:hover {
+.attribute-data-table tbody tr:hover {
   background: rgba(0, 0, 0, 0.8);
 }
 
@@ -1953,13 +1960,15 @@ body {
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--bg-secondary);
+  background: black;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: var(--transition-fast);
   font-size: 14px;
-  color: var(--text-primary);
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: bold;
+  letter-spacing: 0.25px;
 }
 
 .settings-btn:hover {
@@ -2888,7 +2897,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 }
 
 .field-stats {
-  background: var(--bg-secondary);
+  background: rgba(0, 0, 0, 0.8);
   border-radius: var(--radius-md);
   padding: var(--spacing-md);
   margin: var(--spacing-md) 0;
@@ -2897,6 +2906,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 .stats-content {
   font-size: 13px;
   line-height: 1.6;
+  color: white;
 }
 
 .stats-summary {
@@ -2910,7 +2920,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 .stats-values {
   max-height: 200px;
   overflow-y: auto;
-  background: var(--bg-primary);
+  background: black;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
 }
@@ -2930,7 +2940,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 
 .stat-value-name {
   font-weight: 500;
-  color: var(--text-primary);
+  color: white;
   max-width: 60%;
   word-break: break-word;
 }

@@ -5194,7 +5194,7 @@ window.toggleHeatmap = async function () {
   if (heatmapEnabled) {
     // Show controls container
     if (controls) {
-      controls.style.display = "block";
+      controls.style.display = "flex";
     }
 
     updateHeatmapLayerSelect();
@@ -5596,7 +5596,7 @@ function showClassificationStatistics(stats) {
   `;
 
   if (stats.uniqueCount <= 20) {
-    html += "<div><strong>Top Values:</strong></div>";
+    html += "<div><label class='form-label'>Top Values:</label></div>";
     html += '<div class="stats-values">';
 
     stats.sortedValues.forEach(([value, count]) => {
@@ -7353,7 +7353,7 @@ async function toggleTimeControls() {
   const panel = document.getElementById("timeControlsPanel");
 
   if (toggle.checked) {
-    panel.style.display = "block";
+    panel.style.display = "flex";
     initializeTimeLayerSelect();
   } else {
     panel.style.display = "none";
