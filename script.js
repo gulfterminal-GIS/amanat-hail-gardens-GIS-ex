@@ -1037,6 +1037,9 @@ function initializeUI() {
   initializeMapTabs();
 }
 
+// Export initializeUI for MapInitializer
+window.initializeUI = initializeUI;
+
 // Add these new functions after initializeUI():
 
 // Side panel management
@@ -2658,6 +2661,9 @@ function initializeEventHandlers() {
   // Search functionality
   initializeSearch();
 }
+
+// Export initializeEventHandlers for MapInitializer
+window.initializeEventHandlers = initializeEventHandlers;
 
 // Handle country click for info display
 // Handle country click for info display
