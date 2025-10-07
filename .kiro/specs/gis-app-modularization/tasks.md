@@ -1,5 +1,29 @@
 # Implementation Plan
 
+## Current Implementation Status
+
+**COMPLETED:**
+- ✅ Project structure setup (js/ directory with subdirectories)
+- ✅ script.js converted to ES6 module with exports
+- ✅ Core infrastructure modules created:
+  - ✅ js/core/config.js - Configuration constants
+  - ✅ js/core/state-manager.js - Centralized state management
+  - ✅ js/core/map-initializer.js - Map setup and initialization
+  - ✅ js/core/module-loader.js - ArcGIS module loading utilities
+  - ✅ js/ui/notification-manager.js - Toast notification system
+- ✅ main.js updated to orchestrate module loading
+- ✅ Application runs successfully with modular foundation
+
+**CRITICAL BLOCKERS:**
+- ❌ **URGENT**: Global variable migration incomplete - script.js functions still use direct global access
+- ❌ **CRITICAL**: `uploadedLayers` array accessed directly in 15+ functions, breaking StateManager encapsulation
+- ❌ **BLOCKER**: Tasks 4.3 and 4.4 must be completed before any module extraction can proceed
+
+**NEXT STEPS:**
+1. Fix global variable usage (Tasks 4.3-4.4) - **HIGHEST PRIORITY**
+2. Begin UI module extraction (Tasks 5.1-5.4)
+3. Continue with layer management modules (Tasks 6.1-6.3)
+
 ## Important Notes
 
 **Export Management Strategy:**
@@ -19,6 +43,28 @@
 - Keep the application running throughout the refactoring
 - Use browser console to check for errors
 - Test both desktop and mobile views
+
+**CRITICAL: Global Variable Migration Status**
+- StateManager created with all global variables migrated ✅
+- **CRITICAL ISSUE**: Most functions in script.js still use direct global variable access instead of StateManager
+- **MOST CRITICAL**: `uploadedLayers` array is accessed directly in 15+ functions, breaking encapsulation
+- **EXAMPLES**: `toggleLayer`, `removeLayer`, `zoomToLayer`, `loadTableData`, `applyHeatmap` all use `uploadedLayers[index]` directly
+- **PARTIALLY FIXED**: Some functions like `initializeUI`, `goToFeature` use `stateManager.getView()`
+- **REMAINING WORK**: All functions must use StateManager getters/setters before module extraction
+- **AFFECTED GLOBALS**: `uploadedLayers` (CRITICAL), `view`, `displayMap`, `drawLayer`, `sketchViewModel`, `measurementWidget`, `searchWidget`, `currentClassificationLayer`
+- **PATTERN TO FOLLOW**: Replace `uploadedLayers[index]` with `stateManager.getUploadedLayers()[index]`, etc.
+- **PRIORITY**: Tasks 4.3 and 4.4 MUST be completed before any module extraction
+
+**Global Variable Migration Checklist:**
+- [ ] `uploadedLayers` - **CRITICAL** - Used directly in 15+ functions: toggleLayer, removeLayer, zoomToLayer, loadTableData, applyHeatmap, setupTimeFields, toggleSwipe, etc.
+- [ ] `view` - Partially fixed in some functions, but still used directly in many others
+- [ ] `displayMap` - Still used directly in layer management functions (toggleLayer, removeLayer, etc.)
+- [ ] `drawLayer` - Still used directly in drawing functions
+- [ ] `sketchViewModel` - Still used directly in drawing functions
+- [ ] `measurementWidget` - Still used directly in measurement functions
+- [ ] `searchWidget` - Still used directly in search functions
+- [ ] `currentClassificationLayer` - Still used directly in classification functions
+- [ ] All other globals listed in StateManager need similar treatment
 
 ---
 
@@ -68,6 +114,7 @@
     - Comment out global variable declarations in script.js
     - Update main.js to create and initialize StateManager
     - _Requirements: 1.2, 1.3, 1.5_
+
   
   - [x] 3.2 Create js/core/module-loader.js for ArcGIS module loading
 
@@ -87,17 +134,48 @@
     - _Requirements: 1.2, 1.5, 3.2_
   
   - [x] 4.2 Create js/core/map-initializer.js for map setup
+
     - Extract initializeMap, loadDefaultGeoJSON, initializeCountriesLayer from script.js
     - Create MapInitializer class with map setup and loading screen logic
     - Comment out original map initialization code in script.js
     - Update main.js to use MapInitializer
     - _Requirements: 1.2, 1.5, 4.1, 4.2_
+  
+  - [-] 4.3 **CRITICAL: Fix uploadedLayers global variable usage**
+
+
+
+
+    - Replace all direct `uploadedLayers` array access with StateManager methods
+    - Update `toggleLayer(index)` to use `stateManager.getUploadedLayers()[index]`
+    - Update `removeLayer(index)` to use StateManager's `removeUploadedLayer(index)` method
+    - Update `zoomToLayer(index)` to use `stateManager.getUploadedLayers()[index]`
+    - Update `loadTableData(layerIndex)` to use `stateManager.getUploadedLayers()[layerIndex]`
+    - Update `applyHeatmap(layerIndex)` to use `stateManager.getUploadedLayers()[layerIndex]`
+    - Update `setupTimeFields(layerIndex)` to use `stateManager.getUploadedLayers()[layerIndex]`
+    - Update all other functions that access `uploadedLayers` directly
+    - **PRIORITY**: This must be done before extracting layer management modules
+    - _Requirements: 1.2, 1.3, 1.5_
+
+  - [ ] 4.4 **URGENT: Fix other global variable usage in script.js**
+
+    - Replace `view` with `stateManager.getView()` in all remaining functions (partially done)
+    - Replace `displayMap` with `stateManager.getMap()` in all remaining functions
+    - Replace `drawLayer` with `stateManager.getDrawLayer()` in all remaining functions
+    - Replace `sketchViewModel` with `stateManager.getSketchViewModel()` in all remaining functions
+    - Replace `measurementWidget` with `stateManager.getMeasurementWidget()` in all remaining functions
+    - Replace `searchWidget` with `stateManager.getSearchWidget()` in all remaining functions
+    - Replace `currentClassificationLayer` with `stateManager.getCurrentClassificationLayer()` in all functions
+    - Replace all other global variables with their StateManager equivalents
+    - **NOTE**: This is critical for maintaining consistency as modules are extracted
+    - _Requirements: 1.2, 1.3, 1.5_
 
 - [ ] 5. Extract UI foundation modules
   - [ ] 5.1 Create js/ui/panel-manager.js for side panel system
     - Extract openSidePanel, closeSidePanel, clearToolbarActiveStates from script.js
     - Extract initializeUploadPanel, initializeBasemapPanel functions
     - Create PanelManager class with panel lifecycle methods
+    - **CRITICAL**: Update all extracted functions to use StateManager instead of globals (view → stateManager.getView(), etc.)
     - Comment out original panel code in script.js
     - Update main.js to import and initialize PanelManager
     - _Requirements: 1.2, 1.5, 3.2, 3.3_
@@ -105,6 +183,7 @@
   - [ ] 5.2 Create js/ui/toolbar-manager.js for toolbar functionality
     - Extract desktop and mobile toolbar initialization from initializeUI
     - Create ToolbarManager class with toolbar setup and event handling
+    - **CRITICAL**: Replace all global variable usage with StateManager calls (view, displayMap, etc.)
     - Comment out original toolbar code in script.js
     - Update main.js to import and initialize ToolbarManager
     - _Requirements: 1.2, 1.5, 3.2_
@@ -127,6 +206,7 @@
   - [ ] 6.1 Create js/layers/layer-manager.js for layer operations
     - Extract toggleLayer, removeLayer, zoomToLayer, updateLayerList from script.js
     - Create LayerManager class with layer CRUD and visibility methods
+    - **CRITICAL**: Replace uploadedLayers, displayMap, view globals with StateManager getters/setters
     - Comment out original layer management code in script.js
     - Update references to use LayerManager through StateManager
     - _Requirements: 1.2, 1.3, 1.5_
@@ -152,6 +232,7 @@
     - Extract startDrawingWithTool, applyCustomSymbology, updateActiveGraphicsSymbology
     - Extract clearAll, stopDrawing, resetDrawingTools functions
     - Create DrawingManager class with complete drawing functionality
+    - **CRITICAL**: Replace sketchViewModel, drawLayer, activeDrawingTool globals with StateManager calls
     - Comment out original drawing code in script.js
     - Update main.js to import and initialize DrawingManager
     - _Requirements: 1.2, 1.5, 3.2_

@@ -1827,11 +1827,12 @@ function updateLayerList() {
 
 // Layer control functions
 function toggleLayer(index) {
-  uploadedLayers[index].visible = !uploadedLayers[index].visible;
+  const layers = window.stateManager.getUploadedLayers();
+  layers[index].visible = !layers[index].visible;
 }
 
 async function zoomToLayer(index) {
-  const layer = uploadedLayers[index];
+  const layer = window.stateManager.getUploadedLayers()[index];
   if (layer.fullExtent) {
     await view.goTo(layer.fullExtent);
   }
