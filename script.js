@@ -1479,7 +1479,7 @@ async function loadCSV(content, filename) {
   });
 
   displayMap.add(layer);
-  uploadedLayers.push(layer);
+  window.stateManager.addUploadedLayer(layer);
   updateLayerList();
 
   // Zoom to features
@@ -1738,7 +1738,7 @@ async function loadGeoJSON(content, filename) {
     );
 
     displayMap.add(layer);
-    uploadedLayers.push(layer);
+    window.stateManager.addUploadedLayer(layer);
     updateLayerList();
 
     // Zoom to layer extent
@@ -1787,7 +1787,7 @@ function updateLayerList() {
 
   if (!targetList) return;
 
-  if (uploadedLayers.length === 0) {
+  if (window.stateManager.getUploadedLayers().length === 0) {
     targetList.innerHTML = `
       <div class="empty-state">
         <i class="fas fa-layer-group"></i>
@@ -1795,7 +1795,7 @@ function updateLayerList() {
       </div>
     `;
   } else {
-    targetList.innerHTML = uploadedLayers
+    targetList.innerHTML = window.stateManager.getUploadedLayers()
       .map(
         (layer, index) => `
       <div class="layer-item">
@@ -1839,9 +1839,9 @@ async function zoomToLayer(index) {
 }
 
 function removeLayer(index) {
-  const layer = uploadedLayers[index];
+  const layer = window.stateManager.getUploadedLayers()[index];
   displayMap.remove(layer);
-  uploadedLayers.splice(index, 1);
+  window.stateManager.removeUploadedLayer(index);
   updateLayerList();
 }
 
@@ -3977,7 +3977,7 @@ async function toggleLegend() {
     // Update layer infos every time it's shown
     const legend = activeWidgets.get("legend");
     legend.layerInfos = [
-      ...uploadedLayers.map((layer) => ({
+      ...window.stateManager.getUploadedLayers().map((layer) => ({
         layer: layer,
         title: layer.title,
       })),
@@ -4442,7 +4442,7 @@ function updateMeasurementResults(measurement) {
 // Replace the toggleSwipe function with this version
 async function toggleSwipe() {
   if (!activeWidgets.has("swipe")) {
-    if (uploadedLayers.length < 2) {
+    if (window.stateManager.getUploadedLayers().length < 2) {
       showNotification("Need at least 2 layers for swipe comparison", "error");
       return;
     }
@@ -4456,8 +4456,8 @@ async function toggleSwipe() {
 
       const swipe = new Swipe({
         view: view,
-        leadingLayers: [uploadedLayers[0]],
-        trailingLayers: [uploadedLayers[1]],
+        leadingLayers: [window.stateManager.getUploadedLayers()[0]],
+        trailingLayers: [window.stateManager.getUploadedLayers()[1]],
         direction: "horizontal",
         position: 50,
       });
@@ -4599,7 +4599,7 @@ function closeMeasurementResults() {
 // Add this debug function to check what attributes are available
 function debugLayerAttributes() {
   console.log("=== Layer Attributes Debug ===");
-  uploadedLayers.forEach((layer, index) => {
+  window.stateManager.getUploadedLayers().forEach((layer, index) => {
     console.log(`\nLayer ${index}: ${layer.title}`);
     console.log("Fields:", layer.fields);
     console.log("OutFields:", layer.outFields);
@@ -4655,7 +4655,7 @@ async function toggleAttributeTable() {
     if (btn) btn.classList.add("active");
     initializeTableLayerSelect();
 
-    if (uploadedLayers.length > 0) {
+    if (window.stateManager.getUploadedLayers().length > 0) {
       const select = document.getElementById("tableLayerSelect");
       if (select) {
         select.value = 0;
@@ -4673,7 +4673,7 @@ function initializeTableLayerSelect() {
   const select = document.getElementById("tableLayerSelect");
   select.innerHTML = '<option value="">Select a layer...</option>';
 
-  uploadedLayers.forEach((layer, index) => {
+  window.stateManager.getUploadedLayers().forEach((layer, index) => {
     const option = document.createElement("option");
     option.value = index;
     option.textContent = layer.title;
@@ -4701,7 +4701,7 @@ function initializeTableLayerSelect() {
 // Load table data from layer
 async function loadTableData(layerIndex) {
   try {
-    const layer = uploadedLayers[layerIndex];
+    const layer = window.stateManager.getUploadedLayers()[layerIndex];
     if (!layer) return;
 
     currentTableLayer = layer;
@@ -4968,7 +4968,7 @@ function nextPage() {
 
 function refreshTable() {
   if (currentTableLayer) {
-    const layerIndex = uploadedLayers.indexOf(currentTableLayer);
+    const layerIndex = window.stateManager.getUploadedLayers().indexOf(currentTableLayer);
     if (layerIndex !== -1) {
       loadTableData(layerIndex);
     }
@@ -4982,7 +4982,7 @@ function showExportOptions() {
 
   // Populate layer select
   select.innerHTML = '<option value="">Select a layer...</option>';
-  uploadedLayers.forEach((layer, index) => {
+  window.stateManager.getUploadedLayers().forEach((layer, index) => {
     const option = document.createElement("option");
     option.value = index;
     option.textContent = layer.title;
@@ -5004,7 +5004,7 @@ async function exportData(format) {
     return;
   }
 
-  const layer = uploadedLayers[parseInt(layerIndex)];
+  const layer = window.stateManager.getUploadedLayers()[parseInt(layerIndex)];
 
   try {
     showNotification("Preparing export...", "info");
@@ -5307,7 +5307,7 @@ function updateHeatmapLayerSelect() {
   select.innerHTML = '<option value="">Select point layer...</option>';
 
   // Only show point layers
-  uploadedLayers.forEach((layer, index) => {
+  window.stateManager.getUploadedLayers().forEach((layer, index) => {
     // Check if layer has point geometry
     if (
       layer.geometryType === "point" ||
@@ -5332,7 +5332,7 @@ function updateHeatmapLayerSelect() {
 // Update the applyHeatmap and applyHeatmapSettings functions
 async function applyHeatmap(layerIndex) {
   try {
-    const layer = uploadedLayers[layerIndex];
+    const layer = window.stateManager.getUploadedLayers()[layerIndex];
     if (!layer) return;
 
     const [HeatmapRenderer] = await Promise.all([
@@ -5559,7 +5559,7 @@ function initializeClassificationPanel() {
 
   // Populate layers
   layerSelect.innerHTML = '<option value="">Choose a layer...</option>';
-  uploadedLayers.forEach((layer, index) => {
+  window.stateManager.getUploadedLayers().forEach((layer, index) => {
     const option = document.createElement("option");
     option.value = index;
     option.textContent = layer.title;
@@ -5576,7 +5576,7 @@ function initializeClassificationPanel() {
       return;
     }
 
-    const layer = uploadedLayers[parseInt(layerIndex)];
+    const layer = window.stateManager.getUploadedLayers()[parseInt(layerIndex)];
     currentClassificationLayer = layer;
 
     // Populate fields
@@ -6077,7 +6077,7 @@ async function executeBuffer() {
         return;
       }
 
-      const layer = uploadedLayers[parseInt(layerIndex)];
+      const layer = window.stateManager.getUploadedLayers()[parseInt(layerIndex)];
       const query = layer.createQuery();
       query.where = "1=1";
       query.returnGeometry = true;
@@ -6204,7 +6204,7 @@ async function startIntersectAnalysis() {
   drawnFeatures.intersect2 = null;
 
   // Populate layer selects
-  const polygonLayers = uploadedLayers.filter(
+  const polygonLayers = window.stateManager.getUploadedLayers().filter(
     (layer) => layer.geometryType === "polygon"
   );
 
@@ -6622,7 +6622,7 @@ async function executeIntersection() {
         return;
       }
 
-      const polygonLayers = uploadedLayers.filter(
+      const polygonLayers = window.stateManager.getUploadedLayers().filter(
         (layer) => layer.geometryType === "polygon"
       );
       const layer = polygonLayers[parseInt(layerIndex)];
@@ -6664,7 +6664,7 @@ async function executeIntersection() {
         return;
       }
 
-      const polygonLayers = uploadedLayers.filter(
+      const polygonLayers = window.stateManager.getUploadedLayers().filter(
         (layer) => layer.geometryType === "polygon"
       );
       const layer = polygonLayers[parseInt(layerIndex)];
@@ -7376,7 +7376,7 @@ function clearDistanceMeasurement() {
 async function startAreaAnalysis() {
   await initializeAnalysisLayer();
 
-  const polygonLayers = uploadedLayers.filter(
+  const polygonLayers = window.stateManager.getUploadedLayers().filter(
     (layer) =>
       layer.geometryType === "polygon" ||
       (layer.graphics &&
@@ -7462,7 +7462,7 @@ function initializeTimeLayerSelect() {
 
   // Continue script.js - Complete time-aware features implementation
 
-  uploadedLayers.forEach((layer, index) => {
+  window.stateManager.getUploadedLayers().forEach((layer, index) => {
     const option = document.createElement("option");
     option.value = index;
     option.textContent = layer.title;
@@ -7477,7 +7477,7 @@ function initializeTimeLayerSelect() {
 }
 
 async function setupTimeFields(layerIndex) {
-  const layer = uploadedLayers[layerIndex];
+  const layer = window.stateManager.getUploadedLayers()[layerIndex];
   timeEnabledLayer = layer;
 
   const fieldSelect = document.getElementById("timeFieldSelect");
@@ -7747,7 +7747,7 @@ async function startBufferAnalysis() {
 
   // Populate layer select
   select.innerHTML = '<option value="">Select a layer...</option>';
-  uploadedLayers.forEach((layer, index) => {
+  window.stateManager.getUploadedLayers().forEach((layer, index) => {
     const option = document.createElement("option");
     option.value = index;
     option.textContent = layer.title;
