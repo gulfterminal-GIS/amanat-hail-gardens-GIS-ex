@@ -66,7 +66,7 @@ let countryInfoTimeout = null;
 // ============================================================================
 
 // Import module loader utilities
-import { loadModule, loadModules } from './js/core/module-loader.js';
+import { loadModule, loadModules } from "./js/core/module-loader.js";
 
 // ============================================================================
 // COMMENTED OUT - Moved to js/core/module-loader.js
@@ -216,7 +216,7 @@ const tabMessages = {
   gardens: "التوجه الى منصة الحدائق الذكية", // No message for gardens tab
   projects: "يلزم الربط بمنصة قرار لعرض المشروعات",
   assets: "يلزم الربط بالتشغيل و الصيانة لعرض الأصول",
-  smartEye: "يلزم الربط بمنصة العين الذكية"
+  smartEye: "يلزم الربط بمنصة العين الذكية",
 };
 
 const tabButtonTexts = {
@@ -477,6 +477,12 @@ async function autoApplyDefaultClassification(layer, fieldName) {
 // Setup feature tour
 async function setupFeatureTour(layer) {
   try {
+    // Validate layer
+    if (!layer) {
+      console.warn("setupFeatureTour: no layer provided");
+      return;
+    }
+
     // Query all features
     const query = layer.createQuery();
     query.where = "1=1";
@@ -520,55 +526,84 @@ function createTourControls() {
     <section class="overview" id="tourOverview"></section>
 
     <section class="feature-details"></section>
-    `;
+  `;
 
+  // Append to body
   document.body.appendChild(controlsDiv);
+
+  // Set references
+  const chevronBtn = controlsDiv.querySelector(
+    ".feature-tour-controls .chevron"
+  );
+  const chevronIcon = controlsDiv.querySelector(
+    ".feature-tour-controls .chevron i"
+  );
+  const autoControl = controlsDiv.querySelector(
+    ".feature-tour-controls .auto-control"
+  );
+  const featureDetails = controlsDiv.querySelector(
+    ".feature-tour-controls .feature-details"
+  );
+
+  // Setup chevron handler
+  if (chevronBtn) {
+    chevronBtn.addEventListener("click", () => {
+      const currentlyVisible =
+        getComputedStyle(featureDetails).display !== "none";
+      const newVisible = !currentlyVisible;
+
+      featureDetails.style.display = newVisible ? "flex" : "none";
+
+      if (chevronIcon) {
+        chevronIcon.classList.toggle("bi-chevron-up", newVisible);
+        chevronIcon.classList.toggle("bi-chevron-down", !newVisible);
+      }
+    });
+  }
+
+  if (autoControl) {
+    // Set initial states
+    autoControl.classList.toggle("play");
+    autoControl.classList.toggle("pause");
+
+    autoControl.addEventListener("click", () => {
+      // treat "pause" class as playing, "play" as paused
+      const isPlaying = autoControl.classList.contains("pause");
+      // setDetailsVisible(!isPlaying);
+      // toggle classes just in case
+      autoControl.classList.toggle("pause", !isPlaying);
+      autoControl.classList.toggle("play", isPlaying);
+    });
+  }
 }
 
 // function setDetailsVisible(visible) {
+//     // Get references safely
+//     const featureDetailsEl = document.querySelector('.feature-tour-controls .feature-details');
 //     const chevronIcon = document.querySelector('.feature-tour-controls .chevron i');
+//     const autoControl = document.querySelector('.feature-tour-controls .auto-control');
 
-//     // Guard - avoid "reading 'style' of null"
-//     if (!feature-details) return;
-
-//     // show/hide using inline style and keep icon/classes in sync
-//     feature-details.style.display = visible ? 'flex' : 'none';
-
-//     if (chevronIcon) {
-//         chevronIcon.classList.toggle('bi-chevron-up', visible);
-//         chevronIcon.classList.toggle('bi-chevron-down', !visible);
+//     // Guard against null elements
+//     if (!featureDetailsEl) {
+//         console.warn('Feature details element not found');
+//         return;
 //     }
 
+//     // Update feature details visibility
+//     featureDetailsEl.style.display = visible ? 'flex' : 'none';
+
+//     // Update chevron icon if it exists
+//     if (chevronIcon) {
+//         chevronIcon.classList.remove('bi-chevron-up', 'bi-chevron-down');
+//         chevronIcon.classList.add(visible ? 'bi-chevron-up' : 'bi-chevron-down');
+//     }
+
+//     // Update auto-control if it exists
 //     if (autoControl) {
-//         autoControl.classList.toggle('pause', visible);
-//         autoControl.classList.toggle('play', !visible);
+//         autoControl.classList.remove('pause', 'play');
+//         autoControl.classList.add(visible ? 'pause' : 'play');
 //     }
 // }
-
-// document.addEventListener('DOMContentLoaded', () => {
-//     // optional: initialize to visible state if needed
-//     setDetailsVisible(true);
-
-//     if (chevronBtn) {
-//         chevronBtn.addEventListener('click', () => {
-//             const feature-details = document.querySelector('.feature-tour-controls .feature-details');
-//             if (!feature-details) return;
-//             const currentlyVisible = window.getComputedStyle(feature-details).display !== 'none';
-//             setDetailsVisible(!currentlyVisible);
-//         });
-//     }
-
-//     if (autoControl) {
-//         autoControl.addEventListener('click', () => {
-//             // treat "pause" class as playing, "play" as paused
-//             const isPlaying = autoControl.classList.contains('pause');
-//             setDetailsVisible(!isPlaying);
-//             // toggle classes just in case
-//             autoControl.classList.toggle('pause', !isPlaying);
-//             autoControl.classList.toggle('play', isPlaying);
-//         });
-//     }
-// });
 
 // Start feature tour
 function startFeatureTour() {
@@ -626,12 +661,19 @@ function toggleFeatureTour() {
 // Navigate to specific feature
 // Navigate to specific feature
 async function goToFeature(index) {
-  if (index < 0 || index >= tourFeatures.length) return;
-
-  const feature = tourFeatures[index];
-  currentFeatureIndex = index;
-
   try {
+    // Get view from StateManager with fallback
+    const view = window.stateManager?.getView() || window.view;
+    if (!view) {
+      console.error("View not available for goToFeature");
+      return;
+    }
+
+    if (index < 0 || index >= tourFeatures.length) return;
+
+    const feature = tourFeatures[index];
+    currentFeatureIndex = index;
+
     // For polygons, calculate center and use appropriate zoom
     if (feature.geometry.type === "polygon") {
       const extent = feature.geometry.extent;
@@ -668,16 +710,23 @@ async function goToFeature(index) {
       highlightHandle = null;
     }
 
-    view.whenLayerView(tourLayer).then((layerView) => {
-      highlightHandle = layerView.highlight(feature);
-    });
+    // Add highlight with proper error handling
+    if (tourLayer) {
+      try {
+        const layerView = await view.whenLayerView(tourLayer);
+        highlightHandle = layerView.highlight(feature);
+      } catch (error) {
+        console.warn('Error creating highlight:', error);
+      }
+    }
 
     // Update info panel
     updateTourInfo(feature);
 
     // Update progress
-    document.getElementById("tourProgress").textContent = `${index + 1} / ${tourFeatures.length
-      }`;
+    document.getElementById("tourProgress").textContent = `${index + 1} / ${
+      tourFeatures.length
+    }`;
 
     // Show popup in left-center position
     showTourPopup(feature);
@@ -687,6 +736,12 @@ async function goToFeature(index) {
 }
 
 function showCustomPopupTour(graphic) {
+  const featureDetails = document.querySelector('.feature-tour-controls .feature-details');
+  if (!featureDetails) {
+    console.warn('Feature details element not found for tour popup');
+    return;
+  }
+
   currentPopupFeature = graphic;
 
   // Attributes
@@ -729,7 +784,6 @@ function showCustomPopupTour(graphic) {
           `;
       }
     });
-
   } else {
     html += '<div class="item">No attributes available</div>';
   }
@@ -905,7 +959,11 @@ window.manuallyStartTour = manuallyStartTour;
 // }
 
 // Initialize UI components
-function initializeUI() {
+function initializeUI(stateManager) {
+  // Get state from StateManager for proper scope access
+  const displayMap = stateManager ? stateManager.getMap() : window.displayMap;
+  const view = stateManager ? stateManager.getView() : window.view;
+
   // Add this code right after the function starts:
   // Initialize mobile toolbar
   const mobileToggle = document.getElementById("mobileToolbarToggle");
@@ -1027,8 +1085,8 @@ function initializeUI() {
   // Initialize tools
   initializeTools();
 
-  // Initialize coordinate display
-  initializeCoordinateDisplay();
+  // Initialize coordinate display (pass view for proper scope)
+  initializeCoordinateDisplay(view);
 
   // Initialize fullscreen listener
   initializeFullscreenListener();
@@ -1742,8 +1800,9 @@ function updateLayerList() {
         (layer, index) => `
       <div class="layer-item">
         <input type="checkbox" class="layer-checkbox" id="layer-${index}" 
-               ${layer.visible ? "checked" : ""
-          } onchange="toggleLayer(${index})">
+               ${
+                 layer.visible ? "checked" : ""
+               } onchange="toggleLayer(${index})">
         <label for="layer-${index}" class="layer-name">${layer.title}</label>
         <div class="layer-actions">
           <button onclick="zoomToLayer(${index})" title="Zoom to layer">
@@ -2281,10 +2340,10 @@ function hexToRgb(hex) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? [
-      parseInt(result[1], 16),
-      parseInt(result[2], 16),
-      parseInt(result[3], 16),
-    ]
+        parseInt(result[1], 16),
+        parseInt(result[2], 16),
+        parseInt(result[3], 16),
+      ]
     : [33, 150, 243];
 }
 
@@ -2559,11 +2618,18 @@ async function locateUser() {
 
 // Initialize coordinate display
 // Replace your existing initializeCoordinateDisplay function:
-function initializeCoordinateDisplay() {
+function initializeCoordinateDisplay(view) {
+  // Fallback to window.view if not passed (backward compatibility)
+  const mapView = view || window.view;
+  if (!mapView) {
+    console.warn("initializeCoordinateDisplay: view not available");
+    return;
+  }
+
   let currentCoords = { lat: 0, lon: 0 };
 
-  view.on("pointer-move", (event) => {
-    const point = view.toMap({ x: event.x, y: event.y });
+  mapView.on("pointer-move", (event) => {
+    const point = mapView.toMap({ x: event.x, y: event.y });
     if (point) {
       currentCoords.lat = point.latitude.toFixed(6);
       currentCoords.lon = point.longitude.toFixed(6);
@@ -2604,7 +2670,88 @@ function initializeCoordinateDisplay() {
 }
 
 // Initialize event handlers
-function initializeEventHandlers() {
+function initializeEventHandlers(stateManager) {
+  // Get state from StateManager for proper scope access
+  const view = stateManager ? stateManager.getView() : window.view;
+  const uploadedLayers = stateManager
+    ? stateManager.getUploadedLayers()
+    : window.uploadedLayers;
+  const countriesLayer = stateManager
+    ? stateManager.getCountriesLayer()
+    : window.countriesLayer;
+  const flashGraphicsLayer = stateManager
+    ? stateManager.getFlashGraphicsLayer()
+    : window.flashGraphicsLayer;
+
+  // Handle country click for info display (nested function with closure access)
+  async function handleCountryClick(event) {
+    if (!countriesLayer) return;
+
+    // First check if we clicked on any uploaded features
+    try {
+      const response = await view.hitTest(event);
+      const uploadedFeatureHit = response.results.find(
+        (result) =>
+          result.graphic &&
+          result.graphic.layer &&
+          uploadedLayers.includes(result.graphic.layer)
+      );
+
+      // If we clicked on an uploaded feature, don't show country info
+      if (uploadedFeatureHit) {
+        return;
+      }
+
+      // Now proceed with country query
+      const query = countriesLayer.createQuery();
+      query.geometry = event.mapPoint;
+      query.spatialRelationship = "intersects";
+      query.outFields = ["COUNTRY", "Shape__Area", "Shape__Length"];
+      query.returnGeometry = true;
+
+      const result = await countriesLayer.queryFeatures(query);
+
+      if (result.features.length > 0) {
+        const feature = result.features[0];
+        const countryName = feature.attributes.COUNTRY;
+        const area = Math.floor(feature.attributes.Shape__Area / 1000000);
+        const length = Math.floor(feature.attributes.Shape__Length / 1000);
+
+        // Clear previous animations
+        flashGraphicsLayer.removeAll();
+
+        // Update info display
+        document.getElementById("countryName").textContent = countryName;
+        document.getElementById("countryDetails").innerHTML = `
+          <strong>Area:</strong> ${area.toLocaleString()} km²<br>
+          <strong>Perimeter:</strong> ${length.toLocaleString()} km
+        `;
+
+        // Show the info display
+        const infoDisplay = document.getElementById("countryInfo");
+        infoDisplay.classList.remove("hidden");
+
+        // Zoom to country with animation
+        view.goTo({
+          target: feature.geometry.extent.expand(1.2),
+          duration: 1000,
+        });
+
+        // Add flash animation
+        createCountryFlashAnimation(feature.geometry);
+
+        // Hide after 5 seconds
+        clearTimeout(countryInfoTimeout);
+        countryInfoTimeout = setTimeout(() => {
+          infoDisplay.classList.add("hidden");
+          flashGraphicsLayer.removeAll();
+        }, 5000);
+      }
+    } catch (error) {
+      console.error("Error querying country:", error);
+    }
+  }
+
   // Click handler for features
   // In initializeEventHandlers function, replace the click handler with this:
   view.on("click", async (event) => {
@@ -2628,8 +2775,9 @@ function initializeEventHandlers() {
         if (graphic.layer && graphic.layer.queryFeatures) {
           try {
             const query = graphic.layer.createQuery();
-            query.where = `${graphic.layer.objectIdField} = ${graphic.attributes[graphic.layer.objectIdField]
-              }`;
+            query.where = `${graphic.layer.objectIdField} = ${
+              graphic.attributes[graphic.layer.objectIdField]
+            }`;
             query.outFields = ["*"];
             query.returnGeometry = true;
 
@@ -2658,83 +2806,23 @@ function initializeEventHandlers() {
     }
   });
 
-  // Search functionality
-  initializeSearch();
+  // Search functionality (pass view for proper scope)
+  initializeSearch(view);
 }
 
 // Export initializeEventHandlers for MapInitializer
 window.initializeEventHandlers = initializeEventHandlers;
 
-// Handle country click for info display
-// Handle country click for info display
-// Handle country click for info display
-async function handleCountryClick(event) {
-  if (!countriesLayer) return;
-
-  // First check if we clicked on any uploaded features
-  try {
-    const response = await view.hitTest(event);
-    const uploadedFeatureHit = response.results.find(
-      (result) =>
-        result.graphic &&
-        result.graphic.layer &&
-        uploadedLayers.includes(result.graphic.layer)
-    );
-
-    // If we clicked on an uploaded feature, don't show country info
-    if (uploadedFeatureHit) {
-      return;
-    }
-
-    // Now proceed with country query
-    const query = countriesLayer.createQuery();
-    query.geometry = event.mapPoint;
-    query.spatialRelationship = "intersects";
-    query.outFields = ["COUNTRY", "Shape__Area", "Shape__Length"];
-    query.returnGeometry = true;
-
-    const result = await countriesLayer.queryFeatures(query);
-
-    if (result.features.length > 0) {
-      const feature = result.features[0];
-      const countryName = feature.attributes.COUNTRY;
-      const area = Math.floor(feature.attributes.Shape__Area / 1000000);
-      const length = Math.floor(feature.attributes.Shape__Length / 1000);
-
-      // Clear previous animations
-      flashGraphicsLayer.removeAll();
-
-      // Update info display
-      document.getElementById("countryName").textContent = countryName;
-      document.getElementById("countryDetails").innerHTML = `
-        <strong>Area:</strong> ${area.toLocaleString()} km²<br>
-        <strong>Perimeter:</strong> ${length.toLocaleString()} km
-      `;
-
-      // Show the info display
-      const infoDisplay = document.getElementById("countryInfo");
-      infoDisplay.classList.remove("hidden");
-
-      // Zoom to country with animation
-      view.goTo({
-        target: feature.geometry.extent.expand(1.2),
-        duration: 1000,
-      });
-
-      // Add flash animation
-      createCountryFlashAnimation(feature.geometry);
-
-      // Hide after 5 seconds
-      clearTimeout(countryInfoTimeout);
-      countryInfoTimeout = setTimeout(() => {
-        infoDisplay.classList.add("hidden");
-        flashGraphicsLayer.removeAll();
-      }, 5000);
-    }
-  } catch (error) {
-    console.error("Error querying country:", error);
-  }
-}
+// ============================================================================
+// COMMENTED OUT - Moved inside initializeEventHandlers as nested function
+// ============================================================================
+// handleCountryClick is now defined inside initializeEventHandlers
+// so it has proper access to view, countriesLayer, flashGraphicsLayer via closure
+// ============================================================================
+// async function handleCountryClick(event) {
+//   if (!countriesLayer) return;
+//   // ... (moved inside initializeEventHandlers)
+// }
 // Create modern flash animation for country
 // Create modern flash animation for country
 async function createCountryFlashAnimation(geometry) {
@@ -2810,7 +2898,15 @@ async function createCountryFlashAnimation(geometry) {
 }
 
 // Replace the beginning of initializeSearch() function with this:
-async function initializeSearch() {
+async function initializeSearch(view) {
+  // Fallback to window.view if not passed (backward compatibility)
+  const mapView = view || window.view;
+
+  if (!mapView) {
+    console.warn("initializeSearch: view not available");
+    return;
+  }
+
   const [Search] = await Promise.all([loadModule("esri/widgets/Search")]);
 
   const searchInput = document.getElementById("searchInput");
@@ -2819,7 +2915,7 @@ async function initializeSearch() {
 
   // Create search widget with proper configuration
   searchWidget = new Search({
-    view: view,
+    view: mapView,
     container: document.createElement("div"),
     includeDefaultSources: true,
     locationEnabled: false,
@@ -2828,7 +2924,7 @@ async function initializeSearch() {
   });
 
   // Wait for the view to be ready instead
-  await view.when();
+  await mapView.when();
 
   let searchTimeout;
   let currentSuggestions = [];
@@ -3329,8 +3425,8 @@ async function updateGeometryDetails(geometry) {
           <div class="attribute-row">
             <span class="attribute-label">Longitude:</span>
             <span class="attribute-value">${geometry.longitude.toFixed(
-          6
-        )}</span>
+              6
+            )}</span>
           </div>
           <div class="attribute-row">
             <span class="attribute-label">Latitude:</span>
@@ -3393,7 +3489,7 @@ async function updateGeometryDetails(geometry) {
 // // Add helper functions for formatting and calculations
 function formatAttributeValue(value, key) {
   if (value === null || value === undefined) {
-    return 'N/A';
+    return "N/A";
   }
 
   // Check if it's a date field by name or value
@@ -4313,8 +4409,9 @@ function updateMeasurementResults(measurement) {
       <div class="measurement-item">
         <i class="fas fa-ruler-horizontal"></i>
         <span class="measurement-label">Distance:</span>
-        <span class="measurement-value">${measurement.distance.toFixed(2)} ${measurement.distanceUnit
-      }</span>
+        <span class="measurement-value">${measurement.distance.toFixed(2)} ${
+      measurement.distanceUnit
+    }</span>
       </div>
     `;
   } else if (measurement.area !== undefined) {
@@ -4323,14 +4420,16 @@ function updateMeasurementResults(measurement) {
       <div class="measurement-item">
         <i class="fas fa-vector-square"></i>
         <span class="measurement-label">Area:</span>
-        <span class="measurement-value">${measurement.area.toFixed(2)} ${measurement.areaUnit
-      }</span>
+        <span class="measurement-value">${measurement.area.toFixed(2)} ${
+      measurement.areaUnit
+    }</span>
       </div>
       <div class="measurement-item">
         <i class="fas fa-draw-polygon"></i>
         <span class="measurement-label">Perimeter:</span>
-        <span class="measurement-value">${measurement.perimeter.toFixed(2)} ${measurement.perimeterUnit
-      }</span>
+        <span class="measurement-value">${measurement.perimeter.toFixed(2)} ${
+      measurement.perimeterUnit
+    }</span>
       </div>
     `;
   }
@@ -4349,7 +4448,7 @@ async function toggleSwipe() {
 
     // Temporarily suppress console warnings for deprecated widget
     const originalWarn = console.warn;
-    console.warn = () => { };
+    console.warn = () => {};
 
     try {
       const [Swipe] = await Promise.all([loadModule("esri/widgets/Swipe")]);
@@ -4836,8 +4935,9 @@ async function flashFeature(feature) {
 function updatePagination() {
   const totalPages = Math.ceil(filteredData.length / recordsPerPage);
 
-  document.getElementById("tablePaginationInfo").textContent = `${filteredData.length
-    } record${filteredData.length !== 1 ? "s" : ""}`;
+  document.getElementById("tablePaginationInfo").textContent = `${
+    filteredData.length
+  } record${filteredData.length !== 1 ? "s" : ""}`;
   document.getElementById(
     "tablePageInfo"
   ).textContent = `Page ${currentPage} of ${totalPages}`;
@@ -5830,7 +5930,11 @@ function createClassificationLegend(stats, colors, fieldName) {
     <div class="widget-header" style="margin: -12px -12px 12px; padding: 12px;">
       <h3 style="font-size: 16px; display: flex; align-items: center; gap: 8px;">
         <i class="fas fa-list" style="color: var(--primary-color);"></i>
-        ${fieldName === "GARDENSTATUS" ? "حالة الحديقة" : formatFieldName(fieldName)}
+        ${
+          fieldName === "GARDENSTATUS"
+            ? "حالة الحديقة"
+            : formatFieldName(fieldName)
+        }
       </h3>
       <button class="widget-close" onclick="removeClassificationLegend()">
         <i class="fas fa-times"></i>
@@ -7550,7 +7654,7 @@ function playTimeAnimation() {
           start: fullExtent.start,
           end: new Date(
             fullExtent.start.getTime() +
-            (currentEnd - timeSlider.timeExtent.start)
+              (currentEnd - timeSlider.timeExtent.start)
           ),
         };
       }
@@ -7600,7 +7704,8 @@ updateLayerList = function () {
       <input type="checkbox" class="layer-checkbox" 
              ${analysisLayer.visible ? "checked" : ""} 
              onchange="analysisLayer.visible = this.checked">
-      <label class="layer-name">Analysis Results (${analysisLayer.graphics.length
+      <label class="layer-name">Analysis Results (${
+        analysisLayer.graphics.length
       })</label>
       <div class="layer-actions">
         <button onclick="clearAnalysisResults()" title="Clear results">
@@ -7704,7 +7809,8 @@ window.toggleModalMinimize = function (modalId) {
     const indicator = document.createElement("div");
     indicator.className = "modal-minimized-indicator";
     indicator.innerHTML = `
-      <span>${modalId === "bufferModal" ? "Buffer" : "Intersection"
+      <span>${
+        modalId === "bufferModal" ? "Buffer" : "Intersection"
       } Analysis</span>
       <button onclick="toggleModalMinimize('${modalId}')">
         <i class="fas fa-window-maximize"></i>
@@ -7744,10 +7850,11 @@ async function startBufferDrawing(type) {
     `;
     indicator.innerHTML = `
       <i class="fas fa-pencil-alt"></i>
-      <span>Drawing ${type}. ${type === "point"
+      <span>Drawing ${type}. ${
+      type === "point"
         ? "Click to place point"
         : "Click to add vertices, double-click to complete"
-      }.</span>
+    }.</span>
       <button onclick="cancelBufferDrawing()" style="
         background: white;
         color: var(--primary-color);
@@ -8243,6 +8350,7 @@ function startAppTour() {
 window.startAppTour = startAppTour;
 // Make initializeMap available globally for main.js
 window.initializeMap = initializeMap;
+window.setupFeatureTour = setupFeatureTour;
 
 // Export functions for module system - ES6 module exports
 // ES6 Module Exports
@@ -8289,7 +8397,7 @@ export {
   locateUser,
 
   // Measurement functions (will be moved to measurement-manager.js)
-  toggleMeasurement
+  toggleMeasurement,
 };
 
 // Global variables - These will be moved to StateManager

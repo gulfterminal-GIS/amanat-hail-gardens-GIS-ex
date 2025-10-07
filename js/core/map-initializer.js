@@ -58,12 +58,14 @@ export class MapInitializer {
       // Store home extent
       const homeExtent = view.extent.clone();
 
-      // Store in global variables for backward compatibility
-      // These will be managed by StateManager in future refactoring
-      window.displayMap = displayMap;
-      window.view = view;
-      window.drawLayer = drawLayer;
-      window.homeExtent = homeExtent;
+      // Store in StateManager (single source of truth)
+      this.stateManager.setMap(displayMap);
+      this.stateManager.setView(view);
+      this.stateManager.setDrawLayer(drawLayer);
+      this.stateManager.setHomeExtent(homeExtent);
+      
+      // StateManager automatically syncs to window globals for backward compatibility
+      // This allows old code to still work during the transition
 
       // Load default GeoJSON layer
       await this.loadDefaultGeoJSON(displayMap, view);
@@ -91,11 +93,14 @@ export class MapInitializer {
       );
 
       // Initialize UI and event handlers (still in script.js)
+      // Pass StateManager so functions have proper access to state
       if (window.initializeUI) {
-        window.initializeUI();
+        console.log("Initializing UI components...");
+        window.initializeUI(this.stateManager);
       }
       if (window.initializeEventHandlers) {
-        window.initializeEventHandlers();
+        console.log("Setting up event handlers...");
+        window.initializeEventHandlers(this.stateManager);
       }
 
       // Handle loading screen
@@ -150,14 +155,11 @@ export class MapInitializer {
       // Add to map
       displayMap.add(geojsonLayer);
 
-      // Add to uploaded layers array so it appears in layer list
-      if (!window.uploadedLayers) {
-        window.uploadedLayers = [];
-      }
-      window.uploadedLayers.push(geojsonLayer);
+      // Add to uploaded layers array via StateManager
+      this.stateManager.addUploadedLayer(geojsonLayer);
 
-      // Store for tour
-      window.tourLayer = geojsonLayer;
+      // Store for tour via StateManager
+      this.stateManager.setTourLayer(geojsonLayer);
 
       // Wait for layer to load
       await geojsonLayer.load();
@@ -177,23 +179,23 @@ export class MapInitializer {
         await window.setupFeatureTour(geojsonLayer);
         
         // Setup chevron button event listener
-        const chevronBtn = document.querySelector(".feature-tour-controls .chevron");
-        const featureDetails = document.querySelector(".feature-tour-controls .feature-details");
+        // const chevronBtn = document.querySelector(".feature-tour-controls .chevron");
+        // const featureDetails = document.querySelector(".feature-tour-controls .feature-details");
         
-        if (chevronBtn && featureDetails) {
-          chevronBtn.addEventListener("click", () => {
-            const chevronIcon = chevronBtn.querySelector("i");
-            const currentlyVisible = window.getComputedStyle(featureDetails).display !== "none";
-            const newVisible = !currentlyVisible;
+        // if (chevronBtn && featureDetails) {
+        //   chevronBtn.addEventListener("click", () => {
+        //     const chevronIcon = chevronBtn.querySelector("i");
+        //     const currentlyVisible = window.getComputedStyle(featureDetails).display !== "none";
+        //     const newVisible = !currentlyVisible;
 
-            featureDetails.style.display = newVisible ? "flex" : "none";
+        //     featureDetails.style.display = newVisible ? "flex" : "none";
 
-            if (chevronIcon) {
-              chevronIcon.classList.toggle("bi-chevron-up", newVisible);
-              chevronIcon.classList.toggle("bi-chevron-down", !newVisible);
-            }
-          });
-        }
+        //     if (chevronIcon) {
+        //       chevronIcon.classList.toggle("bi-chevron-up", newVisible);
+        //       chevronIcon.classList.toggle("bi-chevron-down", !newVisible);
+        //     }
+        //   });
+        // }
       }
 
       console.log("Default GeoJSON layer loaded successfully");
@@ -234,9 +236,9 @@ export class MapInitializer {
 
       displayMap.add(countriesLayer);
 
-      // Store in global variables for backward compatibility
-      window.flashGraphicsLayer = flashGraphicsLayer;
-      window.countriesLayer = countriesLayer;
+      // Store in StateManager (single source of truth)
+      this.stateManager.setFlashGraphicsLayer(flashGraphicsLayer);
+      this.stateManager.setCountriesLayer(countriesLayer);
     } catch (error) {
       console.error("Error loading countries layer:", error);
     }
