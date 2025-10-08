@@ -1,3 +1,8 @@
+import { StateManager } from './js/core/state-manager.js';
+import { MapInitializer } from './js/core/map-initializer.js';
+import { NotificationManager } from './js/ui/notification-manager.js';
+import { PanelManager } from './js/ui/panel-manager.js';
+
 // ============================================================================
 // GLOBAL VARIABLES - NOW MANAGED BY StateManager (js/core/state-manager.js)
 // ============================================================================
@@ -6,74 +11,73 @@
 // Once all modules are refactored, these can be removed entirely.
 // ============================================================================
 
-// Core map objects
-var displayMap;
-let view;
-let homeExtent = null;
+// Module-level state container
+let moduleState = null;
 
-// Layers
-let uploadedLayers = [];
-let drawLayer = null;
-let countriesLayer = null;
-let flashGraphicsLayer = null;
-let tourLayer = null;
+// Initialize module state with injected dependencies
+function initModuleState(state) {
+  moduleState = state;
+}
 
-// Widgets and tools
-let measurementWidget;
-let searchWidget;
-let sketchViewModel = null;
-
-// Drawing state
-let activeDrawingTool = null;
-
-// Popup state
-let currentPopupFeature = null;
+// Helper to access state safely
+function getState() {
+  if (!moduleState) {
+    throw new Error('Module state not initialized. Call initializeMap first.');
+  }
+  return moduleState;
+}
 
 // Notification state
 // COMMENTED OUT - Moved to js/ui/notification-manager.js
 // let activeNotifications = [];
 
-// Classification variables
-let currentClassificationLayer = null;
-let originalRenderers = new Map();
-
-// Analysis state
-let analysisDrawing = false;
-let analysisDrawType = null;
-let drawnFeatures = {
-  buffer: [],
-  intersect1: null,
-  intersect2: null,
+// These states are managed by StateManager, keeping references for transition
+// Classification state
+const classificationState = {
+  currentLayer: null,
+  renderers: new Map()
 };
 
-// Feature Tour System
-let featureTourActive = false;
-let featureTourInterval = null;
-let currentFeatureIndex = 0;
-let tourFeatures = [];
-let highlightHandle = null;
-let autoControl = null;
-let chevronIcon = null;
-let chevronBtn = null;
-let featureDetails = null;
+// Analysis state  
+const analysisState = {
+  isDrawing: false,
+  drawType: null,
+  features: {
+    buffer: [],
+    intersect1: null,
+    intersect2: null
+  }
+};
+
+// Feature Tour System state managed by StateManager
+const tourState = {
+  isActive: false,
+  interval: null,
+  currentIndex: 0,
+  features: [],
+  highlightHandle: null,
+  // UI references managed locally
+  controls: {
+    auto: null,
+    chevronIcon: null,
+    chevronBtn: null,
+    details: null
+  }
+};
 
 // Other state
 let countryInfoTimeout = null;
 
 // ============================================================================
-// Application initialization is now handled by main.js
-// StateManager is available globally as window.stateManager
-// ============================================================================
+// StateManager is now injected through initializeMap
+// All state access should go through getState()
 
-// Import module loader utilities
+// Import core modules and utilities
 import { loadModule, loadModules } from "./js/core/module-loader.js";
-
-// ============================================================================
-// COMMENTED OUT - Moved to js/core/module-loader.js
-// ============================================================================
-// Original loadModule function has been extracted to js/core/module-loader.js
-// and is now imported above for use in this module
-// ============================================================================
+// import { StateManager } from "./js/core/state-manager.js";
+// import { NotificationManager } from "./js/ui/notification-manager.js";
+// import { MapInitializer } from "./js/core/map-initializer.js";
+// import { PanelManager } from "./js/ui/panel-manager.js";
 
 // ============================================================================
 // COMMENTED OUT - Moved to js/core/map-initializer.js
@@ -82,15 +86,50 @@ import { loadModule, loadModules } from "./js/core/module-loader.js";
 // Use window.mapInitializer.initializeMap() instead
 // ============================================================================
 
-// Wrapper function for backward compatibility
-async function initializeMap() {
-  if (window.mapInitializer) {
-    return await window.mapInitializer.initializeMap();
-  } else {
-    console.error("MapInitializer not initialized yet");
-    throw new Error("MapInitializer not available");
+// Initialize map with injected dependencies
+async function initializeMap(
+  stateManager = new StateManager(),
+  mapInitializer = new MapInitializer(stateManager),
+  notificationManager = new NotificationManager(),
+  panelManager = new PanelManager(stateManager, notificationManager)
+) {
+  try {
+    // Store instances at module level for use by other functions
+    const moduleState = {
+      stateManager,
+      mapInitializer,
+      notificationManager,
+      panelManager
+    };
+
+    // Initialize state
+    moduleState.map = null;
+    moduleState.view = null;
+    moduleState.homeExtent = null;
+    moduleState.drawLayer = null;
+    moduleState.tourLayer = null;
+    moduleState.measurementWidget = null;
+    moduleState.searchWidget = null;
+
+    // Expose module state to internal functions
+    initModuleState(moduleState);
+
+    // Initialize map
+    await mapInitializer.initializeMap();
+
+    return moduleState;
+  } catch (error) {
+    notificationManager.showError("Failed to initialize map");
+    throw error;
   }
-}
+}  
+// if (mapInitializer && typeof mapInitializer.initializeMap === "function") {
+//     await mapInitializer.initializeMap();
+//   } else {
+//     console.error("MapInitializer not initialized yet");
+//     throw new Error("MapInitializer not available");
+//   }
+// }
 
 // ============================================================================
 // ORIGINAL CODE (COMMENTED OUT)
@@ -210,36 +249,38 @@ async function initializeMap() {
 //   }
 // }
 
-// Tab System
-const tabMessages = {
-  // gardens: null, // No message for gardens tab
-  gardens: "التوجه الى منصة الحدائق الذكية", // No message for gardens tab
-  projects: "يلزم الربط بمنصة قرار لعرض المشروعات",
-  assets: "يلزم الربط بالتشغيل و الصيانة لعرض الأصول",
-  smartEye: "يلزم الربط بمنصة العين الذكية",
-};
-
-const tabButtonTexts = {
-  gardens: {
-    text: "ربط بمنصة الحدائق الذكية",
-    url: "https://intelli.it.com/",
+// Tab System configuration managed by StateManager
+const tabConfig = {
+  messages: {
+    gardens: "التوجه الى منصة الحدائق الذكية",
+    projects: "يلزم الربط بمنصة قرار لعرض المشروعات",
+    assets: "يلزم الربط بالتشغيل و الصيانة لعرض الأصول",
+    smartEye: "يلزم الربط بمنصة العين الذكية"
   },
-  projects: {
-    text: "ربط بمنصة قرار",
-    url: "https://qarar2025.azurewebsites.net/",
-  },
-  assets: {
-    text: "ربط بالتشغيل و الصيانة",
-    url: "https://gt-ams.azurewebsites.net/",
-  },
-  smartEye: {
-    text: "ربط بمنصة العين الذكية ",
-    url: "http://hayel.dtsit.net/dashboard",
-  },
+  buttons: {
+    gardens: {
+      text: "ربط بمنصة الحدائق الذكية",
+      url: "https://intelli.it.com/"
+    },
+    projects: {
+      text: "ربط بمنصة قرار",
+      url: "https://qarar2025.azurewebsites.net/"
+    },
+    assets: {
+      text: "ربط بالتشغيل و الصيانة",
+      url: "https://gt-ams.azurewebsites.net/"
+    },
+    smartEye: {
+      text: "ربط بمنصة العين الذكية",
+      url: "http://hayel.dtsit.net/dashboard"
+    }
+  }
 };
 
 // Initialize tabs
 function initializeMapTabs() {
+  const { stateManager } = getState();
+  
   const tabButtons = document.querySelectorAll(".tab-button");
   const backdrop = document.getElementById("tabBackdrop");
   const contentCard = backdrop.querySelector(".tab-content-card");
@@ -260,8 +301,8 @@ function initializeMapTabs() {
       // }
 
       // For other tabs, show the message
-      const message = tabMessages[tabType];
-      const buttonInfo = tabButtonTexts[tabType];
+      const message = tabConfig.messages[tabType];
+      const buttonInfo = tabConfig.buttons[tabType];
 
       if (message && buttonInfo) {
         // Update content
@@ -297,9 +338,10 @@ function initializeMapTabs() {
 
 // Add this function to handle platform redirect
 function redirectToTabPlatform(tabType) {
-  const buttonInfo = tabButtonTexts[tabType];
+  const { notificationManager } = getState();
+  const buttonInfo = tabConfig.buttons[tabType];
   if (buttonInfo && buttonInfo.url) {
-    showNotification(`جاري التوجيه إلى ${buttonInfo.text}...`, "success");
+    notificationManager.showSuccess(`جاري التوجيه إلى ${buttonInfo.text}...`);
 
     // Simulate loading state
     const button = event.target.closest(".tab-action-button");
@@ -310,10 +352,8 @@ function redirectToTabPlatform(tabType) {
     `;
 
     setTimeout(() => {
-      // In production, replace with: window.open(buttonInfo.url, '_blank');
       window.open(buttonInfo.url, "_blank");
       console.log(`Redirecting to: ${buttonInfo.url}`);
-      // showNotification(`سيتم التوجيه إلى: ${buttonInfo.url}`, 'success');
 
       // Close the backdrop
       document.getElementById("tabBackdrop").classList.add("hidden");
@@ -327,8 +367,8 @@ function redirectToTabPlatform(tabType) {
   }
 }
 
-// Export the function for onclick handler
-window.redirectToTabPlatform = redirectToTabPlatform;
+// Export the function through ES modules
+// export { redirectToTabPlatform };
 
 // ============================================================================
 // COMMENTED OUT - Moved to js/core/map-initializer.js
@@ -418,12 +458,17 @@ window.redirectToTabPlatform = redirectToTabPlatform;
 
 async function autoApplyDefaultClassification(layer, fieldName) {
   try {
+    const { stateManager } = getState();
+    
     const stats = await analyzeFieldForClassification(layer, fieldName);
     if (!stats || stats.uniqueCount === 0) {
       console.warn(`No valid values found in ${fieldName}`);
       return;
     }
 
+    // Store current layer in state
+    stateManager.setCurrentClassificationLayer(layer);
+    
     const colors = generateClassificationColors(stats.sortedValues.length);
     const geometryType = layer.geometryType;
 
@@ -483,6 +528,8 @@ async function setupFeatureTour(layer) {
       return;
     }
 
+    const { stateManager } = getState();
+
     // Query all features
     const query = layer.createQuery();
     query.where = "1=1";
@@ -490,9 +537,9 @@ async function setupFeatureTour(layer) {
     query.outFields = ["*"];
 
     const featureSet = await layer.queryFeatures(query);
-    window.stateManager.setTourFeatures(featureSet.features);
+    stateManager.setTourFeatures(featureSet.features);
 
-    console.log(`Feature tour setup with ${window.stateManager.getTourFeatures().length} features`);
+    console.log(`Feature tour setup with ${stateManager.getTourFeatures().length} features`);
 
     // Create tour controls
     createTourControls();
@@ -508,13 +555,17 @@ async function setupFeatureTour(layer) {
 
 // Create tour control panel
 function createTourControls() {
+  const { stateManager } = getState();
+  
   const controlsDiv = document.createElement("div");
   controlsDiv.className = "feature-tour-controls";
+  
+  // Create tour controls DOM
   controlsDiv.innerHTML = `
     <header class="tour-header">
         <div class="chevron">
             <i class="bi bi-chevron-down"></i>
-        </div>
+            </div>
         <div class="map-actions">
             <img class="backward-control" src="images/fluent_next-24-regular-back.svg" alt="" onclick="previousFeature()">
             <div class="auto-control pause" onclick="toggleFeatureTour()"></div>
@@ -607,13 +658,16 @@ function createTourControls() {
 
 // Start feature tour
 function startFeatureTour() {
-  if (window.stateManager.getTourFeatures().length === 0) {
-    showNotification("No features to tour", "warning");
+  const { stateManager, notificationManager } = getState();
+  const tourFeatures = stateManager.getTourFeatures();
+
+  if (!tourFeatures || tourFeatures.length === 0) {
+    notificationManager.showWarning("No features to tour");
     return;
   }
 
-  window.stateManager.setFeatureTourActive(true);
-  window.stateManager.setCurrentFeatureIndex(0);
+  stateManager.setFeatureTourActive(true);
+  stateManager.setCurrentFeatureIndex(0);
 
   // Show controls
   document.querySelector(".feature-tour-controls").classList.add("active");
@@ -626,21 +680,24 @@ function startFeatureTour() {
   }
 
   // Start touring
-  goToFeature(window.stateManager.getCurrentFeatureIndex());
+  goToFeature(stateManager.getCurrentFeatureIndex());
 
   // Auto advance every 3 seconds
-  window.stateManager.setFeatureTourInterval(setInterval(() => {
+  stateManager.setFeatureTourInterval(setInterval(() => {
     nextFeature(false); // auto-play
   }, 7000));
 }
 
 // Stop feature tour
 function stopFeatureTour() {
-  window.stateManager.setFeatureTourActive(false);
+  const { stateManager } = getState();
 
-  if (window.stateManager.getFeatureTourInterval()) {
-    clearInterval(window.stateManager.getFeatureTourInterval());
-    window.stateManager.setFeatureTourInterval(null);
+  stateManager.setFeatureTourActive(false);
+
+  const interval = stateManager.getFeatureTourInterval();
+  if (interval) {
+    clearInterval(interval);
+    stateManager.setFeatureTourInterval(null);
   }
 
   // Update play button
@@ -653,7 +710,8 @@ function stopFeatureTour() {
 
 // Toggle tour play/pause
 function toggleFeatureTour() {
-  if (window.stateManager.isFeatureTourActive()) {
+  const { stateManager } = getState();
+  if (stateManager.isFeatureTourActive()) {
     stopFeatureTour();
   } else {
     startFeatureTour();
@@ -661,20 +719,21 @@ function toggleFeatureTour() {
 }
 
 // Navigate to specific feature
-// Navigate to specific feature
 async function goToFeature(index) {
   try {
-    // Get view from StateManager with fallback
-    const view = window.stateManager?.getView() || window.view;
+    const { stateManager } = getState();
+    const view = stateManager.getView();
+    
     if (!view) {
       console.error("View not available for goToFeature");
       return;
     }
 
-    if (index < 0 || index >= window.stateManager.getTourFeatures().length) return;
+    const tourFeatures = stateManager.getTourFeatures();
+    if (!tourFeatures || index < 0 || index >= tourFeatures.length) return;
 
-    const feature = window.stateManager.getTourFeatures()[index];
-    window.stateManager.setCurrentFeatureIndex(index);
+    const feature = tourFeatures[index];
+    stateManager.setCurrentFeatureIndex(index);
 
     // For polygons, calculate center and use appropriate zoom
     if (feature.geometry.type === "polygon") {
@@ -707,16 +766,18 @@ async function goToFeature(index) {
     }
 
     // Highlight the feature
-    if (window.stateManager.getHighlightHandle()) {
-      window.stateManager.getHighlightHandle().remove(); // clear old highlight
-      window.stateManager.setHighlightHandle(null);
+    const highlightHandle = stateManager.getHighlightHandle();
+    if (highlightHandle) {
+      highlightHandle.remove();
+      stateManager.setHighlightHandle(null);
     }
 
     // Add highlight with proper error handling
+    const tourLayer = stateManager.getTourLayer();
     if (tourLayer) {
       try {
-        const layerView = await window.stateManager.getView().whenLayerView(window.stateManager.getTourLayer());
-        window.stateManager.setHighlightHandle(layerView.highlight(feature));
+        const layerView = await view.whenLayerView(stateManager.getTourLayer());
+        stateManager.setHighlightHandle(layerView.highlight(feature));
       } catch (error) {
         console.warn('Error creating highlight:', error);
       }
@@ -727,7 +788,7 @@ async function goToFeature(index) {
 
     // Update progress
     document.getElementById("tourProgress").textContent = `${index + 1} / ${
-      window.stateManager.getTourFeatures().length
+      (stateManager.getTourFeatures() || []).length
     }`;
 
     // Show popup in left-center position
@@ -738,13 +799,15 @@ async function goToFeature(index) {
 }
 
 function showCustomPopupTour(graphic) {
+  const { stateManager } = getState();
+  
   const featureDetails = document.querySelector('.feature-tour-controls .feature-details');
   if (!featureDetails) {
     console.warn('Feature details element not found for tour popup');
     return;
   }
 
-  window.stateManager.setCurrentPopupFeature(graphic);
+  stateManager.setCurrentPopupFeature(graphic);
 
   // Attributes
   const attributes = graphic.attributes;
@@ -840,6 +903,7 @@ window.closeTourPopup = closeTourPopup;
 // Update tour info panel
 // Update tour info panel
 function updateTourInfo(feature) {
+  const { stateManager } = getState();
   const tourOverview = document.getElementById("tourOverview");
   const attrs = feature.attributes;
 
@@ -856,7 +920,7 @@ function updateTourInfo(feature) {
 
   // If no name found, use a default
   if (!featureName) {
-    featureName = `حديقه ${window.stateManager.getCurrentFeatureIndex() + 1}`;
+    featureName = `حديقه ${(stateManager.getCurrentFeatureIndex() || 0) + 1}`;
   }
 
   // Only show if is a truthy value
@@ -879,23 +943,28 @@ function updateTourInfo(feature) {
 
 // Navigation functions
 function nextFeature(manual = true) {
+  const { stateManager } = getState();
+  
   if (manual) {
     stopFeatureTour(); // only stop when user explicitly clicks
   }
 
-  const nextIndex = (window.stateManager.getCurrentFeatureIndex() + 1) % window.stateManager.getTourFeatures().length;
+  const currentIndex = stateManager.getCurrentFeatureIndex();
+  const tourFeatures = stateManager.getTourFeatures();
+  const nextIndex = (currentIndex + 1) % tourFeatures.length;
   goToFeature(nextIndex);
 }
 
 function previousFeature(manual = true) {
+  const { stateManager } = getState();
+  
   if (manual) {
     stopFeatureTour();
   }
 
-  const prevIndex =
-    window.stateManager.getCurrentFeatureIndex() === 0
-      ? window.stateManager.getTourFeatures().length - 1
-      : window.stateManager.getCurrentFeatureIndex() - 1;
+  const currentIndex = stateManager.getCurrentFeatureIndex();
+  const tourFeatures = stateManager.getTourFeatures();
+  const prevIndex = currentIndex === 0 ? tourFeatures.length - 1 : currentIndex - 1;
   goToFeature(prevIndex);
 }
 
@@ -907,26 +976,36 @@ function closeTourControls() {
   closeTourPopup(); // Add this line
 }
 
-// Export functions for inline handlers
-window.toggleFeatureTour = toggleFeatureTour;
-window.nextFeature = nextFeature;
-window.previousFeature = previousFeature;
-window.closeTourControls = closeTourControls;
+// Export functions as ES modules
+// export {
+//   initializeMap,
+//   toggleFeatureTour,
+//   nextFeature,
+//   previousFeature,
+//   closeTourControls,
+//   manuallyStartTour,
+//   initializeUI,
+//   initializeMapTabs,
+//   redirectToTabPlatform
+// };
 
 function manuallyStartTour() {
-  if (window.stateManager.getTourFeatures().length === 0) {
-    showNotification("No features available for tour", "warning");
+  const { stateManager, notificationManager } = getState();
+  const tourFeatures = stateManager.getTourFeatures();
+
+  if (!tourFeatures || tourFeatures.length === 0) {
+    notificationManager.showWarning("No features available for tour");
     return;
   }
 
   document.querySelector(".feature-tour-controls").classList.add("active");
 
-  if (!window.stateManager.isFeatureTourActive()) {
+  if (!stateManager.isFeatureTourActive()) {
     startFeatureTour();
   }
 }
 
-window.manuallyStartTour = manuallyStartTour;
+// All exports are now handled through ES modules
 
 // ============================================================================
 // COMMENTED OUT - Moved to js/core/map-initializer.js
@@ -961,10 +1040,17 @@ window.manuallyStartTour = manuallyStartTour;
 // }
 
 // Initialize UI components
-function initializeUI(stateManager) {
-  // Get state from StateManager for proper scope access
-  const displayMap = stateManager ? stateManager.getMap() : window.displayMap;
-  const view = stateManager ? stateManager.getView() : window.view;
+function initializeUI(injectedStateManager) {
+  // Initialize module state with injected StateManager
+  initModuleState({
+    stateManager: injectedStateManager,
+    map: injectedStateManager.getMap(),
+    view: injectedStateManager.getView()
+  });
+
+  const { stateManager } = getState();
+  const displayMap = stateManager.getMap();
+  const view = stateManager.getView();
 
   // Add this code right after the function starts:
   // Initialize mobile toolbar
@@ -990,38 +1076,39 @@ function initializeUI(stateManager) {
   // Mobile menu item clicks
   document.querySelectorAll(".mobile-menu-item").forEach((item) => {
     item.addEventListener("click", function () {
+      const { stateManager } = getState();
       const action = this.dataset.action;
       mobileMenu.classList.remove("active");
 
       // Trigger the appropriate action
       switch (action) {
         case "upload":
-          openSidePanel("Upload Files", "uploadPanelTemplate");
+          getState().panelManager.openSidePanel("Upload Files", "uploadPanelTemplate");
           break;
         case "layers":
-          openSidePanel("Layers", "layersPanelTemplate");
+          getState().panelManager.openSidePanel("Layers", "layersPanelTemplate");
           break;
         case "basemap":
-          openSidePanel("Basemap", "basemapPanelTemplate");
+          getState().panelManager.openSidePanel("Basemap", "basemapPanelTemplate");
           break;
         case "measure":
           toggleMeasurement();
           break;
         case "draw":
-          openSidePanel("Drawing Tools", "drawingPanelTemplate");
+          getState().panelManager.openSidePanel("Drawing Tools", "drawingPanelTemplate");
           initializeDrawingPanel();
           break;
         case "locate":
           locateUser();
           break;
         case "analysis":
-          openSidePanel("Spatial Analysis", "analysisPanelTemplate");
+          getState().panelManager.openSidePanel("Spatial Analysis", "analysisPanelTemplate");
           break;
         case "visualize":
-          openSidePanel("Visualization", "visualizationPanelTemplate");
+          getState().panelManager.openSidePanel("Visualization", "visualizationPanelTemplate");
           break;
         case "classification":
-          openSidePanel("Classification", "classificationPanelTemplate");
+          getState().panelManager.openSidePanel("Classification", "classificationPanelTemplate");
           initializeClassificationPanel();
           break;
       }
@@ -1031,36 +1118,36 @@ function initializeUI(stateManager) {
   // Desktop toolbar buttons
   document.getElementById("uploadBtn").addEventListener("click", function () {
     this.classList.toggle("active");
-    openSidePanel("Upload Files", "uploadPanelTemplate");
+    getState().panelManager.openSidePanel("Upload Files", "uploadPanelTemplate");
   });
 
   document.getElementById("layersBtn").addEventListener("click", function () {
     this.classList.toggle("active");
-    openSidePanel("Layers", "layersPanelTemplate");
+    getState().panelManager.openSidePanel("Layers", "layersPanelTemplate");
   });
 
   document.getElementById("basemapBtn").addEventListener("click", function () {
     this.classList.toggle("active");
-    openSidePanel("Basemap", "basemapPanelTemplate");
+    getState().panelManager.openSidePanel("Basemap", "basemapPanelTemplate");
   });
 
   document.getElementById("analysisBtn").addEventListener("click", function () {
     this.classList.toggle("active");
-    openSidePanel("Spatial Analysis", "analysisPanelTemplate");
+    getState().panelManager.openSidePanel("Spatial Analysis", "analysisPanelTemplate");
   });
 
   document
     .getElementById("visualizeBtn")
     .addEventListener("click", function () {
       this.classList.toggle("active");
-      openSidePanel("Visualization", "visualizationPanelTemplate");
+      getState().panelManager.openSidePanel("Visualization", "visualizationPanelTemplate");
     });
 
   document
     .getElementById("classificationBtn")
     .addEventListener("click", function () {
       this.classList.toggle("active");
-      openSidePanel("Classification", "classificationPanelTemplate");
+      getState().panelManager.openSidePanel("Classification", "classificationPanelTemplate");
       initializeClassificationPanel();
     });
 
@@ -1072,12 +1159,16 @@ function initializeUI(stateManager) {
   const basemapItems = document.querySelectorAll(".basemap-item");
   basemapItems.forEach((item) => {
     item.addEventListener("click", () => {
+      const { stateManager } = getState();
+      const map = stateManager.getMap();
       const basemap = item.dataset.basemap;
-      displayMap.basemap = basemap;
-
-      // Update active state
-      basemapItems.forEach((b) => b.classList.remove("active"));
-      item.classList.add("active");
+      
+      if (map) {
+        map.basemap = basemap;
+        // Update active state
+        basemapItems.forEach((b) => b.classList.remove("active"));
+        item.classList.add("active");
+      }
     });
   });
 
@@ -1097,153 +1188,22 @@ function initializeUI(stateManager) {
   initializeMapTabs();
 }
 
-// Export initializeUI for MapInitializer
-window.initializeUI = initializeUI;
+// initializeUI is already exported in the module exports section
 
 // Add these new functions after initializeUI():
 
-// Side panel management
-function openSidePanel(title, templateId) {
-  clearToolbarActiveStates();
+// Side panel management has been moved to PanelManager class
+// Panel management functions have been moved to PanelManager class
 
-  // Mark the relevant button as active
-  const buttonMap = {
-    uploadPanelTemplate: "uploadBtn",
-    layersPanelTemplate: "layersBtn",
-    basemapPanelTemplate: "basemapBtn",
-    drawingPanelTemplate: "drawBtn",
-    analysisPanelTemplate: "analysisBtn",
-    visualizationPanelTemplate: "visualizeBtn",
-  };
+// Panel management functions have been moved to PanelManager class
 
-  const btnId = buttonMap[templateId];
-  if (btnId) {
-    document.getElementById(btnId)?.classList.add("active");
-  }
-
-  const panel = document.getElementById("sidePanel");
-  const panelTitle = document.getElementById("sidePanelTitle");
-  const panelContent = document.getElementById("sidePanelContent");
-  const template = document.getElementById(templateId);
-
-  if (template) {
-    panelTitle.textContent = title;
-    panelContent.innerHTML = template.innerHTML;
-    panel.classList.add("active");
-
-    // Initialize panel-specific functionality
-    if (templateId === "uploadPanelTemplate") {
-      initializeUploadPanel();
-    } else if (templateId === "basemapPanelTemplate") {
-      initializeBasemapPanel();
-    }
-  }
-}
-// Add this function after openSidePanel:
-function clearToolbarActiveStates() {
-  document.querySelectorAll(".toolbar-btn").forEach((btn) => {
-    // Don't clear measure button if measurement is active
-    if (btn.id !== "measureBtn" || !measurementWidget) {
-      btn.classList.remove("active");
-    }
-  });
-}
-
-// Initialize upload panel when opened
-function initializeUploadPanel() {
-  const dropZone = document.querySelector("#sidePanelContent #dropZone");
-  const fileInput = document.querySelector("#sidePanelContent #fileInput");
-
-  if (!dropZone || !fileInput) return;
-
-  // Prevent default drag behaviors
-  ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
-    dropZone.addEventListener(eventName, preventDefaults, false);
-  });
-
-  function preventDefaults(e) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-
-  // Highlight drop zone when item is dragged over it
-  ["dragenter", "dragover"].forEach((eventName) => {
-    dropZone.addEventListener(
-      eventName,
-      () => {
-        dropZone.classList.add("drag-over");
-      },
-      false
-    );
-  });
-
-  ["dragleave", "drop"].forEach((eventName) => {
-    dropZone.addEventListener(
-      eventName,
-      () => {
-        dropZone.classList.remove("drag-over");
-      },
-      false
-    );
-  });
-
-  // Handle dropped files
-  dropZone.addEventListener(
-    "drop",
-    (e) => {
-      const dt = e.dataTransfer;
-      const files = dt.files;
-      handleFiles(files);
-    },
-    false
-  );
-
-  // Handle click to browse
-  dropZone.addEventListener("click", () => {
-    fileInput.click();
-  });
-
-  // Handle file input change
-  fileInput.addEventListener("change", (e) => {
-    handleFiles(e.target.files);
-  });
-}
-
-// Initialize basemap panel
-function initializeBasemapPanel() {
-  const basemapItems = document.querySelectorAll(
-    "#sidePanelContent .basemap-item"
-  );
-
-  basemapItems.forEach((item) => {
-    item.addEventListener("click", () => {
-      const basemap = item.dataset.basemap;
-      displayMap.basemap = basemap;
-
-      // Update active state
-      basemapItems.forEach((b) => b.classList.remove("active"));
-      item.classList.add("active");
-    });
-  });
-}
-
-function closeSidePanel() {
-  const panel = document.getElementById("sidePanel");
-  panel.classList.remove("active");
-
-  // Clean up any active states
-  document.querySelectorAll(".toolbar-btn").forEach((btn) => {
-    btn.classList.remove("active");
-  });
-}
-
-// Initialize panel close button
-document
-  .getElementById("sidePanelClose")
-  .addEventListener("click", closeSidePanel);
+// Panel management is now handled by PanelManager
+// Initialization of panel close button moved to PanelManager class
 
 // Initialize file upload functionality
 function initializeFileUpload() {
+  const { stateManager } = getState();
+  
   const dropZone = document.getElementById("dropZone");
   const fileInput = document.getElementById("fileInput");
 
@@ -1480,13 +1440,14 @@ async function loadCSV(content, filename) {
     },
   });
 
+  const { stateManager } = getState();
   displayMap.add(layer);
-  window.stateManager.addUploadedLayer(layer);
+  stateManager.addUploadedLayer(layer);
   updateLayerList();
 
   // Zoom to features
   if (features.length > 0) {
-    await window.stateManager.getView().goTo(features);
+    await stateManager.getView().goTo(features);
   }
 }
 
@@ -1740,12 +1701,13 @@ async function loadGeoJSON(content, filename) {
     );
 
     displayMap.add(layer);
-    window.stateManager.addUploadedLayer(layer);
+    const { stateManager } = getState();
+    stateManager.addUploadedLayer(layer);
     updateLayerList();
 
     // Zoom to layer extent
     if (layer.fullExtent) {
-      await window.stateManager.getView().goTo(layer.fullExtent.expand(1.1));
+      await stateManager.getView().goTo(layer.fullExtent.expand(1.1));
     }
 
     // Clean up blob URL
@@ -1789,7 +1751,8 @@ function updateLayerList() {
 
   if (!targetList) return;
 
-  if (window.stateManager.getUploadedLayers().length === 0) {
+  const { stateManager } = getState();
+  if ((stateManager.getUploadedLayers() || []).length === 0) {
     targetList.innerHTML = `
       <div class="empty-state">
         <i class="fas fa-layer-group"></i>
@@ -1797,7 +1760,7 @@ function updateLayerList() {
       </div>
     `;
   } else {
-    targetList.innerHTML = window.stateManager.getUploadedLayers()
+  targetList.innerHTML = (stateManager.getUploadedLayers() || [])
       .map(
         (layer, index) => `
       <div class="layer-item">
@@ -1829,21 +1792,24 @@ function updateLayerList() {
 
 // Layer control functions
 function toggleLayer(index) {
-  const layers = window.stateManager.getUploadedLayers();
-  layers[index].visible = !layers[index].visible;
+  const { stateManager } = getState();
+  const layers = stateManager.getUploadedLayers() || [];
+  if (layers[index]) layers[index].visible = !layers[index].visible;
 }
 
 async function zoomToLayer(index) {
-  const layer = window.stateManager.getUploadedLayers()[index];
-  if (layer.fullExtent) {
-    await window.stateManager.getView().goTo(layer.fullExtent);
+  const { stateManager } = getState();
+  const layer = (stateManager.getUploadedLayers() || [])[index];
+  if (layer && layer.fullExtent) {
+    await stateManager.getView().goTo(layer.fullExtent);
   }
 }
 
 function removeLayer(index) {
-  const layer = window.stateManager.getUploadedLayers()[index];
-  window.stateManager.getMap().remove(layer);
-  window.stateManager.removeUploadedLayer(index);
+  const { stateManager } = getState();
+  const layer = (stateManager.getUploadedLayers() || [])[index];
+  if (layer) stateManager.getMap().remove(layer);
+  stateManager.removeUploadedLayer(index);
   updateLayerList();
 }
 
@@ -1939,8 +1905,9 @@ function initializeDrawingPanel() {
       drawToolBtns.forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
 
-      // Start drawing
-      window.stateManager.setActiveDrawingTool(tool);
+  // Start drawing
+  const { stateManager } = getState();
+  stateManager.setActiveDrawingTool(tool);
       startDrawingWithTool(tool);
     });
   });
@@ -2030,6 +1997,9 @@ async function initializeSketchViewModel() {
 window.cancelBufferDrawing = function () {
   console.log("Canceling buffer drawing");
 
+  // Get stateManager instance
+  const { stateManager } = getState();
+
   // Restore modal
   disableDrawingMode("bufferModal");
 
@@ -2040,7 +2010,7 @@ window.cancelBufferDrawing = function () {
     sketchViewModel.cancel();
   }
 
-  window.stateManager.setAnalysisDrawing(false);
+  stateManager.setAnalysisDrawing(false);
 
   const indicator = document.getElementById("drawingIndicator");
   if (indicator) {
@@ -2057,11 +2027,12 @@ window.cancelBufferDrawing = function () {
   });
 };
 window.debugDrawing = function () {
+  const { stateManager } = getState();
   console.log("Debug Info:");
   console.log("- SketchViewModel exists:", !!sketchViewModel);
   console.log("- View exists:", !!view);
   console.log("- DrawLayer exists:", !!drawLayer);
-  console.log("- Analysis drawing active:", window.stateManager.isAnalysisDrawing());
+  console.log("- Analysis drawing active:", stateManager.isAnalysisDrawing());
   console.log("- Current cursor:", view.container.style.cursor);
 
   if (sketchViewModel) {
@@ -2123,10 +2094,10 @@ function setupSketchViewModelEvents() {
       applyCustomSymbology(event.graphic);
 
       // Continue drawing if tool is still active
-      if (window.stateManager.getActiveDrawingTool()) {
+      if (getState().stateManager.getActiveDrawingTool()) {
         setTimeout(() => {
-          if (window.stateManager.getActiveDrawingTool()) {
-            startDrawingWithTool(window.stateManager.getActiveDrawingTool());
+          if (getState().stateManager.getActiveDrawingTool()) {
+            startDrawingWithTool(getState().stateManager.getActiveDrawingTool());
           }
         }, 100);
       }
@@ -2166,7 +2137,8 @@ function initializeDrawingToolButtons() {
       btn.classList.add("active");
 
       // Start drawing
-      window.stateManager.setActiveDrawingTool(tool);
+      const { stateManager } = getState();
+      stateManager.setActiveDrawingTool(tool);
       startDrawingWithTool(tool);
     });
   });
@@ -2312,7 +2284,7 @@ function updateActiveGraphicsSymbology() {
 
 // Reset drawing tools
 function resetDrawingTools() {
-  window.stateManager.setActiveDrawingTool(null);
+  getState().stateManager.setActiveDrawingTool(null);
   document.querySelectorAll(".draw-tool-btn").forEach((btn) => {
     btn.classList.remove("active");
   });
@@ -2744,10 +2716,10 @@ function initializeEventHandlers(stateManager) {
         createCountryFlashAnimation(feature.geometry);
 
         // Hide after 5 seconds
-        window.stateManager.clearCountryInfoTimeout();
-        window.stateManager.setCountryInfoTimeout(setTimeout(() => {
+        getState().stateManager.clearCountryInfoTimeout();
+        getState().stateManager.setCountryInfoTimeout(setTimeout(() => {
           infoDisplay.classList.add("hidden");
-          window.stateManager.getFlashGraphicsLayer().removeAll();
+          getState().stateManager.getFlashGraphicsLayer().removeAll();
         }, 5000));
       }
     } catch (error) {
@@ -2917,14 +2889,17 @@ async function initializeSearch(view) {
   const suggestionsDiv = document.getElementById("searchSuggestions");
 
   // Create search widget with proper configuration
-  searchWidget = new Search({
+  const { stateManager } = getState();
+  // Create and store search widget in state manager
+  stateManager.setSearchWidget(new Search({
     view: mapView,
     container: document.createElement("div"),
     includeDefaultSources: true,
     locationEnabled: false,
     popupEnabled: false,
     autoSelect: false,
-  });
+  }));
+  const searchWidget = stateManager.getSearchWidget();
 
   // Wait for the view to be ready instead
   await mapView.when();
@@ -2968,6 +2943,7 @@ async function initializeSearch(view) {
       currentSuggestions = [];
 
       // Perform a direct search instead of using suggest
+      const searchWidget = stateManager.getSearchWidget();
       searchWidget.searchTerm = searchTerm;
 
       try {
@@ -3007,6 +2983,7 @@ async function initializeSearch(view) {
   // Perform direct search as fallback
   async function performDirectSearch(searchTerm) {
     try {
+      const searchWidget = stateManager.getSearchWidget();
       searchWidget.viewModel.searchTerm = searchTerm;
       const searchResponse = await searchWidget.viewModel.search();
 
@@ -3097,8 +3074,9 @@ async function initializeSearch(view) {
         }
       } else if (suggestion.suggestResult) {
         // Suggestion result - need to search
-        searchWidget.viewModel.searchTerm = suggestion.text;
-        const response = await searchWidget.viewModel.search(
+        const searchWidget = stateManager.getSearchWidget();
+      searchWidget.viewModel.searchTerm = suggestion.text;
+      const response = await searchWidget.viewModel.search(
           suggestion.suggestResult
         );
 
@@ -3273,7 +3251,8 @@ async function initializeSearch(view) {
 
 // Replace showCustomPopup with this enhanced version
 function showCustomPopup(graphic, mapPoint) {
-  window.stateManager.setCurrentPopupFeature(graphic);
+  const { stateManager } = getState();
+  stateManager.setCurrentPopupFeature(graphic);
   const popup = document.getElementById("customPopup");
   const content = document.getElementById("popupContent");
   const title = document.getElementById("popupTitle");
@@ -3657,24 +3636,25 @@ function positionPopup(popup, mapPoint) {
 
 // Popup action functions
 function zoomToFeature() {
-  if (window.stateManager.getCurrentPopupFeature() && window.stateManager.getCurrentPopupFeature().geometry) {
-    window.stateManager.getView().goTo({
-      target: window.stateManager.getCurrentPopupFeature().geometry,
-      zoom: window.stateManager.getView().zoom + 2,
+  const { stateManager } = getState();
+  if (stateManager.getCurrentPopupFeature() && stateManager.getCurrentPopupFeature().geometry) {
+    stateManager.getView().goTo({
+      target: stateManager.getCurrentPopupFeature().geometry,
+      zoom: stateManager.getView().zoom + 2,
     });
   }
 }
 
 function copyFeatureInfo() {
-  if (!window.stateManager.getCurrentPopupFeature()) return;
+  if (!getState().stateManager.getCurrentPopupFeature()) return;
 
   let text = "Feature Information\n";
   text += "==================\n\n";
 
   // Add attributes
-  if (window.stateManager.getCurrentPopupFeature().attributes) {
+  if (getState().stateManager.getCurrentPopupFeature().attributes) {
     text += "Attributes:\n";
-    Object.entries(window.stateManager.getCurrentPopupFeature().attributes).forEach(([key, value]) => {
+    Object.entries(getState().stateManager.getCurrentPopupFeature().attributes).forEach(([key, value]) => {
       if (!key.startsWith("_") && key !== "ObjectID" && key !== "FID") {
         text += `${formatFieldName(key)}: ${value || "N/A"}\n`;
       }
@@ -3700,7 +3680,7 @@ window.copyFeatureInfo = copyFeatureInfo;
 function closeCustomPopup() {
   const popup = document.getElementById("customPopup");
   popup.classList.add("hidden");
-  window.stateManager.setCurrentPopupFeature(null);
+  getState().stateManager.setCurrentPopupFeature(null);
 }
 
 // // Utility functions
@@ -3979,7 +3959,7 @@ async function toggleLegend() {
     // Update layer infos every time it's shown
     const legend = activeWidgets.get("legend");
     legend.layerInfos = [
-      ...window.stateManager.getUploadedLayers().map((layer) => ({
+      ...getState().stateManager.getUploadedLayers().map((layer) => ({
         layer: layer,
         title: layer.title,
       })),
@@ -4444,7 +4424,7 @@ function updateMeasurementResults(measurement) {
 // Replace the toggleSwipe function with this version
 async function toggleSwipe() {
   if (!activeWidgets.has("swipe")) {
-    if (window.stateManager.getUploadedLayers().length < 2) {
+    if (getState().stateManager.getUploadedLayers().length < 2) {
       showNotification("Need at least 2 layers for swipe comparison", "error");
       return;
     }
@@ -4457,14 +4437,14 @@ async function toggleSwipe() {
       const [Swipe] = await Promise.all([loadModule("esri/widgets/Swipe")]);
 
       const swipe = new Swipe({
-        view: window.stateManager.getView(),
-        leadingLayers: [window.stateManager.getUploadedLayers()[0]],
-        trailingLayers: [window.stateManager.getUploadedLayers()[1]],
+        view: getState().stateManager.getView(),
+        leadingLayers: [getState().stateManager.getUploadedLayers()[0]],
+        trailingLayers: [getState().stateManager.getUploadedLayers()[1]],
         direction: "horizontal",
         position: 50,
       });
 
-      window.stateManager.getView().ui.add(swipe);
+      getState().stateManager.getView().ui.add(swipe);
       activeWidgets.set("swipe", swipe);
       showNotification("Swipe between first two layers", "info");
 
@@ -4601,7 +4581,7 @@ function closeMeasurementResults() {
 // Add this debug function to check what attributes are available
 function debugLayerAttributes() {
   console.log("=== Layer Attributes Debug ===");
-  window.stateManager.getUploadedLayers().forEach((layer, index) => {
+  getState().stateManager.getUploadedLayers().forEach((layer, index) => {
     console.log(`\nLayer ${index}: ${layer.title}`);
     console.log("Fields:", layer.fields);
     console.log("OutFields:", layer.outFields);
@@ -4657,7 +4637,7 @@ async function toggleAttributeTable() {
     if (btn) btn.classList.add("active");
     initializeTableLayerSelect();
 
-    if (window.stateManager.getUploadedLayers().length > 0) {
+    if (getState().stateManager.getUploadedLayers().length > 0) {
       const select = document.getElementById("tableLayerSelect");
       if (select) {
         select.value = 0;
@@ -4675,7 +4655,7 @@ function initializeTableLayerSelect() {
   const select = document.getElementById("tableLayerSelect");
   select.innerHTML = '<option value="">Select a layer...</option>';
 
-  window.stateManager.getUploadedLayers().forEach((layer, index) => {
+  getState().stateManager.getUploadedLayers().forEach((layer, index) => {
     const option = document.createElement("option");
     option.value = index;
     option.textContent = layer.title;
@@ -4703,7 +4683,7 @@ function initializeTableLayerSelect() {
 // Load table data from layer
 async function loadTableData(layerIndex) {
   try {
-    const layer = window.stateManager.getUploadedLayers()[layerIndex];
+    const layer = getState().stateManager.getUploadedLayers()[layerIndex];
     if (!layer) return;
 
     currentTableLayer = layer;
@@ -4970,7 +4950,7 @@ function nextPage() {
 
 function refreshTable() {
   if (currentTableLayer) {
-    const layerIndex = window.stateManager.getUploadedLayers().indexOf(currentTableLayer);
+    const layerIndex = getState().stateManager.getUploadedLayers().indexOf(currentTableLayer);
     if (layerIndex !== -1) {
       loadTableData(layerIndex);
     }
@@ -4984,7 +4964,7 @@ function showExportOptions() {
 
   // Populate layer select
   select.innerHTML = '<option value="">Select a layer...</option>';
-  window.stateManager.getUploadedLayers().forEach((layer, index) => {
+  getState().stateManager.getUploadedLayers().forEach((layer, index) => {
     const option = document.createElement("option");
     option.value = index;
     option.textContent = layer.title;
@@ -5006,7 +4986,7 @@ async function exportData(format) {
     return;
   }
 
-  const layer = window.stateManager.getUploadedLayers()[parseInt(layerIndex)];
+  const layer = getState().stateManager.getUploadedLayers()[parseInt(layerIndex)];
 
   try {
     showNotification("Preparing export...", "info");
@@ -5309,7 +5289,7 @@ function updateHeatmapLayerSelect() {
   select.innerHTML = '<option value="">Select point layer...</option>';
 
   // Only show point layers
-  window.stateManager.getUploadedLayers().forEach((layer, index) => {
+  getState().stateManager.getUploadedLayers().forEach((layer, index) => {
     // Check if layer has point geometry
     if (
       layer.geometryType === "point" ||
@@ -5334,15 +5314,15 @@ function updateHeatmapLayerSelect() {
 // Update the applyHeatmap and applyHeatmapSettings functions
 async function applyHeatmap(layerIndex) {
   try {
-    const layer = window.stateManager.getUploadedLayers()[layerIndex];
+    const layer = getState().stateManager.getUploadedLayers()[layerIndex];
     if (!layer) return;
 
     const [HeatmapRenderer] = await Promise.all([
       loadModule("esri/renderers/HeatmapRenderer"),
     ]);
 
-    if (!window.stateManager.getOriginalRenderer(layer.id)) {
-      window.stateManager.setOriginalRenderer(layer.id, layer.renderer);
+    if (!getState().stateManager.getOriginalRenderer(layer.id)) {
+      getState().stateManager.setOriginalRenderer(layer.id, layer.renderer);
     }
 
     // Create heatmap renderer with density settings
@@ -5370,11 +5350,11 @@ async function applyHeatmap(layerIndex) {
 
 // Restore original renderers
 function restoreOriginalRenderers() {
-  window.stateManager.getUploadedLayers().forEach((layer) => {
-    const originalRenderer = window.stateManager.getOriginalRenderer(layer.id);
+  getState().stateManager.getUploadedLayers().forEach((layer) => {
+    const originalRenderer = getState().stateManager.getOriginalRenderer(layer.id);
     if (originalRenderer) {
       layer.renderer = originalRenderer;
-      window.stateManager.setOriginalRenderer(layer.id, null);
+      getState().stateManager.setOriginalRenderer(layer.id, null);
     }
   });
   heatmapLayer = null;
@@ -5565,7 +5545,7 @@ function initializeClassificationPanel() {
 
   // Populate layers
   layerSelect.innerHTML = '<option value="">Choose a layer...</option>';
-  window.stateManager.getUploadedLayers().forEach((layer, index) => {
+  getState().stateManager.getUploadedLayers().forEach((layer, index) => {
     const option = document.createElement("option");
     option.value = index;
     option.textContent = layer.title;
@@ -5582,8 +5562,8 @@ function initializeClassificationPanel() {
       return;
     }
 
-    const layer = window.stateManager.getUploadedLayers()[parseInt(layerIndex)];
-    window.stateManager.setCurrentClassificationLayer(layer);
+    const layer = getState().stateManager.getUploadedLayers()[parseInt(layerIndex)];
+    getState().stateManager.setCurrentClassificationLayer(layer);
 
     // Populate fields
     fieldSelect.innerHTML = '<option value="">Choose a field...</option>';
@@ -5611,9 +5591,9 @@ function initializeClassificationPanel() {
   // Field change handler
   fieldSelect.addEventListener("change", async (e) => {
     const fieldName = e.target.value;
-    if (fieldName && window.stateManager.getCurrentClassificationLayer()) {
+    if (fieldName && getState().stateManager.getCurrentClassificationLayer()) {
       const stats = await analyzeFieldForClassification(
-        window.stateManager.getCurrentClassificationLayer(),
+        getState().stateManager.getCurrentClassificationLayer(),
         fieldName
       );
       showClassificationStatistics(stats);
@@ -5791,7 +5771,7 @@ async function applyClassification() {
   const fieldSelect = document.getElementById("classifyFieldSelect");
   const fieldName = fieldSelect.value;
 
-  if (!fieldName || !window.stateManager.getCurrentClassificationLayer()) {
+  if (!fieldName || !getState().stateManager.getCurrentClassificationLayer()) {
     showNotification("Please select a field for classification", "error");
     return;
   }
@@ -5800,7 +5780,7 @@ async function applyClassification() {
     showNotification("Applying classification...", "info");
 
     const stats = await analyzeFieldForClassification(
-      window.stateManager.getCurrentClassificationLayer(),
+      getState().stateManager.getCurrentClassificationLayer(),
       fieldName
     );
 
@@ -5810,9 +5790,9 @@ async function applyClassification() {
     }
 
     // Store original renderer
-    const currentLayer = window.stateManager.getCurrentClassificationLayer();
-    if (!window.stateManager.getOriginalRenderer(currentLayer.id)) {
-      window.stateManager.setOriginalRenderer(currentLayer.id, currentLayer.renderer);
+    const currentLayer = getState().stateManager.getCurrentClassificationLayer();
+    if (!getState().stateManager.getOriginalRenderer(currentLayer.id)) {
+      getState().stateManager.setOriginalRenderer(currentLayer.id, currentLayer.renderer);
     }
 
     const colors = generateClassificationColors(stats.sortedValues.length);
@@ -5966,13 +5946,13 @@ function createClassificationLegend(stats, colors, fieldName) {
 
 // Reset classification
 function resetClassification() {
-  const currentLayer = window.stateManager.getCurrentClassificationLayer();
+  const currentLayer = getState().stateManager.getCurrentClassificationLayer();
   if (!currentLayer) return;
 
-  const originalRenderer = window.stateManager.getOriginalRenderer(currentLayer.id);
+  const originalRenderer = getState().stateManager.getOriginalRenderer(currentLayer.id);
   if (originalRenderer) {
     currentLayer.renderer = originalRenderer;
-    window.stateManager.setOriginalRenderer(currentLayer.id, null);
+    getState().stateManager.setOriginalRenderer(currentLayer.id, null);
   }
 
   removeClassificationLegend();
@@ -6082,7 +6062,7 @@ async function executeBuffer() {
         return;
       }
 
-      const layer = window.stateManager.getUploadedLayers()[parseInt(layerIndex)];
+      const layer = getState().stateManager.getUploadedLayers()[parseInt(layerIndex)];
       const query = layer.createQuery();
       query.where = "1=1";
       query.returnGeometry = true;
@@ -6090,11 +6070,11 @@ async function executeBuffer() {
       const result = await layer.queryFeatures(query);
       features = result.features;
     } else {
-      if (window.stateManager.getDrawnFeatures().buffer.length === 0) {
+      if (getState().stateManager.getDrawnFeatures().buffer.length === 0) {
         showNotification("Please draw at least one feature", "error");
         return;
       }
-      features = window.stateManager.getDrawnFeatures().buffer;
+      features = getState().stateManager.getDrawnFeatures().buffer;
     }
 
     // Convert distance to meters
@@ -6205,11 +6185,11 @@ async function startIntersectAnalysis() {
   }
 
   // Reset drawn features
-  window.stateManager.setIntersectFeature1(null);
-  window.stateManager.setIntersectFeature2(null);
+  getState().stateManager.setIntersectFeature1(null);
+  getState().stateManager.setIntersectFeature2(null);
 
   // Populate layer selects
-  const polygonLayers = window.stateManager.getUploadedLayers().filter(
+  const polygonLayers = getState().stateManager.getUploadedLayers().filter(
     (layer) => layer.geometryType === "polygon"
   );
 
@@ -6284,13 +6264,13 @@ function closeIntersectModal() {
   stopAnalysisDrawing();
 
   // Clear drawn features if user wants
-  if (window.stateManager.getDrawnFeatures().intersect1) {
-    window.stateManager.getDrawLayer().remove(window.stateManager.getDrawnFeatures().intersect1);
-    window.stateManager.setIntersectFeature1(null);
+  if (getState().stateManager.getDrawnFeatures().intersect1) {
+    getState().stateManager.getDrawLayer().remove(getState().stateManager.getDrawnFeatures().intersect1);
+    getState().stateManager.setIntersectFeature1(null);
   }
-  if (window.stateManager.getDrawnFeatures().intersect2) {
-    window.stateManager.getDrawLayer().remove(window.stateManager.getDrawnFeatures().intersect2);
-    window.stateManager.setIntersectFeature2(null);
+  if (getState().stateManager.getDrawnFeatures().intersect2) {
+    getState().stateManager.getDrawLayer().remove(getState().stateManager.getDrawnFeatures().intersect2);
+    getState().stateManager.setIntersectFeature2(null);
   }
 }
 
@@ -6340,12 +6320,12 @@ async function startIntersectDrawing(featureNum) {
   }
 
   // Clear previous drawing for this feature
-  if (featureNum === 1 && window.stateManager.getDrawnFeatures().intersect1) {
-    window.stateManager.getDrawLayer().remove(window.stateManager.getDrawnFeatures().intersect1);
-    window.stateManager.setIntersectFeature1(null);
-  } else if (featureNum === 2 && window.stateManager.getDrawnFeatures().intersect2) {
-    window.stateManager.getDrawLayer().remove(window.stateManager.getDrawnFeatures().intersect2);
-    window.stateManager.setIntersectFeature2(null);
+  if (featureNum === 1 && getState().stateManager.getDrawnFeatures().intersect1) {
+    getState().stateManager.getDrawLayer().remove(getState().stateManager.getDrawnFeatures().intersect1);
+    getState().stateManager.setIntersectFeature1(null);
+  } else if (featureNum === 2 && getState().stateManager.getDrawnFeatures().intersect2) {
+    getState().stateManager.getDrawLayer().remove(getState().stateManager.getDrawnFeatures().intersect2);
+    getState().stateManager.setIntersectFeature2(null);
   }
 
   // Set custom symbology for intersection polygons
@@ -6408,11 +6388,11 @@ async function startIntersectDrawing(featureNum) {
       modal.classList.remove("drawing-active");
 
       if (featureNum === 1) {
-        window.stateManager.setIntersectFeature1(event.graphic);
+        getState().stateManager.setIntersectFeature1(event.graphic);
         document.querySelector("#intersectDraw1Section button").innerHTML =
           '<i class="fas fa-edit"></i> Redraw First Polygon';
       } else {
-        window.stateManager.setIntersectFeature2(event.graphic);
+        getState().stateManager.setIntersectFeature2(event.graphic);
         document.querySelector("#intersectDraw2Section button").innerHTML =
           '<i class="fas fa-edit"></i> Redraw Second Polygon';
       }
@@ -6627,7 +6607,7 @@ async function executeIntersection() {
         return;
       }
 
-      const polygonLayers = window.stateManager.getUploadedLayers().filter(
+      const polygonLayers = getState().stateManager.getUploadedLayers().filter(
         (layer) => layer.geometryType === "polygon"
       );
       const layer = polygonLayers[parseInt(layerIndex)];
@@ -6639,11 +6619,11 @@ async function executeIntersection() {
       const result = await layer.queryFeatures(query);
       features1 = result.features;
     } else {
-      if (!window.stateManager.getDrawnFeatures().intersect1) {
+      if (!getState().stateManager.getDrawnFeatures().intersect1) {
         showNotification("Please draw the first polygon", "error");
         return;
       }
-      features1 = [window.stateManager.getDrawnFeatures().intersect1];
+      features1 = [getState().stateManager.getDrawnFeatures().intersect1];
     }
 
     // Check second feature source
@@ -6669,7 +6649,7 @@ async function executeIntersection() {
         return;
       }
 
-      const polygonLayers = window.stateManager.getUploadedLayers().filter(
+      const polygonLayers = getState().stateManager.getUploadedLayers().filter(
         (layer) => layer.geometryType === "polygon"
       );
       const layer = polygonLayers[parseInt(layerIndex)];
@@ -6681,11 +6661,11 @@ async function executeIntersection() {
       const result = await layer.queryFeatures(query);
       features2 = result.features;
     } else {
-      if (!window.stateManager.getDrawnFeatures().intersect2) {
+      if (!getState().stateManager.getDrawnFeatures().intersect2) {
         showNotification("Please draw the second polygon", "error");
         return;
       }
-      features2 = [window.stateManager.getDrawnFeatures().intersect2];
+      features2 = [getState().stateManager.getDrawnFeatures().intersect2];
     }
 
     // Clear previous results
@@ -6817,11 +6797,11 @@ async function executeIntersection() {
     }
 
     // Clear drawn features from draw layer
-    if (!source1IsLayer && window.stateManager.getDrawnFeatures().intersect1) {
-      window.stateManager.getDrawLayer().remove(window.stateManager.getDrawnFeatures().intersect1);
+    if (!source1IsLayer && getState().stateManager.getDrawnFeatures().intersect1) {
+      getState().stateManager.getDrawLayer().remove(getState().stateManager.getDrawnFeatures().intersect1);
     }
-    if (!source2IsLayer && window.stateManager.getDrawnFeatures().intersect2) {
-      window.stateManager.getDrawLayer().remove(window.stateManager.getDrawnFeatures().intersect2);
+    if (!source2IsLayer && getState().stateManager.getDrawnFeatures().intersect2) {
+      getState().stateManager.getDrawLayer().remove(getState().stateManager.getDrawnFeatures().intersect2);
     }
 
     // Report results
@@ -7381,7 +7361,7 @@ function clearDistanceMeasurement() {
 async function startAreaAnalysis() {
   await initializeAnalysisLayer();
 
-  const polygonLayers = window.stateManager.getUploadedLayers().filter(
+  const polygonLayers = getState().stateManager.getUploadedLayers().filter(
     (layer) =>
       layer.geometryType === "polygon" ||
       (layer.graphics &&
@@ -7467,7 +7447,7 @@ function initializeTimeLayerSelect() {
 
   // Continue script.js - Complete time-aware features implementation
 
-  window.stateManager.getUploadedLayers().forEach((layer, index) => {
+  getState().stateManager.getUploadedLayers().forEach((layer, index) => {
     const option = document.createElement("option");
     option.value = index;
     option.textContent = layer.title;
@@ -7482,7 +7462,7 @@ function initializeTimeLayerSelect() {
 }
 
 async function setupTimeFields(layerIndex) {
-  const layer = window.stateManager.getUploadedLayers()[layerIndex];
+  const layer = getState().stateManager.getUploadedLayers()[layerIndex];
   timeEnabledLayer = layer;
 
   const fieldSelect = document.getElementById("timeFieldSelect");
@@ -7748,11 +7728,11 @@ async function startBufferAnalysis() {
   }
 
   // Reset drawn features
-  window.stateManager.clearDrawnFeatures();
+  getState().stateManager.clearDrawnFeatures();
 
   // Populate layer select
   select.innerHTML = '<option value="">Select a layer...</option>';
-  window.stateManager.getUploadedLayers().forEach((layer, index) => {
+  getState().stateManager.getUploadedLayers().forEach((layer, index) => {
     const option = document.createElement("option");
     option.value = index;
     option.textContent = layer.title;
@@ -7884,8 +7864,8 @@ async function startBufferDrawing(type) {
     sketchViewModel.cancel();
   }
 
-  window.stateManager.setAnalysisDrawing(true);
-  window.stateManager.setAnalysisDrawType(type);
+  getState().stateManager.setAnalysisDrawing(true);
+  getState().stateManager.setAnalysisDrawType(type);
 
   // Update button states
   document.querySelectorAll(".draw-option-btn").forEach((btn) => {
@@ -7964,7 +7944,7 @@ async function startBufferDrawing(type) {
       view.container.style.cursor = "default";
 
       // Add to drawn features
-      window.stateManager.addBufferFeature(event.graphic);
+      getState().stateManager.addBufferFeature(event.graphic);
 
       // Show success message
       showNotification(`${type} added to buffer analysis`, "success");
@@ -7972,13 +7952,13 @@ async function startBufferDrawing(type) {
       // Update help text to show count
       if (helpText) {
         helpText.innerHTML = `
-          <i class="fas fa-check-circle"></i> ${window.stateManager.getDrawnFeatures().buffer.length} feature(s) drawn. 
+          <i class="fas fa-check-circle"></i> ${getState().stateManager.getDrawnFeatures().buffer.length} feature(s) drawn. 
           Click a tool to draw more or execute analysis.
         `;
       }
 
       // Clean up
-      window.stateManager.setAnalysisDrawing(false);
+      getState().stateManager.setAnalysisDrawing(false);
       window.currentBufferHandler.remove();
     }
   });
@@ -8355,7 +8335,7 @@ function startAppTour() {
 // Export the tour function
 window.startAppTour = startAppTour;
 // Make initializeMap available globally for main.js
-window.initializeMap = initializeMap;
+// window.initializeMap = initializeMap;
 window.setupFeatureTour = setupFeatureTour;
 
 // Export functions for module system - ES6 module exports
@@ -8376,9 +8356,9 @@ export {
   showNotification,
 
   // Panel functions (will be moved to panel-manager.js)
-  openSidePanel,
-  closeSidePanel,
-  clearToolbarActiveStates,
+  // openSidePanel,
+  // closeSidePanel,
+  // clearToolbarActiveStates,
 
   // Layer management functions (will be moved to layer-manager.js)
   toggleLayer,
@@ -8404,6 +8384,15 @@ export {
 
   // Measurement functions (will be moved to measurement-manager.js)
   toggleMeasurement,
+
+  toggleFeatureTour,
+  nextFeature,
+  previousFeature,
+  closeTourControls,
+  manuallyStartTour,
+  initializeMapTabs,
+  redirectToTabPlatform
+
 };
 
 // Global variables - These will be moved to StateManager

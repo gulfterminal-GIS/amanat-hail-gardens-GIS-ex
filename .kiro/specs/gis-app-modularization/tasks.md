@@ -43,11 +43,21 @@
 - Never create circular dependencies
 - Test after each extraction to ensure nothing breaks
 
+**Window Object Exposure (CRITICAL):**
+
+- Functions called from HTML (onclick, onchange, etc.) MUST be exposed on window object
+- After extracting a module, ensure its public functions are available on window
+- Example: `window.toggleWidget = (name) => widgetManager.toggle(name);`
+- This maintains compatibility with inline HTML event handlers
+- Document all window-exposed functions in each module
+
 **Testing Strategy:**
 
 - After each task, verify the specific functionality still works
 - Keep the application running throughout the refactoring
 - Use browser console to check for errors
+- Test both desktop and mobile views
+- **CRITICAL**: Test all onclick handlers and inline events from HTML
 - Test both desktop and mobile views
 
 **CRITICAL: Global Variable Migration Status**
@@ -150,6 +160,8 @@
   
   - [x] 4.3 **CRITICAL: Fix uploadedLayers global variable usage**
 
+
+
     - Replace all direct `uploadedLayers` array access with StateManager methods
     - Update `toggleLayer(index)` to use `stateManager.getUploadedLayers()[index]`
     - Update `removeLayer(index)` to use StateManager's `removeUploadedLayer(index)` method
@@ -160,6 +172,7 @@
     - Update all other functions that access `uploadedLayers` directly
     - **PRIORITY**: This must be done before extracting layer management modules
     - _Requirements: 1.2, 1.3, 1.5_
+
 
   - [x] 4.4 **URGENT: Fix other global variable usage in script.js**
 
@@ -185,8 +198,22 @@
     - **GOAL**: Reduce StateManager complexity and improve performance
     - _Requirements: 1.2, 1.3, 3.1_
 
+  - [ ] 4.6 **CRITICAL: Document and expose window functions for HTML event handlers**
+    - Review window-functions.md for complete list of functions to expose
+    - Create a window exposure section at the end of each module
+    - Expose functions like: toggleWidget, toggleAttributeTable, zoomIn, zoomOut, etc.
+    - Use pattern: `window.functionName = (...args) => moduleInstance.method(...args);`
+    - Consider creating js/window-bindings.js to centralize all window exposures
+    - Test all inline event handlers after exposure (see checklist in window-functions.md)
+    - _Requirements: 1.2, 1.5, 3.2_
+    - _Reference: .kiro/specs/gis-app-modularization/window-functions.md_
+
+
 - [ ] 5. Extract UI foundation modules
-  - [ ] 5.1 Create js/ui/panel-manager.js for side panel system
+  - [x] 5.1 Create js/ui/panel-manager.js for side panel system
+
+
+
     - Extract openSidePanel, closeSidePanel, clearToolbarActiveStates from script.js
     - Extract initializeUploadPanel, initializeBasemapPanel functions
     - Create PanelManager class with panel lifecycle methods

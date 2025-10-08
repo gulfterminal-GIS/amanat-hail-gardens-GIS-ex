@@ -1,0 +1,187 @@
+/**
+ * PanelManager - Manages side panel system and panel lifecycle
+ * Handles opening/closing panels, toolbar states, and panel-specific initialization
+ */
+
+import { handleFiles } from "../../script.js";
+
+export class PanelManager {
+  constructor(stateManager, notificationManager) {
+    this.stateManager = stateManager;
+    this.notificationManager = notificationManager;
+    
+    // Initialize panel close button event listener
+    this.initializePanelCloseButton();
+  }
+
+  /**
+   * Open a side panel with specified title and template
+   * @param {string} title - Panel title to display
+   * @param {string} templateId - ID of the template element to load
+   */
+  openSidePanel(title, templateId) {
+    this.clearToolbarActiveStates();
+
+    // Mark the relevant button as active
+    const buttonMap = {
+      uploadPanelTemplate: "uploadBtn",
+      layersPanelTemplate: "layersBtn",
+      basemapPanelTemplate: "basemapBtn",
+      drawingPanelTemplate: "drawBtn",
+      analysisPanelTemplate: "analysisBtn",
+      visualizationPanelTemplate: "visualizeBtn",
+    };
+
+    const btnId = buttonMap[templateId];
+    if (btnId) {
+      document.getElementById(btnId)?.classList.add("active");
+    }
+
+    const panel = document.getElementById("sidePanel");
+    const panelTitle = document.getElementById("sidePanelTitle");
+    const panelContent = document.getElementById("sidePanelContent");
+    const template = document.getElementById(templateId);
+
+    if (template) {
+      panelTitle.textContent = title;
+      panelContent.innerHTML = template.innerHTML;
+      panel.classList.add("active");
+
+      // Initialize panel-specific functionality
+      if (templateId === "uploadPanelTemplate") {
+        this.initializeUploadPanel();
+      } else if (templateId === "basemapPanelTemplate") {
+        this.initializeBasemapPanel();
+      }
+    }
+  }  /**
+   
+* Clear active states from all toolbar buttons
+   * Preserves measurement button state if measurement widget is active
+   */
+  clearToolbarActiveStates() {
+    document.querySelectorAll(".toolbar-btn").forEach((btn) => {
+      // Don't clear measure button if measurement is active
+      const measurementWidget = this.stateManager.getMeasurementWidget();
+      if (btn.id !== "measureBtn" || !measurementWidget) {
+        btn.classList.remove("active");
+      }
+    });
+  }
+
+  /**
+   * Close the side panel and clean up active states
+   */
+  closeSidePanel() {
+    const panel = document.getElementById("sidePanel");
+    panel.classList.remove("active");
+
+    // Clean up any active states
+    document.querySelectorAll(".toolbar-btn").forEach((btn) => {
+      btn.classList.remove("active");
+    });
+  }
+
+  /**
+   * Initialize upload panel functionality when opened
+   * Sets up drag & drop zone and file input handling
+   */
+  initializeUploadPanel() {
+    const dropZone = document.querySelector("#sidePanelContent #dropZone");
+    const fileInput = document.querySelector("#sidePanelContent #fileInput");
+
+    if (!dropZone || !fileInput) return;
+
+    // Prevent default drag behaviors
+    ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+      dropZone.addEventListener(eventName, this.preventDefaults, false);
+    });
+
+    // Highlight drop zone when item is dragged over it
+    ["dragenter", "dragover"].forEach((eventName) => {
+      dropZone.addEventListener(
+        eventName,
+        () => {
+          dropZone.classList.add("drag-over");
+        },
+        false
+      );
+    });
+
+    ["dragleave", "drop"].forEach((eventName) => {
+      dropZone.addEventListener(
+        eventName,
+        () => {
+          dropZone.classList.remove("drag-over");
+        },
+        false
+      );
+    });
+
+    // Handle dropped files
+    dropZone.addEventListener(
+      "drop",
+      (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+      },
+      false
+    );
+
+    // Handle click to browse
+    dropZone.addEventListener("click", () => {
+      fileInput.click();
+    });
+
+    // Handle file input change
+    fileInput.addEventListener("change", (e) => {
+      handleFiles(e.target.files);
+    });
+  }  /**
+
+   * Initialize basemap panel functionality when opened
+   * Sets up basemap selection and switching
+   */
+  initializeBasemapPanel() {
+    const basemapItems = document.querySelectorAll(
+      "#sidePanelContent .basemap-item"
+    );
+
+    basemapItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        const basemap = item.dataset.basemap;
+        const map = this.stateManager.getMap();
+        
+        if (map) {
+          map.basemap = basemap;
+
+          // Update active state
+          basemapItems.forEach((b) => b.classList.remove("active"));
+          item.classList.add("active");
+        }
+      });
+    });
+  }
+
+  /**
+   * Initialize panel close button event listener
+   */
+  initializePanelCloseButton() {
+    const closeButton = document.getElementById("sidePanelClose");
+    if (closeButton) {
+      closeButton.addEventListener("click", () => {
+        this.closeSidePanel();
+      });
+    }
+  }
+
+  /**
+   * Prevent default drag behaviors for file upload
+   * @param {Event} e - The drag event
+   */
+  preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+}
