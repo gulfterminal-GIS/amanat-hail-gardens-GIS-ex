@@ -142,7 +142,6 @@
   
   - [x] 4.2 Create js/core/map-initializer.js for map setup
 
-
     - Extract initializeMap, loadDefaultGeoJSON, initializeCountriesLayer from script.js
     - Create MapInitializer class with map setup and loading screen logic
     - Comment out original map initialization code in script.js
@@ -162,7 +161,7 @@
     - **PRIORITY**: This must be done before extracting layer management modules
     - _Requirements: 1.2, 1.3, 1.5_
 
-  - [ ] 4.4 **URGENT: Fix other global variable usage in script.js**
+  - [x] 4.4 **URGENT: Fix other global variable usage in script.js**
 
     - Replace `view` with `stateManager.getView()` in all remaining functions (partially done)
     - Replace `displayMap` with `stateManager.getMap()` in all remaining functions
@@ -174,6 +173,17 @@
     - Replace all other global variables with their StateManager equivalents
     - **NOTE**: This is critical for maintaining consistency as modules are extracted
     - _Requirements: 1.2, 1.3, 1.5_
+
+  - [x] 4.5 **Optimize StateManager: Remove scope-limited globals**
+
+
+    - Identify globals that can be scoped to specific functions/modules instead of StateManager
+    - Remove UI element references that can be queried when needed: `chevronIcon`, `chevronBtn`, `featureDetails`
+    - Remove temporary/local state that doesn't need global persistence: `autoControl` (already removed)
+    - Keep only truly global application state in StateManager
+    - Update script.js to use local variables or DOM queries for scope-limited items
+    - **GOAL**: Reduce StateManager complexity and improve performance
+    - _Requirements: 1.2, 1.3, 3.1_
 
 - [ ] 5. Extract UI foundation modules
   - [ ] 5.1 Create js/ui/panel-manager.js for side panel system

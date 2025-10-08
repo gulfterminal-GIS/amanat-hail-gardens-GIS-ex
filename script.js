@@ -490,9 +490,9 @@ async function setupFeatureTour(layer) {
     query.outFields = ["*"];
 
     const featureSet = await layer.queryFeatures(query);
-    tourFeatures = featureSet.features;
+    window.stateManager.setTourFeatures(featureSet.features);
 
-    console.log(`Feature tour setup with ${tourFeatures.length} features`);
+    console.log(`Feature tour setup with ${window.stateManager.getTourFeatures().length} features`);
 
     // Create tour controls
     createTourControls();
@@ -561,20 +561,20 @@ function createTourControls() {
     });
   }
 
-  if (autoControl) {
-    // Set initial states
-    autoControl.classList.toggle("play");
-    autoControl.classList.toggle("pause");
+  // if (autoControl) {
+  //   // Set initial states
+  //   // autoControl.classList.remove("play");
+  //   // autoControl.classList.add("pause");
 
-    autoControl.addEventListener("click", () => {
-      // treat "pause" class as playing, "play" as paused
-      const isPlaying = autoControl.classList.contains("pause");
-      // setDetailsVisible(!isPlaying);
-      // toggle classes just in case
-      autoControl.classList.toggle("pause", !isPlaying);
-      autoControl.classList.toggle("play", isPlaying);
-    });
-  }
+  //   autoControl.addEventListener("click", () => {
+  //     // treat "pause" class as playing, "play" as paused
+  //     const isPlaying = autoControl.classList.contains("pause");
+  //     // setDetailsVisible(!isPlaying);
+  //     // toggle classes just in case
+  //     autoControl.classList.toggle("pause", !isPlaying);
+  //     autoControl.classList.toggle("play", isPlaying);
+  //   });
+  // }
 }
 
 // function setDetailsVisible(visible) {
@@ -607,51 +607,53 @@ function createTourControls() {
 
 // Start feature tour
 function startFeatureTour() {
-  if (tourFeatures.length === 0) {
+  if (window.stateManager.getTourFeatures().length === 0) {
     showNotification("No features to tour", "warning");
     return;
   }
 
-  featureTourActive = true;
-  currentFeatureIndex = 0;
+  window.stateManager.setFeatureTourActive(true);
+  window.stateManager.setCurrentFeatureIndex(0);
 
   // Show controls
   document.querySelector(".feature-tour-controls").classList.add("active");
 
   // Update play button
+  const autoControl = document.querySelector(".feature-tour-controls .auto-control");
   if (autoControl) {
-    autoControl.classList.toggle("pause");
-    autoControl.classList.toggle("play");
+    autoControl.classList.remove("pause");
+    autoControl.classList.add("play");
   }
 
   // Start touring
-  goToFeature(currentFeatureIndex);
+  goToFeature(window.stateManager.getCurrentFeatureIndex());
 
   // Auto advance every 3 seconds
-  featureTourInterval = setInterval(() => {
+  window.stateManager.setFeatureTourInterval(setInterval(() => {
     nextFeature(false); // auto-play
-  }, 7000);
+  }, 7000));
 }
 
 // Stop feature tour
 function stopFeatureTour() {
-  featureTourActive = false;
+  window.stateManager.setFeatureTourActive(false);
 
-  if (featureTourInterval) {
-    clearInterval(featureTourInterval);
-    featureTourInterval = null;
+  if (window.stateManager.getFeatureTourInterval()) {
+    clearInterval(window.stateManager.getFeatureTourInterval());
+    window.stateManager.setFeatureTourInterval(null);
   }
 
   // Update play button
+  const autoControl = document.querySelector(".feature-tour-controls .auto-control");
   if (autoControl) {
-    autoControl.classList.toggle("pause");
-    autoControl.classList.toggle("play");
+    autoControl.classList.add("pause");
+    autoControl.classList.remove("play");
   }
 }
 
 // Toggle tour play/pause
 function toggleFeatureTour() {
-  if (featureTourActive) {
+  if (window.stateManager.isFeatureTourActive()) {
     stopFeatureTour();
   } else {
     startFeatureTour();
@@ -669,10 +671,10 @@ async function goToFeature(index) {
       return;
     }
 
-    if (index < 0 || index >= tourFeatures.length) return;
+    if (index < 0 || index >= window.stateManager.getTourFeatures().length) return;
 
-    const feature = tourFeatures[index];
-    currentFeatureIndex = index;
+    const feature = window.stateManager.getTourFeatures()[index];
+    window.stateManager.setCurrentFeatureIndex(index);
 
     // For polygons, calculate center and use appropriate zoom
     if (feature.geometry.type === "polygon") {
@@ -705,16 +707,16 @@ async function goToFeature(index) {
     }
 
     // Highlight the feature
-    if (highlightHandle) {
-      highlightHandle.remove(); // clear old highlight
-      highlightHandle = null;
+    if (window.stateManager.getHighlightHandle()) {
+      window.stateManager.getHighlightHandle().remove(); // clear old highlight
+      window.stateManager.setHighlightHandle(null);
     }
 
     // Add highlight with proper error handling
     if (tourLayer) {
       try {
-        const layerView = await view.whenLayerView(tourLayer);
-        highlightHandle = layerView.highlight(feature);
+        const layerView = await window.stateManager.getView().whenLayerView(window.stateManager.getTourLayer());
+        window.stateManager.setHighlightHandle(layerView.highlight(feature));
       } catch (error) {
         console.warn('Error creating highlight:', error);
       }
@@ -725,7 +727,7 @@ async function goToFeature(index) {
 
     // Update progress
     document.getElementById("tourProgress").textContent = `${index + 1} / ${
-      tourFeatures.length
+      window.stateManager.getTourFeatures().length
     }`;
 
     // Show popup in left-center position
@@ -742,7 +744,7 @@ function showCustomPopupTour(graphic) {
     return;
   }
 
-  currentPopupFeature = graphic;
+  window.stateManager.setCurrentPopupFeature(graphic);
 
   // Attributes
   const attributes = graphic.attributes;
@@ -854,7 +856,7 @@ function updateTourInfo(feature) {
 
   // If no name found, use a default
   if (!featureName) {
-    featureName = `حديقه ${currentFeatureIndex + 1}`;
+    featureName = `حديقه ${window.stateManager.getCurrentFeatureIndex() + 1}`;
   }
 
   // Only show if is a truthy value
@@ -881,7 +883,7 @@ function nextFeature(manual = true) {
     stopFeatureTour(); // only stop when user explicitly clicks
   }
 
-  const nextIndex = (currentFeatureIndex + 1) % tourFeatures.length;
+  const nextIndex = (window.stateManager.getCurrentFeatureIndex() + 1) % window.stateManager.getTourFeatures().length;
   goToFeature(nextIndex);
 }
 
@@ -891,9 +893,9 @@ function previousFeature(manual = true) {
   }
 
   const prevIndex =
-    currentFeatureIndex === 0
-      ? tourFeatures.length - 1
-      : currentFeatureIndex - 1;
+    window.stateManager.getCurrentFeatureIndex() === 0
+      ? window.stateManager.getTourFeatures().length - 1
+      : window.stateManager.getCurrentFeatureIndex() - 1;
   goToFeature(prevIndex);
 }
 
@@ -912,14 +914,14 @@ window.previousFeature = previousFeature;
 window.closeTourControls = closeTourControls;
 
 function manuallyStartTour() {
-  if (tourFeatures.length === 0) {
+  if (window.stateManager.getTourFeatures().length === 0) {
     showNotification("No features available for tour", "warning");
     return;
   }
 
   document.querySelector(".feature-tour-controls").classList.add("active");
 
-  if (!featureTourActive) {
+  if (!window.stateManager.isFeatureTourActive()) {
     startFeatureTour();
   }
 }
@@ -1484,7 +1486,7 @@ async function loadCSV(content, filename) {
 
   // Zoom to features
   if (features.length > 0) {
-    await view.goTo(features);
+    await window.stateManager.getView().goTo(features);
   }
 }
 
@@ -1743,7 +1745,7 @@ async function loadGeoJSON(content, filename) {
 
     // Zoom to layer extent
     if (layer.fullExtent) {
-      await view.goTo(layer.fullExtent.expand(1.1));
+      await window.stateManager.getView().goTo(layer.fullExtent.expand(1.1));
     }
 
     // Clean up blob URL
@@ -1834,13 +1836,13 @@ function toggleLayer(index) {
 async function zoomToLayer(index) {
   const layer = window.stateManager.getUploadedLayers()[index];
   if (layer.fullExtent) {
-    await view.goTo(layer.fullExtent);
+    await window.stateManager.getView().goTo(layer.fullExtent);
   }
 }
 
 function removeLayer(index) {
   const layer = window.stateManager.getUploadedLayers()[index];
-  displayMap.remove(layer);
+  window.stateManager.getMap().remove(layer);
   window.stateManager.removeUploadedLayer(index);
   updateLayerList();
 }
@@ -1938,7 +1940,7 @@ function initializeDrawingPanel() {
       btn.classList.add("active");
 
       // Start drawing
-      activeDrawingTool = tool;
+      window.stateManager.setActiveDrawingTool(tool);
       startDrawingWithTool(tool);
     });
   });
@@ -2038,7 +2040,7 @@ window.cancelBufferDrawing = function () {
     sketchViewModel.cancel();
   }
 
-  analysisDrawing = false;
+  window.stateManager.setAnalysisDrawing(false);
 
   const indicator = document.getElementById("drawingIndicator");
   if (indicator) {
@@ -2059,7 +2061,7 @@ window.debugDrawing = function () {
   console.log("- SketchViewModel exists:", !!sketchViewModel);
   console.log("- View exists:", !!view);
   console.log("- DrawLayer exists:", !!drawLayer);
-  console.log("- Analysis drawing active:", analysisDrawing);
+  console.log("- Analysis drawing active:", window.stateManager.isAnalysisDrawing());
   console.log("- Current cursor:", view.container.style.cursor);
 
   if (sketchViewModel) {
@@ -2121,10 +2123,10 @@ function setupSketchViewModelEvents() {
       applyCustomSymbology(event.graphic);
 
       // Continue drawing if tool is still active
-      if (activeDrawingTool) {
+      if (window.stateManager.getActiveDrawingTool()) {
         setTimeout(() => {
-          if (activeDrawingTool) {
-            startDrawingWithTool(activeDrawingTool);
+          if (window.stateManager.getActiveDrawingTool()) {
+            startDrawingWithTool(window.stateManager.getActiveDrawingTool());
           }
         }, 100);
       }
@@ -2164,7 +2166,7 @@ function initializeDrawingToolButtons() {
       btn.classList.add("active");
 
       // Start drawing
-      activeDrawingTool = tool;
+      window.stateManager.setActiveDrawingTool(tool);
       startDrawingWithTool(tool);
     });
   });
@@ -2310,7 +2312,7 @@ function updateActiveGraphicsSymbology() {
 
 // Reset drawing tools
 function resetDrawingTools() {
-  activeDrawingTool = null;
+  window.stateManager.setActiveDrawingTool(null);
   document.querySelectorAll(".draw-tool-btn").forEach((btn) => {
     btn.classList.remove("active");
   });
@@ -2742,11 +2744,11 @@ function initializeEventHandlers(stateManager) {
         createCountryFlashAnimation(feature.geometry);
 
         // Hide after 5 seconds
-        clearTimeout(countryInfoTimeout);
-        countryInfoTimeout = setTimeout(() => {
+        window.stateManager.clearCountryInfoTimeout();
+        window.stateManager.setCountryInfoTimeout(setTimeout(() => {
           infoDisplay.classList.add("hidden");
-          flashGraphicsLayer.removeAll();
-        }, 5000);
+          window.stateManager.getFlashGraphicsLayer().removeAll();
+        }, 5000));
       }
     } catch (error) {
       console.error("Error querying country:", error);
@@ -3271,7 +3273,7 @@ async function initializeSearch(view) {
 
 // Replace showCustomPopup with this enhanced version
 function showCustomPopup(graphic, mapPoint) {
-  currentPopupFeature = graphic;
+  window.stateManager.setCurrentPopupFeature(graphic);
   const popup = document.getElementById("customPopup");
   const content = document.getElementById("popupContent");
   const title = document.getElementById("popupTitle");
@@ -3655,24 +3657,24 @@ function positionPopup(popup, mapPoint) {
 
 // Popup action functions
 function zoomToFeature() {
-  if (currentPopupFeature && currentPopupFeature.geometry) {
-    view.goTo({
-      target: currentPopupFeature.geometry,
-      zoom: view.zoom + 2,
+  if (window.stateManager.getCurrentPopupFeature() && window.stateManager.getCurrentPopupFeature().geometry) {
+    window.stateManager.getView().goTo({
+      target: window.stateManager.getCurrentPopupFeature().geometry,
+      zoom: window.stateManager.getView().zoom + 2,
     });
   }
 }
 
 function copyFeatureInfo() {
-  if (!currentPopupFeature) return;
+  if (!window.stateManager.getCurrentPopupFeature()) return;
 
   let text = "Feature Information\n";
   text += "==================\n\n";
 
   // Add attributes
-  if (currentPopupFeature.attributes) {
+  if (window.stateManager.getCurrentPopupFeature().attributes) {
     text += "Attributes:\n";
-    Object.entries(currentPopupFeature.attributes).forEach(([key, value]) => {
+    Object.entries(window.stateManager.getCurrentPopupFeature().attributes).forEach(([key, value]) => {
       if (!key.startsWith("_") && key !== "ObjectID" && key !== "FID") {
         text += `${formatFieldName(key)}: ${value || "N/A"}\n`;
       }
@@ -3698,7 +3700,7 @@ window.copyFeatureInfo = copyFeatureInfo;
 function closeCustomPopup() {
   const popup = document.getElementById("customPopup");
   popup.classList.add("hidden");
-  currentPopupFeature = null;
+  window.stateManager.setCurrentPopupFeature(null);
 }
 
 // // Utility functions
@@ -4455,14 +4457,14 @@ async function toggleSwipe() {
       const [Swipe] = await Promise.all([loadModule("esri/widgets/Swipe")]);
 
       const swipe = new Swipe({
-        view: view,
+        view: window.stateManager.getView(),
         leadingLayers: [window.stateManager.getUploadedLayers()[0]],
         trailingLayers: [window.stateManager.getUploadedLayers()[1]],
         direction: "horizontal",
         position: 50,
       });
 
-      view.ui.add(swipe);
+      window.stateManager.getView().ui.add(swipe);
       activeWidgets.set("swipe", swipe);
       showNotification("Swipe between first two layers", "info");
 
@@ -5339,8 +5341,8 @@ async function applyHeatmap(layerIndex) {
       loadModule("esri/renderers/HeatmapRenderer"),
     ]);
 
-    if (!originalRenderers.has(layer)) {
-      originalRenderers.set(layer, layer.renderer);
+    if (!window.stateManager.getOriginalRenderer(layer.id)) {
+      window.stateManager.setOriginalRenderer(layer.id, layer.renderer);
     }
 
     // Create heatmap renderer with density settings
@@ -5368,8 +5370,12 @@ async function applyHeatmap(layerIndex) {
 
 // Restore original renderers
 function restoreOriginalRenderers() {
-  originalRenderers.forEach((renderer, layer) => {
-    layer.renderer = renderer;
+  window.stateManager.getUploadedLayers().forEach((layer) => {
+    const originalRenderer = window.stateManager.getOriginalRenderer(layer.id);
+    if (originalRenderer) {
+      layer.renderer = originalRenderer;
+      window.stateManager.setOriginalRenderer(layer.id, null);
+    }
   });
   heatmapLayer = null;
 }
@@ -5577,7 +5583,7 @@ function initializeClassificationPanel() {
     }
 
     const layer = window.stateManager.getUploadedLayers()[parseInt(layerIndex)];
-    currentClassificationLayer = layer;
+    window.stateManager.setCurrentClassificationLayer(layer);
 
     // Populate fields
     fieldSelect.innerHTML = '<option value="">Choose a field...</option>';
@@ -5605,9 +5611,9 @@ function initializeClassificationPanel() {
   // Field change handler
   fieldSelect.addEventListener("change", async (e) => {
     const fieldName = e.target.value;
-    if (fieldName && currentClassificationLayer) {
+    if (fieldName && window.stateManager.getCurrentClassificationLayer()) {
       const stats = await analyzeFieldForClassification(
-        currentClassificationLayer,
+        window.stateManager.getCurrentClassificationLayer(),
         fieldName
       );
       showClassificationStatistics(stats);
@@ -5785,7 +5791,7 @@ async function applyClassification() {
   const fieldSelect = document.getElementById("classifyFieldSelect");
   const fieldName = fieldSelect.value;
 
-  if (!fieldName || !currentClassificationLayer) {
+  if (!fieldName || !window.stateManager.getCurrentClassificationLayer()) {
     showNotification("Please select a field for classification", "error");
     return;
   }
@@ -5794,7 +5800,7 @@ async function applyClassification() {
     showNotification("Applying classification...", "info");
 
     const stats = await analyzeFieldForClassification(
-      currentClassificationLayer,
+      window.stateManager.getCurrentClassificationLayer(),
       fieldName
     );
 
@@ -5804,15 +5810,13 @@ async function applyClassification() {
     }
 
     // Store original renderer
-    if (!originalRenderers.has(currentClassificationLayer)) {
-      originalRenderers.set(
-        currentClassificationLayer,
-        currentClassificationLayer.renderer
-      );
+    const currentLayer = window.stateManager.getCurrentClassificationLayer();
+    if (!window.stateManager.getOriginalRenderer(currentLayer.id)) {
+      window.stateManager.setOriginalRenderer(currentLayer.id, currentLayer.renderer);
     }
 
     const colors = generateClassificationColors(stats.sortedValues.length);
-    const geometryType = currentClassificationLayer.geometryType;
+    const geometryType = currentLayer.geometryType;
 
     // Create unique value infos
     const uniqueValueInfos = stats.sortedValues.map(([value, count], index) => {
@@ -5862,7 +5866,7 @@ async function applyClassification() {
     const defaultSymbol = createDefaultClassificationSymbol(geometryType);
 
     // Apply renderer
-    currentClassificationLayer.renderer = {
+    currentLayer.renderer = {
       type: "unique-value",
       field: fieldName,
       uniqueValueInfos: uniqueValueInfos,
@@ -5962,12 +5966,13 @@ function createClassificationLegend(stats, colors, fieldName) {
 
 // Reset classification
 function resetClassification() {
-  if (!currentClassificationLayer) return;
+  const currentLayer = window.stateManager.getCurrentClassificationLayer();
+  if (!currentLayer) return;
 
-  const originalRenderer = originalRenderers.get(currentClassificationLayer);
+  const originalRenderer = window.stateManager.getOriginalRenderer(currentLayer.id);
   if (originalRenderer) {
-    currentClassificationLayer.renderer = originalRenderer;
-    originalRenderers.delete(currentClassificationLayer);
+    currentLayer.renderer = originalRenderer;
+    window.stateManager.setOriginalRenderer(currentLayer.id, null);
   }
 
   removeClassificationLegend();
@@ -6085,11 +6090,11 @@ async function executeBuffer() {
       const result = await layer.queryFeatures(query);
       features = result.features;
     } else {
-      if (drawnFeatures.buffer.length === 0) {
+      if (window.stateManager.getDrawnFeatures().buffer.length === 0) {
         showNotification("Please draw at least one feature", "error");
         return;
       }
-      features = drawnFeatures.buffer;
+      features = window.stateManager.getDrawnFeatures().buffer;
     }
 
     // Convert distance to meters
@@ -6200,8 +6205,8 @@ async function startIntersectAnalysis() {
   }
 
   // Reset drawn features
-  drawnFeatures.intersect1 = null;
-  drawnFeatures.intersect2 = null;
+  window.stateManager.setIntersectFeature1(null);
+  window.stateManager.setIntersectFeature2(null);
 
   // Populate layer selects
   const polygonLayers = window.stateManager.getUploadedLayers().filter(
@@ -6279,13 +6284,13 @@ function closeIntersectModal() {
   stopAnalysisDrawing();
 
   // Clear drawn features if user wants
-  if (drawnFeatures.intersect1) {
-    drawLayer.remove(drawnFeatures.intersect1);
-    drawnFeatures.intersect1 = null;
+  if (window.stateManager.getDrawnFeatures().intersect1) {
+    window.stateManager.getDrawLayer().remove(window.stateManager.getDrawnFeatures().intersect1);
+    window.stateManager.setIntersectFeature1(null);
   }
-  if (drawnFeatures.intersect2) {
-    drawLayer.remove(drawnFeatures.intersect2);
-    drawnFeatures.intersect2 = null;
+  if (window.stateManager.getDrawnFeatures().intersect2) {
+    window.stateManager.getDrawLayer().remove(window.stateManager.getDrawnFeatures().intersect2);
+    window.stateManager.setIntersectFeature2(null);
   }
 }
 
@@ -6335,12 +6340,12 @@ async function startIntersectDrawing(featureNum) {
   }
 
   // Clear previous drawing for this feature
-  if (featureNum === 1 && drawnFeatures.intersect1) {
-    drawLayer.remove(drawnFeatures.intersect1);
-    drawnFeatures.intersect1 = null;
-  } else if (featureNum === 2 && drawnFeatures.intersect2) {
-    drawLayer.remove(drawnFeatures.intersect2);
-    drawnFeatures.intersect2 = null;
+  if (featureNum === 1 && window.stateManager.getDrawnFeatures().intersect1) {
+    window.stateManager.getDrawLayer().remove(window.stateManager.getDrawnFeatures().intersect1);
+    window.stateManager.setIntersectFeature1(null);
+  } else if (featureNum === 2 && window.stateManager.getDrawnFeatures().intersect2) {
+    window.stateManager.getDrawLayer().remove(window.stateManager.getDrawnFeatures().intersect2);
+    window.stateManager.setIntersectFeature2(null);
   }
 
   // Set custom symbology for intersection polygons
@@ -6403,11 +6408,11 @@ async function startIntersectDrawing(featureNum) {
       modal.classList.remove("drawing-active");
 
       if (featureNum === 1) {
-        drawnFeatures.intersect1 = event.graphic;
+        window.stateManager.setIntersectFeature1(event.graphic);
         document.querySelector("#intersectDraw1Section button").innerHTML =
           '<i class="fas fa-edit"></i> Redraw First Polygon';
       } else {
-        drawnFeatures.intersect2 = event.graphic;
+        window.stateManager.setIntersectFeature2(event.graphic);
         document.querySelector("#intersectDraw2Section button").innerHTML =
           '<i class="fas fa-edit"></i> Redraw Second Polygon';
       }
@@ -6634,11 +6639,11 @@ async function executeIntersection() {
       const result = await layer.queryFeatures(query);
       features1 = result.features;
     } else {
-      if (!drawnFeatures.intersect1) {
+      if (!window.stateManager.getDrawnFeatures().intersect1) {
         showNotification("Please draw the first polygon", "error");
         return;
       }
-      features1 = [drawnFeatures.intersect1];
+      features1 = [window.stateManager.getDrawnFeatures().intersect1];
     }
 
     // Check second feature source
@@ -6676,11 +6681,11 @@ async function executeIntersection() {
       const result = await layer.queryFeatures(query);
       features2 = result.features;
     } else {
-      if (!drawnFeatures.intersect2) {
+      if (!window.stateManager.getDrawnFeatures().intersect2) {
         showNotification("Please draw the second polygon", "error");
         return;
       }
-      features2 = [drawnFeatures.intersect2];
+      features2 = [window.stateManager.getDrawnFeatures().intersect2];
     }
 
     // Clear previous results
@@ -6812,11 +6817,11 @@ async function executeIntersection() {
     }
 
     // Clear drawn features from draw layer
-    if (!source1IsLayer && drawnFeatures.intersect1) {
-      drawLayer.remove(drawnFeatures.intersect1);
+    if (!source1IsLayer && window.stateManager.getDrawnFeatures().intersect1) {
+      window.stateManager.getDrawLayer().remove(window.stateManager.getDrawnFeatures().intersect1);
     }
-    if (!source2IsLayer && drawnFeatures.intersect2) {
-      drawLayer.remove(drawnFeatures.intersect2);
+    if (!source2IsLayer && window.stateManager.getDrawnFeatures().intersect2) {
+      window.stateManager.getDrawLayer().remove(window.stateManager.getDrawnFeatures().intersect2);
     }
 
     // Report results
@@ -7743,7 +7748,7 @@ async function startBufferAnalysis() {
   }
 
   // Reset drawn features
-  drawnFeatures.buffer = [];
+  window.stateManager.clearDrawnFeatures();
 
   // Populate layer select
   select.innerHTML = '<option value="">Select a layer...</option>';
@@ -7879,8 +7884,8 @@ async function startBufferDrawing(type) {
     sketchViewModel.cancel();
   }
 
-  analysisDrawing = true;
-  analysisDrawType = type;
+  window.stateManager.setAnalysisDrawing(true);
+  window.stateManager.setAnalysisDrawType(type);
 
   // Update button states
   document.querySelectorAll(".draw-option-btn").forEach((btn) => {
@@ -7959,7 +7964,7 @@ async function startBufferDrawing(type) {
       view.container.style.cursor = "default";
 
       // Add to drawn features
-      drawnFeatures.buffer.push(event.graphic);
+      window.stateManager.addBufferFeature(event.graphic);
 
       // Show success message
       showNotification(`${type} added to buffer analysis`, "success");
@@ -7967,13 +7972,13 @@ async function startBufferDrawing(type) {
       // Update help text to show count
       if (helpText) {
         helpText.innerHTML = `
-          <i class="fas fa-check-circle"></i> ${drawnFeatures.buffer.length} feature(s) drawn. 
+          <i class="fas fa-check-circle"></i> ${window.stateManager.getDrawnFeatures().buffer.length} feature(s) drawn. 
           Click a tool to draw more or execute analysis.
         `;
       }
 
       // Clean up
-      analysisDrawing = false;
+      window.stateManager.setAnalysisDrawing(false);
       window.currentBufferHandler.remove();
     }
   });

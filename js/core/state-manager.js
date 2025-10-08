@@ -10,7 +10,7 @@
  * - searchWidget, measurementWidget, sketchViewModel
  * - currentPopupFeature, activeNotifications
  * - featureTourActive, featureTourInterval, currentFeatureIndex, tourFeatures
- * - highlightHandle, autoControl, chevronIcon, chevronBtn, featureDetails
+ * - highlightHandle
  * - currentClassificationLayer, originalRenderers
  * - analysisDrawing, analysisDrawType, drawnFeatures
  * - countryInfoTimeout, activeDrawingTool
@@ -50,10 +50,6 @@ export class StateManager {
     this._currentFeatureIndex = 0;
     this._tourFeatures = [];
     this._highlightHandle = null;
-    this._autoControl = null;
-    this._chevronIcon = null;
-    this._chevronBtn = null;
-    this._featureDetails = null;
 
     // Classification state
     this._currentClassificationLayer = null;
@@ -342,53 +338,9 @@ export class StateManager {
     }
   }
 
-  getAutoControl() {
-    return this._autoControl;
-  }
 
-  setAutoControl(control) {
-    this._autoControl = control;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.autoControl = control;
-    }
-  }
 
-  getChevronIcon() {
-    return this._chevronIcon;
-  }
 
-  setChevronIcon(icon) {
-    this._chevronIcon = icon;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.chevronIcon = icon;
-    }
-  }
-
-  getChevronBtn() {
-    return this._chevronBtn;
-  }
-
-  setChevronBtn(btn) {
-    this._chevronBtn = btn;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.chevronBtn = btn;
-    }
-  }
-
-  getFeatureDetails() {
-    return this._featureDetails;
-  }
-
-  setFeatureDetails(details) {
-    this._featureDetails = details;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.featureDetails = details;
-    }
-  }
 
   // ==================== Classification State ====================
 
@@ -553,10 +505,6 @@ export class StateManager {
     this._currentFeatureIndex = 0;
     this._tourFeatures = [];
     this._highlightHandle = null;
-    this._autoControl = null;
-    this._chevronIcon = null;
-    this._chevronBtn = null;
-    this._featureDetails = null;
     this._currentClassificationLayer = null;
     this._originalRenderers.clear();
     this._analysisDrawing = false;
