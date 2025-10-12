@@ -34,8 +34,8 @@ export function bindWindowFunctions(managers) {
     notificationManager,
     mapInitializer,
     panelManager,
+    toolbarManager,
     // Future managers will be added here as they're created:
-    // toolbarManager,
     // tabSystem,
     // searchManager,
     // layerManager,

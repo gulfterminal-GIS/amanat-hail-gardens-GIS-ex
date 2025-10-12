@@ -214,7 +214,7 @@
     - _Reference: .kiro/specs/gis-app-modularization/window-functions.md_
 
 
-- [ ] 5. Extract UI foundation modules
+- [-] 5. Extract UI foundation modules
   - [x] 5.1 Create js/ui/panel-manager.js for side panel system
 
 
@@ -227,7 +227,7 @@
     - Update main.js to import and initialize PanelManager
     - _Requirements: 1.2, 1.5, 3.2, 3.3_
   
-  - [ ] 5.2 Create js/ui/toolbar-manager.js for toolbar functionality
+  - [x] 5.2 Create js/ui/toolbar-manager.js for toolbar functionality
     - Extract desktop and mobile toolbar initialization from initializeUI
     - Create ToolbarManager class with toolbar setup and event handling
     - **CRITICAL**: Replace all global variable usage with StateManager calls (view, displayMap, etc.)

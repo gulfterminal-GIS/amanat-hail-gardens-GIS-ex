@@ -2,6 +2,7 @@ import { StateManager } from './js/core/state-manager.js';
 import { MapInitializer } from './js/core/map-initializer.js';
 import { NotificationManager } from './js/ui/notification-manager.js';
 import { PanelManager } from './js/ui/panel-manager.js';
+import { loadModule, loadModules } from "./js/core/module-loader.js";
 
 // ============================================================================
 // GLOBAL VARIABLES - NOW MANAGED BY StateManager (js/core/state-manager.js)
@@ -71,19 +72,6 @@ let countryInfoTimeout = null;
 // ============================================================================
 // StateManager is now injected through initializeMap
 // All state access should go through getState()
-
-// Import core modules and utilities
-import { loadModule, loadModules } from "./js/core/module-loader.js";
-// import { StateManager } from "./js/core/state-manager.js";
-// import { NotificationManager } from "./js/ui/notification-manager.js";
-// import { MapInitializer } from "./js/core/map-initializer.js";
-// import { PanelManager } from "./js/ui/panel-manager.js";
-
-// ============================================================================
-// COMMENTED OUT - Moved to js/core/map-initializer.js
-// ============================================================================
-// Original initializeMap function has been extracted to MapInitializer
-// Use window.mapInitializer.initializeMap() instead
 // ============================================================================
 
 // Initialize map with injected dependencies
@@ -91,7 +79,8 @@ async function initializeMap(
   stateManager = new StateManager(),
   mapInitializer = new MapInitializer(stateManager),
   notificationManager = new NotificationManager(),
-  panelManager = new PanelManager(stateManager, notificationManager)
+  panelManager = new PanelManager(stateManager, notificationManager),
+  toolbarManager = null
 ) {
   try {
     // Store instances at module level for use by other functions
@@ -99,7 +88,8 @@ async function initializeMap(
       stateManager,
       mapInitializer,
       notificationManager,
-      panelManager
+      panelManager,
+      toolbarManager
     };
 
     // Initialize state
@@ -116,6 +106,12 @@ async function initializeMap(
 
     // Initialize map
     await mapInitializer.initializeMap();
+
+    // Initialize toolbar after map is ready
+    if (toolbarManager) {
+      console.log("Initializing ToolbarManager...");
+      toolbarManager.initialize();
+    }
 
     return moduleState;
   } catch (error) {
@@ -1052,108 +1048,115 @@ function initializeUI(injectedStateManager) {
   const displayMap = stateManager.getMap();
   const view = stateManager.getView();
 
-  // Add this code right after the function starts:
-  // Initialize mobile toolbar
-  const mobileToggle = document.getElementById("mobileToolbarToggle");
-  const mobileMenu = document.getElementById("mobileToolbarMenu");
-  const mobileClose = document.getElementById("mobileMenuClose");
+  // ============================================================================
+  // COMMENTED OUT - Moved to js/ui/toolbar-manager.js
+  // ============================================================================
+  // Mobile and desktop toolbar initialization has been extracted to ToolbarManager
+  // The ToolbarManager is initialized in main.js and called from initializeMap
+  // ============================================================================
+  
+  // // Add this code right after the function starts:
+  // // Initialize mobile toolbar
+  // const mobileToggle = document.getElementById("mobileToolbarToggle");
+  // const mobileMenu = document.getElementById("mobileToolbarMenu");
+  // const mobileClose = document.getElementById("mobileMenuClose");
 
-  mobileToggle.addEventListener("click", () => {
-    mobileMenu.classList.add("active");
-  });
+  // mobileToggle.addEventListener("click", () => {
+  //   mobileMenu.classList.add("active");
+  // });
 
-  mobileClose.addEventListener("click", () => {
-    mobileMenu.classList.remove("active");
-  });
+  // mobileClose.addEventListener("click", () => {
+  //   mobileMenu.classList.remove("active");
+  // });
 
-  // Close mobile menu on outside click
-  mobileMenu.addEventListener("click", (e) => {
-    if (e.target === mobileMenu) {
-      mobileMenu.classList.remove("active");
-    }
-  });
+  // // Close mobile menu on outside click
+  // mobileMenu.addEventListener("click", (e) => {
+  //   if (e.target === mobileMenu) {
+  //     mobileMenu.classList.remove("active");
+  //   }
+  // });
 
-  // Mobile menu item clicks
-  document.querySelectorAll(".mobile-menu-item").forEach((item) => {
-    item.addEventListener("click", function () {
-      const { stateManager } = getState();
-      const action = this.dataset.action;
-      mobileMenu.classList.remove("active");
+  // // Mobile menu item clicks
+  // document.querySelectorAll(".mobile-menu-item").forEach((item) => {
+  //   item.addEventListener("click", function () {
+  //     const { stateManager } = getState();
+  //     const action = this.dataset.action;
+  //     mobileMenu.classList.remove("active");
 
-      // Trigger the appropriate action
-      switch (action) {
-        case "upload":
-          getState().panelManager.openSidePanel("Upload Files", "uploadPanelTemplate");
-          break;
-        case "layers":
-          getState().panelManager.openSidePanel("Layers", "layersPanelTemplate");
-          break;
-        case "basemap":
-          getState().panelManager.openSidePanel("Basemap", "basemapPanelTemplate");
-          break;
-        case "measure":
-          toggleMeasurement();
-          break;
-        case "draw":
-          getState().panelManager.openSidePanel("Drawing Tools", "drawingPanelTemplate");
-          initializeDrawingPanel();
-          break;
-        case "locate":
-          locateUser();
-          break;
-        case "analysis":
-          getState().panelManager.openSidePanel("Spatial Analysis", "analysisPanelTemplate");
-          break;
-        case "visualize":
-          getState().panelManager.openSidePanel("Visualization", "visualizationPanelTemplate");
-          break;
-        case "classification":
-          getState().panelManager.openSidePanel("Classification", "classificationPanelTemplate");
-          initializeClassificationPanel();
-          break;
-      }
-    });
-  });
+  //     // Trigger the appropriate action
+  //     switch (action) {
+  //       case "upload":
+  //         getState().panelManager.openSidePanel("Upload Files", "uploadPanelTemplate");
+  //         break;
+  //       case "layers":
+  //         getState().panelManager.openSidePanel("Layers", "layersPanelTemplate");
+  //         break;
+  //       case "basemap":
+  //         getState().panelManager.openSidePanel("Basemap", "basemapPanelTemplate");
+  //         break;
+  //       case "measure":
+  //         toggleMeasurement();
+  //         break;
+  //       case "draw":
+  //         getState().panelManager.openSidePanel("Drawing Tools", "drawingPanelTemplate");
+  //         initializeDrawingPanel();
+  //         break;
+  //       case "locate":
+  //         locateUser();
+  //         break;
+  //       case "analysis":
+  //         getState().panelManager.openSidePanel("Spatial Analysis", "analysisPanelTemplate");
+  //         break;
+  //       case "visualize":
+  //         getState().panelManager.openSidePanel("Visualization", "visualizationPanelTemplate");
+  //         break;
+  //       case "classification":
+  //         getState().panelManager.openSidePanel("Classification", "classificationPanelTemplate");
+  //         initializeClassificationPanel();
+  //         break;
+  //     }
+  //   });
+  // });
 
-  // Desktop toolbar buttons
-  document.getElementById("uploadBtn").addEventListener("click", function () {
-    this.classList.toggle("active");
-    getState().panelManager.openSidePanel("Upload Files", "uploadPanelTemplate");
-  });
+  // // Desktop toolbar buttons
+  // document.getElementById("uploadBtn").addEventListener("click", function () {
+  //   this.classList.toggle("active");
+  //   getState().panelManager.openSidePanel("Upload Files", "uploadPanelTemplate");
+  // });
 
-  document.getElementById("layersBtn").addEventListener("click", function () {
-    this.classList.toggle("active");
-    getState().panelManager.openSidePanel("Layers", "layersPanelTemplate");
-  });
+  // document.getElementById("layersBtn").addEventListener("click", function () {
+  //   this.classList.toggle("active");
+  //   getState().panelManager.openSidePanel("Layers", "layersPanelTemplate");
+  // });
 
-  document.getElementById("basemapBtn").addEventListener("click", function () {
-    this.classList.toggle("active");
-    getState().panelManager.openSidePanel("Basemap", "basemapPanelTemplate");
-  });
+  // document.getElementById("basemapBtn").addEventListener("click", function () {
+  //   this.classList.toggle("active");
+  //   getState().panelManager.openSidePanel("Basemap", "basemapPanelTemplate");
+  // });
 
-  document.getElementById("analysisBtn").addEventListener("click", function () {
-    this.classList.toggle("active");
-    getState().panelManager.openSidePanel("Spatial Analysis", "analysisPanelTemplate");
-  });
+  // document.getElementById("analysisBtn").addEventListener("click", function () {
+  //   this.classList.toggle("active");
+  //   getState().panelManager.openSidePanel("Spatial Analysis", "analysisPanelTemplate");
+  // });
 
-  document
-    .getElementById("visualizeBtn")
-    .addEventListener("click", function () {
-      this.classList.toggle("active");
-      getState().panelManager.openSidePanel("Visualization", "visualizationPanelTemplate");
-    });
+  // document
+  //   .getElementById("visualizeBtn")
+  //   .addEventListener("click", function () {
+  //     this.classList.toggle("active");
+  //     getState().panelManager.openSidePanel("Visualization", "visualizationPanelTemplate");
+  //   });
 
-  document
-    .getElementById("classificationBtn")
-    .addEventListener("click", function () {
-      this.classList.toggle("active");
-      getState().panelManager.openSidePanel("Classification", "classificationPanelTemplate");
-      initializeClassificationPanel();
-    });
+  // document
+  //   .getElementById("classificationBtn")
+  //   .addEventListener("click", function () {
+  //     this.classList.toggle("active");
+  //     getState().panelManager.openSidePanel("Classification", "classificationPanelTemplate");
+  //     initializeClassificationPanel();
+  //   });
 
-  document.getElementById("tableBtn").addEventListener("click", function () {
-    this.classList.toggle("active");
-  });
+  // document.getElementById("tableBtn").addEventListener("click", function () {
+  //   this.classList.toggle("active");
+  // });
 
   // Initialize basemap switcher
   const basemapItems = document.querySelectorAll(".basemap-item");
@@ -1175,8 +1178,13 @@ function initializeUI(injectedStateManager) {
   // Initialize file upload
   initializeFileUpload();
 
-  // Initialize tools
-  initializeTools();
+  // ============================================================================
+  // COMMENTED OUT - Moved to js/ui/toolbar-manager.js
+  // ============================================================================
+  // Tool initialization (draw, clear, locate) has been extracted to ToolbarManager
+  // ============================================================================
+  // // Initialize tools
+  // initializeTools();
 
   // Initialize coordinate display (pass view for proper scope)
   initializeCoordinateDisplay(view);
@@ -1813,20 +1821,22 @@ function removeLayer(index) {
   updateLayerList();
 }
 
+// ============================================================================
+// COMMENTED OUT - Moved to js/ui/toolbar-manager.js
+// ============================================================================
 // Initialize tools
-function initializeTools() {
-  // // Measure tool
-  // document.getElementById('measureBtn').addEventListener('click', toggleMeasurement);
+// function initializeTools() {
+//   // // Measure tool
+//   // document.getElementById('measureBtn').addEventListener('click', toggleMeasurement);
 
-  // Draw tool
-  document.getElementById("drawBtn").addEventListener("click", toggleDraw);
+//   // Draw tool
+//   document.getElementById("drawBtn").addEventListener("click", toggleDraw);
 
-  // Clear tool
-  document.getElementById("clearBtn").addEventListener("click", clearAll);
+//   // Clear tool
+//   document.getElementById("clearBtn").addEventListener("click", clearAll);
 
-  // Locate tool
-  document.getElementById("locateBtn").addEventListener("click", locateUser);
-}
+//   // Locate tool
+//   document.getElementById("locateBtn").addEven", locateUsick"cltListener(
 
 // // Replace your existing toggleDraw function:
 // async function toggleDraw() {
@@ -1868,17 +1878,22 @@ async function toggleDraw() {
     // Deactivate draw
     btn.classList.remove("active");
     closeSidePanel();
+    const { stateManager } = getState();
+    const sketchViewModel = stateManager.getSketchViewModel();
     if (sketchViewModel) {
       sketchViewModel.cancel();
     }
     resetDrawingTools();
   } else {
     // Deactivate other tools
+    const { stateManager } = getState();
     const measureBtn = document.getElementById("measureBtn");
     if (measureBtn) {
       measureBtn.classList.remove("active");
     }
-    if (measurementWidget) {
+    const measurementWidget = stateManager.getMeasurementWidget();
+    const view = stateManager.getView();
+    if (measurementWidget && view) {
       measurementWidget.clear();
       view.ui.remove(measurementWidget);
     }
@@ -1947,11 +1962,18 @@ function initializeDrawingPanel() {
 
 // Initialize SketchViewModel
 async function initializeSketchViewModel() {
+  const { stateManager } = getState();
+  let sketchViewModel = stateManager.getSketchViewModel();
+  
   if (!sketchViewModel) {
     const [SketchViewModel, GraphicsLayer] = await Promise.all([
       loadModule("esri/widgets/Sketch/SketchViewModel"),
       loadModule("esri/layers/GraphicsLayer"),
     ]);
+
+    const view = stateManager.getView();
+    const displayMap = stateManager.getMap();
+    let drawLayer = stateManager.getDrawLayer();
 
     // Create graphics layer if it doesn't exist
     if (!drawLayer) {
@@ -1960,6 +1982,7 @@ async function initializeSketchViewModel() {
         listMode: "show",
       });
       displayMap.add(drawLayer);
+      stateManager.setDrawLayer(drawLayer);
     }
 
     // Create SketchViewModel with proper configuration
@@ -1978,6 +2001,9 @@ async function initializeSketchViewModel() {
         mode: "click", // Important for proper drawing
       },
     });
+
+    // Store in StateManager
+    stateManager.setSketchViewModel(sketchViewModel);
 
     console.log("SketchViewModel initialized");
 
@@ -2004,8 +2030,12 @@ window.cancelBufferDrawing = function () {
   disableDrawingMode("bufferModal");
 
   // Reset cursor
-  view.container.style.cursor = "default";
+  const view = stateManager.getView();
+  if (view) {
+    view.container.style.cursor = "default";
+  }
 
+  const sketchViewModel = stateManager.getSketchViewModel();
   if (sketchViewModel) {
     sketchViewModel.cancel();
   }
@@ -2028,12 +2058,18 @@ window.cancelBufferDrawing = function () {
 };
 window.debugDrawing = function () {
   const { stateManager } = getState();
+  const sketchViewModel = stateManager.getSketchViewModel();
+  const view = stateManager.getView();
+  const drawLayer = stateManager.getDrawLayer();
+  
   console.log("Debug Info:");
   console.log("- SketchViewModel exists:", !!sketchViewModel);
   console.log("- View exists:", !!view);
   console.log("- DrawLayer exists:", !!drawLayer);
   console.log("- Analysis drawing active:", stateManager.isAnalysisDrawing());
-  console.log("- Current cursor:", view.container.style.cursor);
+  if (view) {
+    console.log("- Current cursor:", view.container.style.cursor);
+  }
 
   if (sketchViewModel) {
     console.log("- SketchViewModel state:", sketchViewModel.state);
@@ -2275,6 +2311,8 @@ function applyCustomSymbology(graphic) {
 
 // Update symbology of active graphics
 function updateActiveGraphicsSymbology() {
+  const { stateManager } = getState();
+  const drawLayer = stateManager.getDrawLayer();
   if (!drawLayer) return;
 
   drawLayer.graphics.forEach((graphic) => {
@@ -2284,10 +2322,12 @@ function updateActiveGraphicsSymbology() {
 
 // Reset drawing tools
 function resetDrawingTools() {
-  getState().stateManager.setActiveDrawingTool(null);
+  const { stateManager } = getState();
+  stateManager.setActiveDrawingTool(null);
   document.querySelectorAll(".draw-tool-btn").forEach((btn) => {
     btn.classList.remove("active");
   });
+  const sketchViewModel = stateManager.getSketchViewModel();
   if (sketchViewModel) {
     sketchViewModel.cancel();
   }
@@ -2296,10 +2336,18 @@ function resetDrawingTools() {
 // Update the clearAll function
 function clearAll() {
   if (confirm("Clear all drawings and measurements?")) {
+    const { stateManager } = getState();
+    const drawLayer = stateManager.getDrawLayer();
+    const view = stateManager.getView();
+    const measurementWidget = stateManager.getMeasurementWidget();
+    const sketchViewModel = stateManager.getSketchViewModel();
+    
     if (drawLayer) {
       drawLayer.removeAll();
     }
-    view.graphics.removeAll();
+    if (view) {
+      view.graphics.removeAll();
+    }
     if (measurementWidget) {
       measurementWidget.clear();
     }
@@ -6003,6 +6051,8 @@ function closeBufferModal() {
   modal.classList.add("hidden");
 
   // Cancel any active drawing
+  const { stateManager } = getState();
+  const sketchViewModel = stateManager.getSketchViewModel();
   if (sketchViewModel) {
     sketchViewModel.cancel();
   }
@@ -8008,8 +8058,11 @@ function getAnalysisDrawSymbol(type) {
 
 // Stop analysis drawing
 function stopAnalysisDrawing() {
-  analysisDrawing = false;
-  analysisDrawType = null;
+  const stateManager = getState().stateManager;
+  const sketchViewModel = stateManager.getSketchViewModel();
+  
+  stateManager.setAnalysisDrawing(false);
+  stateManager.setAnalysisDrawType(null);
 
   // Cancel any active sketching
   if (sketchViewModel) {
