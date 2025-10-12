@@ -40,7 +40,7 @@ HTML inline event handlers like `onclick="functionName()"` look for functions in
 - `startDistanceAnalysis()` - Start distance analysis
 - `startAreaAnalysis()` - Start area analysis
 - `executeBuffer()` - Execute buffer operation
-- `executeIntersect()` - Execute intersection operation
+- `executeIntersection()` - Execute intersection operation
 - `setBufferSource(source)` - Set buffer source (layer/draw)
 - `startBufferDrawing(tool)` - Start drawing for buffer
 - `closeBufferModal()` - Close buffer modal

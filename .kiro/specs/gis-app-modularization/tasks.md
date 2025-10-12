@@ -142,7 +142,9 @@
     - _Requirements: 1.2, 1.5_
 
 - [x] 4. Extract core services (foundation modules)
+
   - [x] 4.1 Create js/ui/notification-manager.js (EXTRACT FIRST)
+
     - Extract showNotification function and activeNotifications array from script.js
     - Create NotificationManager class with notification lifecycle methods
     - Comment out original notification code in script.js
@@ -159,8 +161,6 @@
     - _Requirements: 1.2, 1.5, 4.1, 4.2_
   
   - [x] 4.3 **CRITICAL: Fix uploadedLayers global variable usage**
-
-
 
     - Replace all direct `uploadedLayers` array access with StateManager methods
     - Update `toggleLayer(index)` to use `stateManager.getUploadedLayers()[index]`
@@ -198,13 +198,18 @@
     - **GOAL**: Reduce StateManager complexity and improve performance
     - _Requirements: 1.2, 1.3, 3.1_
 
-  - [ ] 4.6 **CRITICAL: Document and expose window functions for HTML event handlers**
-    - Review window-functions.md for complete list of functions to expose
-    - Create a window exposure section at the end of each module
-    - Expose functions like: toggleWidget, toggleAttributeTable, zoomIn, zoomOut, etc.
-    - Use pattern: `window.functionName = (...args) => moduleInstance.method(...args);`
-    - Consider creating js/window-bindings.js to centralize all window exposures
+  - [x] 4.6 **CRITICAL: Create centralized window bindings for HTML event handlers**
+    - Create js/window-bindings.js as a single source of truth for all window-exposed functions
+    - Review window-functions.md for complete list of functions to expose (50+ functions)
+    - Implement bindWindowFunctions(managers) that accepts all manager instances
+    - Organize bindings by functional area: widgets, attribute table, tour, zoom, analysis, visualization, classification, measurement, popup, layers, tabs, drawing
+    - For functions not yet extracted to modules, bind directly to script.js functions
+    - As modules are extracted in future tasks, update bindings to point to new module instances
+    - Import and call bindWindowFunctions() in main.js after all managers are initialized
+    - Document each binding with comments showing which module it belongs to (current or future)
     - Test all inline event handlers after exposure (see checklist in window-functions.md)
+    - **Pattern**: `window.functionName = (...args) => managerInstance.method(...args);`
+    - **Benefits**: Single file to audit, easier migration path, clear API surface, better security
     - _Requirements: 1.2, 1.5, 3.2_
     - _Reference: .kiro/specs/gis-app-modularization/window-functions.md_
 

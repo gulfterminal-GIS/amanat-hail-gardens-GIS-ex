@@ -6,6 +6,7 @@ import { StateManager } from "./core/state-manager.js";
 import { NotificationManager } from "./ui/notification-manager.js";
 import { MapInitializer } from "./core/map-initializer.js";
 import { PanelManager } from "./ui/panel-manager.js";
+import { bindWindowFunctions } from "./window-bindings.js";
 import { initializeMap } from "../script.js";
 
 // Make CONFIG available globally for backward compatibility
@@ -34,6 +35,15 @@ async function initializeApplication() {
 
     // Initialize the map with injected dependencies
     await initializeMap(stateManager, mapInitializer, notificationManager, panelManager);
+
+    // Bind window functions for HTML event handlers (CRITICAL for inline onclick, onchange, etc.)
+    bindWindowFunctions({
+      stateManager,
+      notificationManager,
+      mapInitializer,
+      panelManager,
+      // Future managers will be added here as they're created
+    });
 
     console.log("Application initialized successfully");
     console.log("State snapshot:", stateManager.getStateSnapshot());

@@ -8364,6 +8364,7 @@ export {
   toggleLayer,
   removeLayer,
   updateLayerList,
+  zoomToLayer,
 
   // File upload functions (will be moved to upload-handler.js)
   loadGeoJSON,
@@ -8378,20 +8379,71 @@ export {
 
   // Classification functions (will be moved to classification-manager.js)
   initializeClassificationPanel,
+  applyClassification,
+  resetClassification,
 
   // Toolbar functions (will be moved to toolbar-manager.js)
   locateUser,
 
   // Measurement functions (will be moved to measurement-manager.js)
   toggleMeasurement,
+  closeMeasurementResults,
+  closeDistancePanel,
+  clearDistanceMeasurement,
 
+  // Tour functions (will be moved to tour-manager.js)
   toggleFeatureTour,
   nextFeature,
   previousFeature,
   closeTourControls,
   manuallyStartTour,
+
+  // Tab system functions (will be moved to tab-system.js)
   initializeMapTabs,
-  redirectToTabPlatform
+  redirectToTabPlatform,
+
+  // Widget functions (will be moved to widget-manager.js)
+  toggleWidget,
+
+  // Attribute table functions (will be moved to attribute-table.js)
+  toggleAttributeTable,
+  refreshTable,
+  showExportOptions,
+  previousPage,
+  nextPage,
+
+  // Zoom functions (will be moved to toolbar-manager.js or map-event-handler.js)
+  zoomIn,
+  zoomOut,
+
+  // Analysis functions (will be moved to analysis-manager.js)
+  startBufferAnalysis,
+  startIntersectAnalysis,
+  startDistanceAnalysis,
+  startAreaAnalysis,
+  executeBuffer,
+  executeIntersection,
+  setBufferSource,
+  startBufferDrawing,
+  closeBufferModal,
+  closeIntersectModal,
+
+  // Visualization functions (will be moved to visualization-manager.js)
+  // toggleHeatmap,
+  showHeatmapSettings,
+  closeHeatmapSettings,
+  applyHeatmapSettings,
+  toggleTimeControls,
+  playTimeAnimation,
+  stopTimeAnimation,
+
+  // Popup functions (will be moved to popup-manager.js)
+  closeCustomPopup,
+  zoomToFeature,
+  copyFeatureInfo,
+
+  // App tour function (will be moved to tour-manager.js)
+  startAppTour,
 
 };
 
