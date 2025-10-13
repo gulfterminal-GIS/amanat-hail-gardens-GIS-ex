@@ -2661,58 +2661,61 @@ async function locateUser() {
   );
 }
 
+// ============================================================================
+// COMMENTED OUT - Moved to js/ui/search-manager.js
+// ============================================================================
 // Initialize coordinate display
 // Replace your existing initializeCoordinateDisplay function:
-function initializeCoordinateDisplay(view) {
-  // Fallback to window.view if not passed (backward compatibility)
-  const mapView = view || window.view;
-  if (!mapView) {
-    console.warn("initializeCoordinateDisplay: view not available");
-    return;
-  }
+// function initializeCoordinateDisplay(view) {
+//   // Fallback to window.view if not passed (backward compatibility)
+//   const mapView = view || window.view;
+//   if (!mapView) {
+//     console.warn("initializeCoordinateDisplay: view not available");
+//     return;
+//   }
 
-  let currentCoords = { lat: 0, lon: 0 };
+//   let currentCoords = { lat: 0, lon: 0 };
 
-  mapView.on("pointer-move", (event) => {
-    const point = mapView.toMap({ x: event.x, y: event.y });
-    if (point) {
-      currentCoords.lat = point.latitude.toFixed(6);
-      currentCoords.lon = point.longitude.toFixed(6);
-      document.getElementById(
-        "coordDisplay"
-      ).textContent = `Lat: ${currentCoords.lat}, Lon: ${currentCoords.lon}`;
-    }
-  });
+//   mapView.on("pointer-move", (event) => {
+//     const point = mapView.toMap({ x: event.x, y: event.y });
+//     if (point) {
+//       currentCoords.lat = point.latitude.toFixed(6);
+//       currentCoords.lon = point.longitude.toFixed(6);
+//       document.getElementById(
+//         "coordDisplay"
+//       ).textContent = `Lat: ${currentCoords.lat}, Lon: ${currentCoords.lon}`;
+//     }
+//   });
 
-  // Add copy functionality
-  const copyBtn = document.getElementById("copyCoords");
-  if (copyBtn) {
-    copyBtn.addEventListener("click", () => {
-      const coordText = `${currentCoords.lat}, ${currentCoords.lon}`;
-      navigator.clipboard
-        .writeText(coordText)
-        .then(() => {
-          // Visual feedback
-          copyBtn.classList.add("copied");
-          const icon = copyBtn.querySelector("i");
-          icon.classList.remove("fa-copy");
-          icon.classList.add("fa-check");
+//   // Add copy functionality
+//   const copyBtn = document.getElementById("copyCoords");
+//   if (copyBtn) {
+//     copyBtn.addEventListener("click", () => {
+//       const coordText = `${currentCoords.lat}, ${currentCoords.lon}`;
+//       navigator.clipboard
+//         .writeText(coordText)
+//         .then(() => {
+//           // Visual feedback
+//           copyBtn.classList.add("copied");
+//           const icon = copyBtn.querySelector("i");
+//           icon.classList.remove("fa-copy");
+//           icon.classList.add("fa-check");
 
-          showNotification("Coordinates copied!", "success");
+//           showNotification("Coordinates copied!", "success");
 
-          // Reset after 2 seconds
-          setTimeout(() => {
-            copyBtn.classList.remove("copied");
-            icon.classList.remove("fa-check");
-            icon.classList.add("fa-copy");
-          }, 2000);
-        })
-        .catch(() => {
-          showNotification("Failed to copy coordinates", "error");
-        });
-    });
-  }
-}
+//           // Reset after 2 seconds
+//           setTimeout(() => {
+//             copyBtn.classList.remove("copied");
+//             icon.classList.remove("fa-check");
+//             icon.classList.add("fa-copy");
+//           }, 2000);
+//         })
+//         .catch(() => {
+//           showNotification("Failed to copy coordinates", "error");
+//         });
+//     });
+//   }
+// }
 
 // Initialize event handlers
 function initializeEventHandlers(stateManager) {
@@ -2851,7 +2854,8 @@ function initializeEventHandlers(stateManager) {
   });
 
   // Search functionality (pass view for proper scope)
-  initializeSearch(view);
+  // COMMENTED OUT - EXTRACTED TO js/ui/search-manager.js
+  // initializeSearch(view);
 }
 
 // Export initializeEventHandlers for MapInitializer
@@ -2941,382 +2945,385 @@ async function createCountryFlashAnimation(geometry) {
   flash();
 }
 
+// ============================================================================
+// SEARCH FUNCTIONALITY - EXTRACTED TO js/ui/search-manager.js
+// ============================================================================
 // Replace the beginning of initializeSearch() function with this:
-async function initializeSearch(view) {
-  // Fallback to window.view if not passed (backward compatibility)
-  const mapView = view || window.view;
+// async function initializeSearch(view) {
+//   // Fallback to window.view if not passed (backward compatibility)
+//   const mapView = view || window.view;
 
-  if (!mapView) {
-    console.warn("initializeSearch: view not available");
-    return;
-  }
+//   if (!mapView) {
+//     console.warn("initializeSearch: view not available");
+//     return;
+//   }
 
-  const [Search] = await Promise.all([loadModule("esri/widgets/Search")]);
+//   const [Search] = await Promise.all([loadModule("esri/widgets/Search")]);
 
-  const searchInput = document.getElementById("searchInput");
-  const clearSearchBtn = document.getElementById("clearSearch");
-  const suggestionsDiv = document.getElementById("searchSuggestions");
+//   const searchInput = document.getElementById("searchInput");
+//   const clearSearchBtn = document.getElementById("clearSearch");
+//   const suggestionsDiv = document.getElementById("searchSuggestions");
 
-  // Create search widget with proper configuration
-  const { stateManager } = getState();
-  // Create and store search widget in state manager
-  stateManager.setSearchWidget(new Search({
-    view: mapView,
-    container: document.createElement("div"),
-    includeDefaultSources: true,
-    locationEnabled: false,
-    popupEnabled: false,
-    autoSelect: false,
-  }));
-  const searchWidget = stateManager.getSearchWidget();
+//   // Create search widget with proper configuration
+//   const { stateManager } = getState();
+//   // Create and store search widget in state manager
+//   stateManager.setSearchWidget(new Search({
+//     view: mapView,
+//     container: document.createElement("div"),
+//     includeDefaultSources: true,
+//     locationEnabled: false,
+//     popupEnabled: false,
+//     autoSelect: false,
+//   }));
+//   const searchWidget = stateManager.getSearchWidget();
 
-  // Wait for the view to be ready instead
-  await mapView.when();
+//   // Wait for the view to be ready instead
+//   await mapView.when();
 
-  let searchTimeout;
-  let currentSuggestions = [];
+//   let searchTimeout;
+//   let currentSuggestions = [];
 
-  // Input handler with debouncing
-  searchInput.addEventListener("input", (e) => {
-    const value = e.target.value.trim();
+//   // Input handler with debouncing
+//   searchInput.addEventListener("input", (e) => {
+//     const value = e.target.value.trim();
 
-    // Show/hide clear button
-    clearSearchBtn.style.display = value ? "block" : "none";
+//     // Show/hide clear button
+//     clearSearchBtn.style.display = value ? "block" : "none";
 
-    // Clear timeout
-    clearTimeout(searchTimeout);
+//     // Clear timeout
+//     clearTimeout(searchTimeout);
 
-    if (value.length < 2) {
-      hideSuggestions();
-      return;
-    }
+//     if (value.length < 2) {
+//       hideSuggestions();
+//       return;
+//     }
 
-    // Show loading state
-    showSuggestionsLoading();
+//     // Show loading state
+//     showSuggestionsLoading();
 
-    // Debounce search
-    searchTimeout = setTimeout(async () => {
-      await getSuggestions(value);
-    }, 300);
-  });
-  // Clear search
-  clearSearchBtn.addEventListener("click", () => {
-    searchInput.value = "";
-    clearSearchBtn.style.display = "none";
-    hideSuggestions();
-  });
+//     // Debounce search
+//     searchTimeout = setTimeout(async () => {
+//       await getSuggestions(value);
+//     }, 300);
+//   });
+//   // Clear search
+//   clearSearchBtn.addEventListener("click", () => {
+//     searchInput.value = "";
+//     clearSearchBtn.style.display = "none";
+//     hideSuggestions();
+//   });
 
-  // Replace the getSuggestions function with this simpler version:
-  async function getSuggestions(searchTerm) {
-    try {
-      currentSuggestions = [];
+//   // Replace the getSuggestions function with this simpler version:
+//   async function getSuggestions(searchTerm) {
+//     try {
+//       currentSuggestions = [];
 
-      // Perform a direct search instead of using suggest
-      const searchWidget = stateManager.getSearchWidget();
-      searchWidget.searchTerm = searchTerm;
+//       // Perform a direct search instead of using suggest
+//       const searchWidget = stateManager.getSearchWidget();
+//       searchWidget.searchTerm = searchTerm;
 
-      try {
-        const results = await searchWidget.search();
+//       try {
+//         const results = await searchWidget.search();
 
-        if (results && results.results) {
-          results.results.forEach((sourceResults) => {
-            if (sourceResults.results && sourceResults.results.length > 0) {
-              sourceResults.results.slice(0, 5).forEach((result, idx) => {
-                currentSuggestions.push({
-                  text: result.name || searchTerm,
-                  key: result.address || "",
-                  feature: result.feature,
-                  extent: result.extent,
-                  index: idx,
-                });
-              });
-            }
-          });
-        }
+//         if (results && results.results) {
+//           results.results.forEach((sourceResults) => {
+//             if (sourceResults.results && sourceResults.results.length > 0) {
+//               sourceResults.results.slice(0, 5).forEach((result, idx) => {
+//                 currentSuggestions.push({
+//                   text: result.name || searchTerm,
+//                   key: result.address || "",
+//                   feature: result.feature,
+//                   extent: result.extent,
+//                   index: idx,
+//                 });
+//               });
+//             }
+//           });
+//         }
 
-        if (currentSuggestions.length > 0) {
-          displaySuggestions(currentSuggestions);
-        } else {
-          showNoResults();
-        }
-      } catch (searchError) {
-        console.error("Search error:", searchError);
-        showNoResults();
-      }
-    } catch (error) {
-      console.error("Error in suggestions:", error);
-      showNoResults();
-    }
-  }
+//         if (currentSuggestions.length > 0) {
+//           displaySuggestions(currentSuggestions);
+//         } else {
+//           showNoResults();
+//         }
+//       } catch (searchError) {
+//         console.error("Search error:", searchError);
+//         showNoResults();
+//       }
+//     } catch (error) {
+//       console.error("Error in suggestions:", error);
+//       showNoResults();
+//     }
+//   }
 
-  // Perform direct search as fallback
-  async function performDirectSearch(searchTerm) {
-    try {
-      const searchWidget = stateManager.getSearchWidget();
-      searchWidget.viewModel.searchTerm = searchTerm;
-      const searchResponse = await searchWidget.viewModel.search();
+//   // Perform direct search as fallback
+//   async function performDirectSearch(searchTerm) {
+//     try {
+//       const searchWidget = stateManager.getSearchWidget();
+//       searchWidget.viewModel.searchTerm = searchTerm;
+//       const searchResponse = await searchWidget.viewModel.search();
 
-      if (searchResponse && searchResponse.length > 0) {
-        const suggestions = [];
-        searchResponse.forEach((response) => {
-          if (response.results && response.results.length > 0) {
-            response.results.slice(0, 5).forEach((result) => {
-              suggestions.push({
-                text: result.name || searchTerm,
-                key: result.name || searchTerm,
-                feature: result.feature,
-                extent: result.extent,
-              });
-            });
-          }
-        });
+//       if (searchResponse && searchResponse.length > 0) {
+//         const suggestions = [];
+//         searchResponse.forEach((response) => {
+//           if (response.results && response.results.length > 0) {
+//             response.results.slice(0, 5).forEach((result) => {
+//               suggestions.push({
+//                 text: result.name || searchTerm,
+//                 key: result.name || searchTerm,
+//                 feature: result.feature,
+//                 extent: result.extent,
+//               });
+//             });
+//           }
+//         });
 
-        if (suggestions.length > 0) {
-          displaySuggestions(suggestions);
-        } else {
-          showNoResults();
-        }
-      } else {
-        showNoResults();
-      }
-    } catch (error) {
-      console.error("Direct search error:", error);
-      showNoResults();
-    }
-  }
+//         if (suggestions.length > 0) {
+//           displaySuggestions(suggestions);
+//         } else {
+//           showNoResults();
+//         }
+//       } else {
+//         showNoResults();
+//       }
+//     } catch (error) {
+//       console.error("Direct search error:", error);
+//       showNoResults();
+//     }
+//   }
 
-  // Display suggestions
-  function displaySuggestions(suggestions) {
-    if (suggestions.length === 0) {
-      showNoResults();
-      return;
-    }
+//   // Display suggestions
+//   function displaySuggestions(suggestions) {
+//     if (suggestions.length === 0) {
+//       showNoResults();
+//       return;
+//     }
 
-    let html = "";
-    suggestions.forEach((suggestion, index) => {
-      const icon = getIconForSuggestion(suggestion);
-      const displayText = suggestion.text || "Unknown Location";
-      const subText = suggestion.key !== suggestion.text ? suggestion.key : "";
+//     let html = "";
+//     suggestions.forEach((suggestion, index) => {
+//       const icon = getIconForSuggestion(suggestion);
+//       const displayText = suggestion.text || "Unknown Location";
+//       const subText = suggestion.key !== suggestion.text ? suggestion.key : "";
 
-      html += `
-        <div class="suggestion-item" data-index="${index}">
-          <i class="${icon}"></i>
-          <div class="suggestion-text">
-            <div class="suggestion-name">${displayText}</div>
-            ${subText ? `<div class="suggestion-address">${subText}</div>` : ""}
-          </div>
-        </div>
-      `;
-    });
+//       html += `
+//         <div class="suggestion-item" data-index="${index}">
+//           <i class="${icon}"></i>
+//           <div class="suggestion-text">
+//             <div class="suggestion-name">${displayText}</div>
+//             ${subText ? `<div class="suggestion-address">${subText}</div>` : ""}
+//           </div>
+//         </div>
+//       `;
+//     });
 
-    suggestionsDiv.innerHTML = html;
-    suggestionsDiv.classList.add("active");
+//     suggestionsDiv.innerHTML = html;
+//     suggestionsDiv.classList.add("active");
 
-    // Add click handlers
-    document.querySelectorAll(".suggestion-item").forEach((item) => {
-      item.addEventListener("click", () => {
-        const index = parseInt(item.dataset.index);
-        selectSuggestion(currentSuggestions[index]);
-      });
-    });
-  }
+//     // Add click handlers
+//     document.querySelectorAll(".suggestion-item").forEach((item) => {
+//       item.addEventListener("click", () => {
+//         const index = parseInt(item.dataset.index);
+//         selectSuggestion(currentSuggestions[index]);
+//       });
+//     });
+//   }
 
-  // Select a suggestion
-  async function selectSuggestion(suggestion) {
-    searchInput.value = suggestion.text;
-    hideSuggestions();
+//   // Select a suggestion
+//   async function selectSuggestion(suggestion) {
+//     searchInput.value = suggestion.text;
+//     hideSuggestions();
 
-    try {
-      if (suggestion.feature || suggestion.extent) {
-        // Direct result from search
-        if (suggestion.extent) {
-          await view.goTo({
-            target: suggestion.extent,
-            zoom: 15,
-          });
-        } else if (suggestion.feature && suggestion.feature.geometry) {
-          await view.goTo({
-            target: suggestion.feature.geometry,
-            zoom: 15,
-          });
-          addSearchMarker(suggestion.feature);
-        }
-      } else if (suggestion.suggestResult) {
-        // Suggestion result - need to search
-        const searchWidget = stateManager.getSearchWidget();
-        searchWidget.viewModel.searchTerm = suggestion.text;
-        const response = await searchWidget.viewModel.search(
-          suggestion.suggestResult
-        );
+//     try {
+//       if (suggestion.feature || suggestion.extent) {
+//         // Direct result from search
+//         if (suggestion.extent) {
+//           await view.goTo({
+//             target: suggestion.extent,
+//             zoom: 15,
+//           });
+//         } else if (suggestion.feature && suggestion.feature.geometry) {
+//           await view.goTo({
+//             target: suggestion.feature.geometry,
+//             zoom: 15,
+//           });
+//           addSearchMarker(suggestion.feature);
+//         }
+//       } else if (suggestion.suggestResult) {
+//         // Suggestion result - need to search
+//         const searchWidget = stateManager.getSearchWidget();
+//         searchWidget.viewModel.searchTerm = suggestion.text;
+//         const response = await searchWidget.viewModel.search(
+//           suggestion.suggestResult
+//         );
 
-        if (response && response.length > 0 && response[0].results.length > 0) {
-          const result = response[0].results[0];
+//         if (response && response.length > 0 && response[0].results.length > 0) {
+//           const result = response[0].results[0];
 
-          if (result.extent) {
-            await view.goTo({
-              target: result.extent,
-              zoom: 15,
-            });
-          } else if (result.feature && result.feature.geometry) {
-            await view.goTo({
-              target: result.feature.geometry,
-              zoom: 15,
-            });
-            addSearchMarker(result.feature);
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Error selecting suggestion:", error);
-      showNotification("Error finding location", "error");
-    }
-  }
+//           if (result.extent) {
+//             await view.goTo({
+//               target: result.extent,
+//               zoom: 15,
+//             });
+//           } else if (result.feature && result.feature.geometry) {
+//             await view.goTo({
+//               target: result.feature.geometry,
+//               zoom: 15,
+//             });
+//             addSearchMarker(result.feature);
+//           }
+//         }
+//       }
+//     } catch (error) {
+//       console.error("Error selecting suggestion:", error);
+//       showNotification("Error finding location", "error");
+//     }
+//   }
 
-  // Rest of the functions remain the same...
-  // (addSearchMarker, getIconForSuggestion, showSuggestionsLoading, showNoResults, hideSuggestions)
+//   // Rest of the functions remain the same...
+//   // (addSearchMarker, getIconForSuggestion, showSuggestionsLoading, showNoResults, hideSuggestions)
 
-  // Add marker for search result
-  async function addSearchMarker(feature) {
-    const [Graphic] = await Promise.all([loadModule("esri/Graphic")]);
+//   // Add marker for search result
+//   async function addSearchMarker(feature) {
+//     const [Graphic] = await Promise.all([loadModule("esri/Graphic")]);
 
-    // Remove previous search markers
-    view.graphics.removeAll();
+//     // Remove previous search markers
+//     view.graphics.removeAll();
 
-    const graphic = new Graphic({
-      geometry: feature.geometry,
-      symbol: {
-        type: "simple-marker",
-        style: "circle",
-        color: [226, 119, 40, 0.8],
-        size: 12,
-        outline: {
-          color: [255, 255, 255, 1],
-          width: 2,
-        },
-      },
-      attributes: feature.attributes,
-      popupTemplate: {
-        title:
-          feature.attributes.PlaceName ||
-          feature.attributes.name ||
-          "Search Result",
-        content:
-          feature.attributes.Place_addr ||
-          feature.attributes.address ||
-          "Location",
-      },
-    });
+//     const graphic = new Graphic({
+//       geometry: feature.geometry,
+//       symbol: {
+//         type: "simple-marker",
+//         style: "circle",
+//         color: [226, 119, 40, 0.8],
+//         size: 12,
+//         outline: {
+//           color: [255, 255, 255, 1],
+//           width: 2,
+//         },
+//       },
+//       attributes: feature.attributes,
+//       popupTemplate: {
+//         title:
+//           feature.attributes.PlaceName ||
+//           feature.attributes.name ||
+//           "Search Result",
+//         content:
+//           feature.attributes.Place_addr ||
+//           feature.attributes.address ||
+//           "Location",
+//       },
+//     });
 
-    view.graphics.add(graphic);
+//     view.graphics.add(graphic);
 
-    // Remove marker after 10 seconds
-    setTimeout(() => {
-      view.graphics.remove(graphic);
-    }, 10000);
-  }
+//     // Remove marker after 10 seconds
+//     setTimeout(() => {
+//       view.graphics.remove(graphic);
+//     }, 10000);
+//   }
 
-  // Get icon for suggestion type
-  function getIconForSuggestion(suggestion) {
-    const text = (suggestion.text || "").toLowerCase();
-    if (text.includes("restaurant") || text.includes("food"))
-      return "fas fa-utensils";
-    if (text.includes("hotel") || text.includes("lodging")) return "fas fa-bed";
-    if (text.includes("park")) return "fas fa-tree";
-    if (text.includes("school") || text.includes("university"))
-      return "fas fa-graduation-cap";
-    if (text.includes("hospital") || text.includes("medical"))
-      return "fas fa-hospital";
-    if (text.includes("shopping") || text.includes("store"))
-      return "fas fa-shopping-cart";
-    if (text.includes("airport")) return "fas fa-plane";
-    if (text.includes("station")) return "fas fa-train";
-    return "fas fa-map-marker-alt";
-  }
+//   // Get icon for suggestion type
+//   function getIconForSuggestion(suggestion) {
+//     const text = (suggestion.text || "").toLowerCase();
+//     if (text.includes("restaurant") || text.includes("food"))
+//       return "fas fa-utensils";
+//     if (text.includes("hotel") || text.includes("lodging")) return "fas fa-bed";
+//     if (text.includes("park")) return "fas fa-tree";
+//     if (text.includes("school") || text.includes("university"))
+//       return "fas fa-graduation-cap";
+//     if (text.includes("hospital") || text.includes("medical"))
+//       return "fas fa-hospital";
+//     if (text.includes("shopping") || text.includes("store"))
+//       return "fas fa-shopping-cart";
+//     if (text.includes("airport")) return "fas fa-plane";
+//     if (text.includes("station")) return "fas fa-train";
+//     return "fas fa-map-marker-alt";
+//   }
 
-  // Show loading state
-  function showSuggestionsLoading() {
-    suggestionsDiv.innerHTML =
-      '<div class="search-loading"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
-    suggestionsDiv.classList.add("active");
-  }
+//   // Show loading state
+//   function showSuggestionsLoading() {
+//     suggestionsDiv.innerHTML =
+//       '<div class="search-loading"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+//     suggestionsDiv.classList.add("active");
+//   }
 
-  // Show no results
-  function showNoResults() {
-    suggestionsDiv.innerHTML =
-      '<div class="search-no-results">No results found</div>';
-    suggestionsDiv.classList.add("active");
-  }
+//   // Show no results
+//   function showNoResults() {
+//     suggestionsDiv.innerHTML =
+//       '<div class="search-no-results">No results found</div>';
+//     suggestionsDiv.classList.add("active");
+//   }
 
-  // Hide suggestions
-  function hideSuggestions() {
-    suggestionsDiv.classList.remove("active");
-    currentSuggestions = [];
-  }
+//   // Hide suggestions
+//   function hideSuggestions() {
+//     suggestionsDiv.classList.remove("active");
+//     currentSuggestions = [];
+//   }
 
-  // Handle clicks outside to close suggestions
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest(".search-container")) {
-      hideSuggestions();
-    }
-  });
+//   // Handle clicks outside to close suggestions
+//   document.addEventListener("click", (e) => {
+//     if (!e.target.closest(".search-container")) {
+//       hideSuggestions();
+//     }
+//   });
 
-  // Handle Enter key in search input
-  searchInput.addEventListener("keydown", async (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const value = searchInput.value.trim();
-      if (value.length > 0) {
-        if (currentSuggestions.length > 0) {
-          selectSuggestion(currentSuggestions[0]);
-        } else {
-          // Perform direct search
-          showSuggestionsLoading();
-          await performDirectSearch(value);
-        }
-      }
-    } else if (e.key === "Escape") {
-      hideSuggestions();
-      searchInput.blur();
-    }
-  });
+//   // Handle Enter key in search input
+//   searchInput.addEventListener("keydown", async (e) => {
+//     if (e.key === "Enter") {
+//       e.preventDefault();
+//       const value = searchInput.value.trim();
+//       if (value.length > 0) {
+//         if (currentSuggestions.length > 0) {
+//           selectSuggestion(currentSuggestions[0]);
+//         } else {
+//           // Perform direct search
+//           showSuggestionsLoading();
+//           await performDirectSearch(value);
+//         }
+//       }
+//     } else if (e.key === "Escape") {
+//       hideSuggestions();
+//       searchInput.blur();
+//     }
+//   });
 
-  // Keyboard navigation for suggestions
-  let selectedSuggestionIndex = -1;
+//   // Keyboard navigation for suggestions
+//   let selectedSuggestionIndex = -1;
 
-  searchInput.addEventListener("keydown", (e) => {
-    const suggestionItems = document.querySelectorAll(".suggestion-item");
+//   searchInput.addEventListener("keydown", (e) => {
+//     const suggestionItems = document.querySelectorAll(".suggestion-item");
 
-    if (e.key === "ArrowDown" && suggestionItems.length > 0) {
-      e.preventDefault();
-      selectedSuggestionIndex = Math.min(
-        selectedSuggestionIndex + 1,
-        suggestionItems.length - 1
-      );
-      updateSelectedSuggestion(suggestionItems);
-    } else if (e.key === "ArrowUp" && suggestionItems.length > 0) {
-      e.preventDefault();
-      selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
-      updateSelectedSuggestion(suggestionItems);
-    } else if (
-      e.key === "Enter" &&
-      selectedSuggestionIndex >= 0 &&
-      currentSuggestions.length > 0
-    ) {
-      e.preventDefault();
-      selectSuggestion(currentSuggestions[selectedSuggestionIndex]);
-    }
-  });
+//     if (e.key === "ArrowDown" && suggestionItems.length > 0) {
+//       e.preventDefault();
+//       selectedSuggestionIndex = Math.min(
+//         selectedSuggestionIndex + 1,
+//         suggestionItems.length - 1
+//       );
+//       updateSelectedSuggestion(suggestionItems);
+//     } else if (e.key === "ArrowUp" && suggestionItems.length > 0) {
+//       e.preventDefault();
+//       selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
+//       updateSelectedSuggestion(suggestionItems);
+//     } else if (
+//       e.key === "Enter" &&
+//       selectedSuggestionIndex >= 0 &&
+//       currentSuggestions.length > 0
+//     ) {
+//       e.preventDefault();
+//       selectSuggestion(currentSuggestions[selectedSuggestionIndex]);
+//     }
+//   });
 
-  function updateSelectedSuggestion(items) {
-    items.forEach((item, index) => {
-      if (index === selectedSuggestionIndex) {
-        item.style.background = "rgba(33, 150, 243, 0.1)";
-      } else {
-        item.style.background = "";
-      }
-    });
-  }
-}
+//   function updateSelectedSuggestion(items) {
+//     items.forEach((item, index) => {
+//       if (index === selectedSuggestionIndex) {
+//         item.style.background = "rgba(33, 150, 243, 0.1)";
+//       } else {
+//         item.style.background = "";
+//       }
+//     });
+//   }
+// }
 
 // Replace showCustomPopup with this enhanced version
 function showCustomPopup(graphic, mapPoint) {
