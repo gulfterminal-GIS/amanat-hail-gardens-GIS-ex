@@ -214,7 +214,7 @@
     - _Reference: .kiro/specs/gis-app-modularization/window-functions.md_
 
 
-- [-] 5. Extract UI foundation modules
+- [x] 5. Extract UI foundation modules
   - [x] 5.1 Create js/ui/panel-manager.js for side panel system
 
     - Extract openSidePanel, closeSidePanel, clearToolbarActiveStates from script.js
@@ -247,8 +247,8 @@
     - Update main.js to import and initialize SearchManager
     - _Requirements: 1.2, 1.5, 3.2_
 
-- [ ] 6. Extract layer management modules
-  - [ ] 6.1 Create js/layers/layer-manager.js for layer operations
+- [-] 6. Extract layer management modules
+  - [x] 6.1 Create js/layers/layer-manager.js for layer operations
     - Extract toggleLayer, removeLayer, zoomToLayer, updateLayerList from script.js
     - Create LayerManager class with layer CRUD and visibility methods
     - **CRITICAL**: Replace uploadedLayers, displayMap, view globals with StateManager getters/setters

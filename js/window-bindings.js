@@ -36,9 +36,9 @@ export function bindWindowFunctions(managers) {
     panelManager,
     toolbarManager,
     tabSystem,
+    searchManager,
+    layerManager,
     // Future managers will be added here as they're created:
-    // searchManager,
-    // layerManager,
     // uploadHandler,
     // basemapManager,
     // drawingManager,
@@ -258,19 +258,19 @@ export function bindWindowFunctions(managers) {
 
   // ============================================================================
   // LAYER MANAGEMENT
-  // Future module: js/layers/layer-manager.js
+  // Module: js/layers/layer-manager.js ✅
   // ============================================================================
   
   window.toggleLayer = (index) => {
-    return scriptFunctions.toggleLayer(index);
+    return layerManager.toggleLayer(index);
   };
 
   window.zoomToLayer = (index) => {
-    return scriptFunctions.zoomToLayer(index);
+    return layerManager.zoomToLayer(index);
   };
 
   window.removeLayer = (index) => {
-    return scriptFunctions.removeLayer(index);
+    return layerManager.removeLayer(index);
   };
 
   // ============================================================================

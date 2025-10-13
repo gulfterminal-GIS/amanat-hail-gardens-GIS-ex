@@ -1,0 +1,178 @@
+/**
+ * LayerManager - Manages layer operations including visibility, removal, zoom, and list updates
+ * 
+ * This module handles all layer CRUD operations and maintains the layer list UI.
+ * It uses StateManager for accessing global state (uploadedLayers, map, view).
+ */
+
+export class LayerManager {
+  constructor(stateManager, notificationManager) {
+    this.stateManager = stateManager;
+    this.notificationManager = notificationManager;
+    
+    // Store callbacks that should be triggered when layer list updates
+    this.updateCallbacks = [];
+  }
+
+  /**
+   * Register a callback to be called when layer list updates
+   * @param {Function} callback - Function to call after layer list updates
+   */
+  onLayerListUpdate(callback) {
+    if (typeof callback === 'function') {
+      this.updateCallbacks.push(callback);
+    }
+  }
+
+  /**
+   * Remove a callback from the update list
+   * @param {Function} callback - Function to remove
+   */
+  offLayerListUpdate(callback) {
+    const index = this.updateCallbacks.indexOf(callback);
+    if (index > -1) {
+      this.updateCallbacks.splice(index, 1);
+    }
+  }
+
+  /**
+   * Trigger all registered callbacks
+   * @private
+   */
+  _triggerUpdateCallbacks() {
+    this.updateCallbacks.forEach(callback => {
+      try {
+        callback();
+      } catch (error) {
+        console.error('Error in layer list update callback:', error);
+      }
+    });
+  }
+
+  /**
+   * Toggle layer visibility
+   * @param {number} index - Index of the layer in uploadedLayers array
+   */
+  toggleLayer(index) {
+    const layers = this.stateManager.getUploadedLayers() || [];
+    if (layers[index]) {
+      layers[index].visible = !layers[index].visible;
+    }
+  }
+
+  /**
+   * Zoom to layer extent
+   * @param {number} index - Index of the layer in uploadedLayers array
+   */
+  async zoomToLayer(index) {
+    const layer = (this.stateManager.getUploadedLayers() || [])[index];
+    if (layer && layer.fullExtent) {
+      const view = this.stateManager.getView();
+      if (view) {
+        await view.goTo(layer.fullExtent);
+      }
+    }
+  }
+
+  /**
+   * Remove layer from map and state
+   * @param {number} index - Index of the layer in uploadedLayers array
+   */
+  removeLayer(index) {
+    const layer = (this.stateManager.getUploadedLayers() || [])[index];
+    if (layer) {
+      const map = this.stateManager.getMap();
+      if (map) {
+        map.remove(layer);
+      }
+    }
+    this.stateManager.removeUploadedLayer(index);
+    this.updateLayerList();
+  }
+
+  /**
+   * Update the layer list UI
+   * Updates both the main layer list and the side panel layer list if present
+   */
+  updateLayerList() {
+    const layerList = document.getElementById("layerList");
+
+    // Check if we're in the side panel or original location
+    const panelLayerList = document.querySelector("#sidePanelContent #layerList");
+    const targetList = panelLayerList || layerList;
+
+    if (!targetList) return;
+
+    const layers = this.stateManager.getUploadedLayers() || [];
+    
+    if (layers.length === 0) {
+      targetList.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-layer-group"></i>
+          <p>No layers loaded</p>
+        </div>
+      `;
+    } else {
+      targetList.innerHTML = layers
+        .map((layer, index) => `
+          <div class="layer-item">
+            <input type="checkbox" class="layer-checkbox" id="layer-${index}" 
+                  ${layer.visible ? "checked" : ""} onchange="toggleLayer(${index})">
+            <label for="layer-${index}" class="layer-name">${layer.title}</label>
+            <div class="layer-actions">
+              <button onclick="zoomToLayer(${index})" title="Zoom to layer">
+                <i class="fas fa-search-plus"></i>
+              </button>
+              <button onclick="removeLayer(${index})" title="Remove layer">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        `).join("");
+    }
+
+    // Trigger all registered callbacks (for attribute table, heatmap, analysis, legend, etc.)
+    this._triggerUpdateCallbacks();
+  }
+
+  /**
+   * Get all uploaded layers
+   * @returns {Array} Array of uploaded layers
+   */
+  getUploadedLayers() {
+    return this.stateManager.getUploadedLayers() || [];
+  }
+
+  /**
+   * Get a specific layer by index
+   * @param {number} index - Index of the layer
+   * @returns {Object|null} The layer object or null if not found
+   */
+  getLayerByIndex(index) {
+    const layers = this.stateManager.getUploadedLayers() || [];
+    return layers[index] || null;
+  }
+
+  /**
+   * Get a layer by its ID
+   * @param {string} id - The layer ID
+   * @returns {Object|null} The layer object or null if not found
+   */
+  getLayerById(id) {
+    const layers = this.stateManager.getUploadedLayers() || [];
+    return layers.find(layer => layer.id === id) || null;
+  }
+
+  /**
+   * Add a layer to the map and state
+   * @param {Object} layer - The layer to add
+   */
+  addLayer(layer) {
+    const map = this.stateManager.getMap();
+    if (map) {
+      map.add(layer);
+    }
+    this.stateManager.addUploadedLayer(layer);
+    this.updateLayerList();
+  }
+}

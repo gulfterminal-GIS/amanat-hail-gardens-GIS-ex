@@ -2,6 +2,7 @@ import { StateManager } from './js/core/state-manager.js';
 import { MapInitializer } from './js/core/map-initializer.js';
 import { NotificationManager } from './js/ui/notification-manager.js';
 import { PanelManager } from './js/ui/panel-manager.js';
+import { LayerManager } from './js/layers/layer-manager.js';
 import { loadModule, loadModules } from "./js/core/module-loader.js";
 
 // ============================================================================
@@ -80,7 +81,8 @@ async function initializeMap(
   mapInitializer = new MapInitializer(stateManager),
   notificationManager = new NotificationManager(),
   panelManager = new PanelManager(stateManager, notificationManager),
-  toolbarManager = null
+  toolbarManager = null,
+  layerManager = null
 ) {
   try {
     // Store instances at module level for use by other functions
@@ -89,7 +91,8 @@ async function initializeMap(
       mapInitializer,
       notificationManager,
       panelManager,
-      toolbarManager
+      toolbarManager,
+      layerManager
     };
 
     // Initialize state
@@ -111,6 +114,11 @@ async function initializeMap(
     if (toolbarManager) {
       console.log("Initializing ToolbarManager...");
       toolbarManager.initialize();
+    }
+
+    // Register LayerManager callbacks for attribute table, heatmap, and analysis
+    if (layerManager) {
+      registerLayerManagerCallbacks(layerManager);
     }
 
     return moduleState;
@@ -1752,76 +1760,162 @@ async function loadGeoJSON(content, filename) {
   }
 }
 
-// Update the layer list to also update legend
+// ============================================================================
+// LAYER MANAGEMENT - Delegated to js/layers/layer-manager.js
+// ============================================================================
+// These stub functions delegate to LayerManager for backward compatibility
+// with code in script.js that still calls these functions directly
+
 function updateLayerList() {
-  const layerList = document.getElementById("layerList");
-
-  // Check if we're in the side panel or original location
-  const panelLayerList = document.querySelector("#sidePanelContent #layerList");
-  const targetList = panelLayerList || layerList;
-
-  if (!targetList) return;
-
-  const { stateManager } = getState();
-  if ((stateManager.getUploadedLayers() || []).length === 0) {
-    targetList.innerHTML = `
-      <div class="empty-state">
-        <i class="fas fa-layer-group"></i>
-        <p>No layers loaded</p>
-      </div>
-    `;
-  } else {
-    targetList.innerHTML = (stateManager.getUploadedLayers() || [])
-      .map(
-        (layer, index) => `
-      <div class="layer-item">
-        <input type="checkbox" class="layer-checkbox" id="layer-${index}" 
-               ${layer.visible ? "checked" : ""
-          } onchange="toggleLayer(${index})">
-        <label for="layer-${index}" class="layer-name">${layer.title}</label>
-        <div class="layer-actions">
-          <button onclick="zoomToLayer(${index})" title="Zoom to layer">
-            <i class="fas fa-search-plus"></i>
-          </button>
-          <button onclick="removeLayer(${index})" title="Remove layer">
-            <i class="fas fa-trash"></i>
-          </button>
-        </div>
-      </div>
-    `
-      )
-      .join("");
-  }
-
-  // Update legend if it's active
-  const legendUpdateHandler = activeWidgets.get("legendUpdateHandler");
-  if (legendUpdateHandler) {
-    legendUpdateHandler();
+  const { layerManager } = getState();
+  if (layerManager) {
+    layerManager.updateLayerList();
   }
 }
 
-// Layer control functions
 function toggleLayer(index) {
-  const { stateManager } = getState();
-  const layers = stateManager.getUploadedLayers() || [];
-  if (layers[index]) layers[index].visible = !layers[index].visible;
+  const { layerManager } = getState();
+  if (layerManager) {
+    layerManager.toggleLayer(index);
+  }
 }
 
 async function zoomToLayer(index) {
-  const { stateManager } = getState();
-  const layer = (stateManager.getUploadedLayers() || [])[index];
-  if (layer && layer.fullExtent) {
-    await stateManager.getView().goTo(layer.fullExtent);
+  const { layerManager } = getState();
+  if (layerManager) {
+    await layerManager.zoomToLayer(index);
   }
 }
 
 function removeLayer(index) {
-  const { stateManager } = getState();
-  const layer = (stateManager.getUploadedLayers() || [])[index];
-  if (layer) stateManager.getMap().remove(layer);
-  stateManager.removeUploadedLayer(index);
-  updateLayerList();
+  const { layerManager } = getState();
+  if (layerManager) {
+    layerManager.removeLayer(index);
+  }
 }
+
+/**
+ * Register callbacks with LayerManager for modules that need to react to layer list updates
+ * This replaces the old monkey-patching pattern (originalUpdateLayerList, originalUpdateLayerList2, etc.)
+ */
+function registerLayerManagerCallbacks(layerManager) {
+  // Callback 1: Update attribute table layer select when layers change
+  layerManager.onLayerListUpdate(() => {
+    const tableWidget = document.getElementById("attributeTableWidget");
+    if (tableWidget && !tableWidget.classList.contains("hidden")) {
+      if (typeof initializeTableLayerSelect === 'function') {
+        initializeTableLayerSelect();
+      }
+    }
+  });
+
+  // Callback 2: Update heatmap layer select when layers change
+  layerManager.onLayerListUpdate(() => {
+    if (window.heatmapEnabled && typeof updateHeatmapLayerSelect === 'function') {
+      updateHeatmapLayerSelect();
+    }
+  });
+
+  // Callback 3: Add analysis layer to layer list if it has graphics
+  layerManager.onLayerListUpdate(() => {
+    if (analysisLayer && analysisLayer.graphics && analysisLayer.graphics.length > 0) {
+      const layerList = document.getElementById("layerList");
+      if (layerList) {
+        const analysisItem = document.createElement("div");
+        analysisItem.className = "layer-item";
+        analysisItem.innerHTML = `
+          <input type="checkbox" class="layer-checkbox" 
+                 ${analysisLayer.visible ? "checked" : ""} 
+                 onchange="analysisLayer.visible = this.checked">
+          <label class="layer-name">Analysis Results (${analysisLayer.graphics.length})</label>
+          <div class="layer-actions">
+            <button onclick="clearAnalysisResults()" title="Clear results">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        `;
+        layerList.appendChild(analysisItem);
+      }
+    }
+  });
+
+  console.log('✅ LayerManager callbacks registered (attribute table, heatmap, analysis)');
+}
+
+// ============================================================================
+// COMMENTED OUT - Original implementation moved to js/layers/layer-manager.js
+// ============================================================================
+// Update the layer list to also update legend
+// function updateLayerList() {
+//   const layerList = document.getElementById("layerList");
+
+//   // Check if we're in the side panel or original location
+//   const panelLayerList = document.querySelector("#sidePanelContent #layerList");
+//   const targetList = panelLayerList || layerList;
+
+//   if (!targetList) return;
+
+//   const { stateManager } = getState();
+//   if ((stateManager.getUploadedLayers() || []).length === 0) {
+//     targetList.innerHTML = `
+//       <div class="empty-state">
+//         <i class="fas fa-layer-group"></i>
+//         <p>No layers loaded</p>
+//       </div>
+//     `;
+//   } else {
+//     targetList.innerHTML = (stateManager.getUploadedLayers() || [])
+//       .map(
+//         (layer, index) => `
+//       <div class="layer-item">
+//         <input type="checkbox" class="layer-checkbox" id="layer-${index}" 
+//                ${layer.visible ? "checked" : ""
+//           } onchange="toggleLayer(${index})">
+//         <label for="layer-${index}" class="layer-name">${layer.title}</label>
+//         <div class="layer-actions">
+//           <button onclick="zoomToLayer(${index})" title="Zoom to layer">
+//             <i class="fas fa-search-plus"></i>
+//           </button>
+//           <button onclick="removeLayer(${index})" title="Remove layer">
+//             <i class="fas fa-trash"></i>
+//           </button>
+//         </div>
+//       </div>
+//     `
+//       )
+//       .join("");
+//   }
+
+//   // Update legend if it's active
+//   const legendUpdateHandler = activeWidgets.get("legendUpdateHandler");
+//   if (legendUpdateHandler) {
+//     legendUpdateHandler();
+//   }
+// }
+
+// // Layer control functions
+// function toggleLayer(index) {
+//   const { stateManager } = getState();
+//   const layers = stateManager.getUploadedLayers() || [];
+//   if (layers[index]) layers[index].visible = !layers[index].visible;
+// }
+
+// async function zoomToLayer(index) {
+//   const { stateManager } = getState();
+//   const layer = (stateManager.getUploadedLayers() || [])[index];
+//   if (layer && layer.fullExtent) {
+//     await stateManager.getView().goTo(layer.fullExtent);
+//   }
+// }
+
+// function removeLayer(index) {
+//   const { stateManager } = getState();
+//   const layer = (stateManager.getUploadedLayers() || [])[index];
+//   if (layer) stateManager.getMap().remove(layer);
+//   stateManager.removeUploadedLayer(index);
+//   updateLayerList();
+// }
+// ============================================================================
 
 // ============================================================================
 // COMMENTED OUT - Moved to js/ui/toolbar-manager.js
@@ -3979,9 +4073,9 @@ window.addEventListener("resize", () => {
 });
 
 // Export global functions for inline handlers
-window.toggleLayer = toggleLayer;
-window.zoomToLayer = zoomToLayer;
-window.removeLayer = removeLayer;
+// window.toggleLayer = toggleLayer;
+// window.zoomToLayer = zoomToLayer;
+// window.removeLayer = removeLayer;
 window.closeCustomPopup = closeCustomPopup;
 
 // Widget Management System
@@ -5254,17 +5348,21 @@ function calculateStatistics(data) {
   return stats;
 }
 
+// ============================================================================
+// COMMENTED OUT - updateLayerList moved to js/layers/layer-manager.js
+// ============================================================================
 // Update layer list to refresh table if active
-const originalUpdateLayerList = updateLayerList;
-updateLayerList = function () {
-  originalUpdateLayerList();
+// const originalUpdateLayerList = updateLayerList;
+// updateLayerList = function () {
+//   originalUpdateLayerList();
 
-  // Update table layer select if table is open
-  const tableWidget = document.getElementById("attributeTableWidget");
-  if (!tableWidget.classList.contains("hidden")) {
-    initializeTableLayerSelect();
-  }
-};
+//   // Update table layer select if table is open
+//   const tableWidget = document.getElementById("attributeTableWidget");
+//   if (!tableWidget.classList.contains("hidden")) {
+//     initializeTableLayerSelect();
+//   }
+// };
+// ============================================================================
 
 // Export functions for global access
 window.toggleAttributeTable = toggleAttributeTable;
@@ -5579,16 +5677,20 @@ async function applyHeatmapSettings() {
   }
 }
 
+// ============================================================================
+// COMMENTED OUT - updateLayerList moved to js/layers/layer-manager.js
+// ============================================================================
 // Update layer list to refresh heatmap select
-const originalUpdateLayerList2 = updateLayerList;
-updateLayerList = function () {
-  originalUpdateLayerList2();
+// const originalUpdateLayerList2 = updateLayerList;
+// updateLayerList = function () {
+//   originalUpdateLayerList2();
 
-  // Update heatmap layer select if enabled
-  if (heatmapEnabled) {
-    updateHeatmapLayerSelect();
-  }
-};
+//   // Update heatmap layer select if enabled
+//   if (heatmapEnabled) {
+//     updateHeatmapLayerSelect();
+//   }
+// };
+// ============================================================================
 
 // // Listen for zoom changes to optimize heatmap
 // view.watch('zoom', (zoom) => {
@@ -7762,31 +7864,35 @@ window.toggleTimeControls = toggleTimeControls;
 window.playTimeAnimation = playTimeAnimation;
 window.stopTimeAnimation = stopTimeAnimation;
 
+// ============================================================================
+// COMMENTED OUT - updateLayerList moved to js/layers/layer-manager.js
+// ============================================================================
 // Update layer list to include analysis layer
-const originalUpdateLayerList3 = updateLayerList;
-updateLayerList = function () {
-  originalUpdateLayerList3();
+// const originalUpdateLayerList3 = updateLayerList;
+// updateLayerList = function () {
+//   originalUpdateLayerList3();
 
-  // Add analysis layer to layer list if it exists and has graphics
-  if (analysisLayer && analysisLayer.graphics.length > 0) {
-    const layerList = document.getElementById("layerList");
-    const analysisItem = document.createElement("div");
-    analysisItem.className = "layer-item";
-    analysisItem.innerHTML = `
-      <input type="checkbox" class="layer-checkbox" 
-             ${analysisLayer.visible ? "checked" : ""} 
-             onchange="analysisLayer.visible = this.checked">
-      <label class="layer-name">Analysis Results (${analysisLayer.graphics.length
-      })</label>
-      <div class="layer-actions">
-        <button onclick="clearAnalysisResults()" title="Clear results">
-          <i class="fas fa-trash"></i>
-        </button>
-      </div>
-    `;
-    layerList.appendChild(analysisItem);
-  }
-};
+//   // Add analysis layer to layer list if it exists and has graphics
+//   if (analysisLayer && analysisLayer.graphics.length > 0) {
+//     const layerList = document.getElementById("layerList");
+//     const analysisItem = document.createElement("div");
+//     analysisItem.className = "layer-item";
+//     analysisItem.innerHTML = `
+//       <input type="checkbox" class="layer-checkbox" 
+//              ${analysisLayer.visible ? "checked" : ""} 
+//              onchange="analysisLayer.visible = this.checked">
+//       <label class="layer-name">Analysis Results (${analysisLayer.graphics.length
+//       })</label>
+//       <div class="layer-actions">
+//         <button onclick="clearAnalysisResults()" title="Clear results">
+//           <i class="fas fa-trash"></i>
+//         </button>
+//       </div>
+//     `;
+//     layerList.appendChild(analysisItem);
+//   }
+// };
+// ============================================================================
 
 // Clear analysis results
 function clearAnalysisResults() {
@@ -8450,7 +8556,7 @@ export {
   // closeSidePanel,
   // clearToolbarActiveStates,
 
-  // Layer management functions (will be moved to layer-manager.js)
+  // Layer management functions (DELEGATED to layer-manager.js) ✅
   toggleLayer,
   removeLayer,
   updateLayerList,

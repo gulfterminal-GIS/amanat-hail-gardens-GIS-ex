@@ -9,6 +9,7 @@ import { PanelManager } from "./ui/panel-manager.js";
 import { ToolbarManager } from "./ui/toolbar-manager.js";
 import { TabSystem } from "./ui/tab-system.js";
 import { SearchManager } from "./ui/search-manager.js";
+import { LayerManager } from "./layers/layer-manager.js";
 import { bindWindowFunctions } from "./window-bindings.js";
 import { initializeMap } from "../script.js";
 
@@ -36,6 +37,9 @@ const tabSystem = new TabSystem(notificationManager);
 // Create SearchManager instance
 const searchManager = new SearchManager(stateManager, notificationManager);
 
+// Create LayerManager instance
+const layerManager = new LayerManager(stateManager, notificationManager);
+
 // Initialize application
 async function initializeApplication() {
   try {
@@ -47,9 +51,10 @@ async function initializeApplication() {
     console.log("ToolbarManager created and ready");
     console.log("TabSystem created and ready");
     console.log("SearchManager created and ready");
+    console.log("LayerManager created and ready");
 
     // Initialize the map with injected dependencies
-    await initializeMap(stateManager, mapInitializer, notificationManager, panelManager, toolbarManager);
+    await initializeMap(stateManager, mapInitializer, notificationManager, panelManager, toolbarManager, layerManager);
 
     // Initialize tab system
     tabSystem.initializeMapTabs();
@@ -66,6 +71,7 @@ async function initializeApplication() {
       toolbarManager,
       tabSystem,
       searchManager,
+      layerManager,
       // Future managers will be added here as they're created
     });
 
