@@ -118,7 +118,7 @@ async function initializeMap(
     notificationManager.showError("Failed to initialize map");
     throw error;
   }
-}  
+}
 // if (mapInitializer && typeof mapInitializer.initializeMap === "function") {
 //     await mapInitializer.initializeMap();
 //   } else {
@@ -276,7 +276,7 @@ const tabConfig = {
 // Initialize tabs
 function initializeMapTabs() {
   const { stateManager } = getState();
-  
+
   const tabButtons = document.querySelectorAll(".tab-button");
   const backdrop = document.getElementById("tabBackdrop");
   const contentCard = backdrop.querySelector(".tab-content-card");
@@ -455,7 +455,7 @@ function redirectToTabPlatform(tabType) {
 async function autoApplyDefaultClassification(layer, fieldName) {
   try {
     const { stateManager } = getState();
-    
+
     const stats = await analyzeFieldForClassification(layer, fieldName);
     if (!stats || stats.uniqueCount === 0) {
       console.warn(`No valid values found in ${fieldName}`);
@@ -464,7 +464,7 @@ async function autoApplyDefaultClassification(layer, fieldName) {
 
     // Store current layer in state
     stateManager.setCurrentClassificationLayer(layer);
-    
+
     const colors = generateClassificationColors(stats.sortedValues.length);
     const geometryType = layer.geometryType;
 
@@ -552,10 +552,10 @@ async function setupFeatureTour(layer) {
 // Create tour control panel
 function createTourControls() {
   const { stateManager } = getState();
-  
+
   const controlsDiv = document.createElement("div");
   controlsDiv.className = "feature-tour-controls";
-  
+
   // Create tour controls DOM
   controlsDiv.innerHTML = `
     <header class="tour-header">
@@ -719,7 +719,7 @@ async function goToFeature(index) {
   try {
     const { stateManager } = getState();
     const view = stateManager.getView();
-    
+
     if (!view) {
       console.error("View not available for goToFeature");
       return;
@@ -783,9 +783,8 @@ async function goToFeature(index) {
     updateTourInfo(feature);
 
     // Update progress
-    document.getElementById("tourProgress").textContent = `${index + 1} / ${
-      (stateManager.getTourFeatures() || []).length
-    }`;
+    document.getElementById("tourProgress").textContent = `${index + 1} / ${(stateManager.getTourFeatures() || []).length
+      }`;
 
     // Show popup in left-center position
     showTourPopup(feature);
@@ -796,7 +795,7 @@ async function goToFeature(index) {
 
 function showCustomPopupTour(graphic) {
   const { stateManager } = getState();
-  
+
   const featureDetails = document.querySelector('.feature-tour-controls .feature-details');
   if (!featureDetails) {
     console.warn('Feature details element not found for tour popup');
@@ -940,7 +939,7 @@ function updateTourInfo(feature) {
 // Navigation functions
 function nextFeature(manual = true) {
   const { stateManager } = getState();
-  
+
   if (manual) {
     stopFeatureTour(); // only stop when user explicitly clicks
   }
@@ -953,7 +952,7 @@ function nextFeature(manual = true) {
 
 function previousFeature(manual = true) {
   const { stateManager } = getState();
-  
+
   if (manual) {
     stopFeatureTour();
   }
@@ -1054,7 +1053,7 @@ function initializeUI(injectedStateManager) {
   // Mobile and desktop toolbar initialization has been extracted to ToolbarManager
   // The ToolbarManager is initialized in main.js and called from initializeMap
   // ============================================================================
-  
+
   // // Add this code right after the function starts:
   // // Initialize mobile toolbar
   // const mobileToggle = document.getElementById("mobileToolbarToggle");
@@ -1165,7 +1164,7 @@ function initializeUI(injectedStateManager) {
       const { stateManager } = getState();
       const map = stateManager.getMap();
       const basemap = item.dataset.basemap;
-      
+
       if (map) {
         map.basemap = basemap;
         // Update active state
@@ -1211,7 +1210,7 @@ function initializeUI(injectedStateManager) {
 // Initialize file upload functionality
 function initializeFileUpload() {
   const { stateManager } = getState();
-  
+
   const dropZone = document.getElementById("dropZone");
   const fileInput = document.getElementById("fileInput");
 
@@ -1768,14 +1767,13 @@ function updateLayerList() {
       </div>
     `;
   } else {
-  targetList.innerHTML = (stateManager.getUploadedLayers() || [])
+    targetList.innerHTML = (stateManager.getUploadedLayers() || [])
       .map(
         (layer, index) => `
       <div class="layer-item">
         <input type="checkbox" class="layer-checkbox" id="layer-${index}" 
-               ${
-                 layer.visible ? "checked" : ""
-               } onchange="toggleLayer(${index})">
+               ${layer.visible ? "checked" : ""
+          } onchange="toggleLayer(${index})">
         <label for="layer-${index}" class="layer-name">${layer.title}</label>
         <div class="layer-actions">
           <button onclick="zoomToLayer(${index})" title="Zoom to layer">
@@ -1920,9 +1918,9 @@ function initializeDrawingPanel() {
       drawToolBtns.forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
 
-  // Start drawing
-  const { stateManager } = getState();
-  stateManager.setActiveDrawingTool(tool);
+      // Start drawing
+      const { stateManager } = getState();
+      stateManager.setActiveDrawingTool(tool);
       startDrawingWithTool(tool);
     });
   });
@@ -1932,8 +1930,11 @@ function initializeDrawingPanel() {
   if (clearBtn) {
     clearBtn.addEventListener("click", () => {
       if (confirm("Clear all drawings?")) {
-        drawLayer.removeAll();
-        sketchViewModel.cancel();
+        const { stateManager } = getState();
+        const drawLayer = stateManager.getDrawLayer();
+        const sketchViewModel = stateManager.getSketchViewModel();
+        if (drawLayer) drawLayer.removeAll();
+        if (sketchViewModel) sketchViewModel.cancel();
         resetDrawingTools();
       }
     });
@@ -1964,7 +1965,7 @@ function initializeDrawingPanel() {
 async function initializeSketchViewModel() {
   const { stateManager } = getState();
   let sketchViewModel = stateManager.getSketchViewModel();
-  
+
   if (!sketchViewModel) {
     const [SketchViewModel, GraphicsLayer] = await Promise.all([
       loadModule("esri/widgets/Sketch/SketchViewModel"),
@@ -2061,7 +2062,7 @@ window.debugDrawing = function () {
   const sketchViewModel = stateManager.getSketchViewModel();
   const view = stateManager.getView();
   const drawLayer = stateManager.getDrawLayer();
-  
+
   console.log("Debug Info:");
   console.log("- SketchViewModel exists:", !!sketchViewModel);
   console.log("- View exists:", !!view);
@@ -2123,6 +2124,14 @@ function disableDrawingMode(modalId) {
 
 // Setup SketchViewModel events
 function setupSketchViewModelEvents() {
+  const { stateManager } = getState();
+  const sketchViewModel = stateManager.getSketchViewModel();
+
+  if (!sketchViewModel) {
+    console.warn('SketchViewModel not initialized');
+    return;
+  }
+
   // Handle create events
   sketchViewModel.on("create", (event) => {
     if (event.state === "complete") {
@@ -2185,8 +2194,11 @@ function initializeDrawingToolButtons() {
 
   document.getElementById("clearDrawings").addEventListener("click", () => {
     if (confirm("Clear all drawings?")) {
-      drawLayer.removeAll();
-      sketchViewModel.cancel();
+      const { stateManager } = getState();
+      const drawLayer = stateManager.getDrawLayer();
+      const sketchViewModel = stateManager.getSketchViewModel();
+      if (drawLayer) drawLayer.removeAll();
+      if (sketchViewModel) sketchViewModel.cancel();
       resetDrawingTools();
     }
   });
@@ -2202,8 +2214,12 @@ function initializeDrawingToolButtons() {
 
 // Start drawing with specific tool
 function startDrawingWithTool(tool) {
+  const { stateManager } = getState();
+  const sketchViewModel = stateManager.getSketchViewModel();
+  const view = stateManager.getView();
+
   if (!sketchViewModel) {
-    console.error("SketchViewModel not initialized");
+    console.error('SketchViewModel not initialized. Call initializeSketchViewModel first.');
     return;
   }
 
@@ -2211,7 +2227,9 @@ function startDrawingWithTool(tool) {
   sketchViewModel.cancel();
 
   // Set cursor for drawing
-  view.container.style.cursor = "crosshair";
+  if (view) {
+    view.container.style.cursor = "crosshair";
+  }
 
   // Get current symbology settings
   const color = hexToRgb(
@@ -2341,7 +2359,7 @@ function clearAll() {
     const view = stateManager.getView();
     const measurementWidget = stateManager.getMeasurementWidget();
     const sketchViewModel = stateManager.getSketchViewModel();
-    
+
     if (drawLayer) {
       drawLayer.removeAll();
     }
@@ -2363,10 +2381,10 @@ function hexToRgb(hex) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? [
-        parseInt(result[1], 16),
-        parseInt(result[2], 16),
-        parseInt(result[3], 16),
-      ]
+      parseInt(result[1], 16),
+      parseInt(result[2], 16),
+      parseInt(result[3], 16),
+    ]
     : [33, 150, 243];
 }
 
@@ -2798,9 +2816,8 @@ function initializeEventHandlers(stateManager) {
         if (graphic.layer && graphic.layer.queryFeatures) {
           try {
             const query = graphic.layer.createQuery();
-            query.where = `${graphic.layer.objectIdField} = ${
-              graphic.attributes[graphic.layer.objectIdField]
-            }`;
+            query.where = `${graphic.layer.objectIdField} = ${graphic.attributes[graphic.layer.objectIdField]
+              }`;
             query.outFields = ["*"];
             query.returnGeometry = true;
 
@@ -3123,8 +3140,8 @@ async function initializeSearch(view) {
       } else if (suggestion.suggestResult) {
         // Suggestion result - need to search
         const searchWidget = stateManager.getSearchWidget();
-      searchWidget.viewModel.searchTerm = suggestion.text;
-      const response = await searchWidget.viewModel.search(
+        searchWidget.viewModel.searchTerm = suggestion.text;
+        const response = await searchWidget.viewModel.search(
           suggestion.suggestResult
         );
 
@@ -3455,8 +3472,8 @@ async function updateGeometryDetails(geometry) {
           <div class="attribute-row">
             <span class="attribute-label">Longitude:</span>
             <span class="attribute-value">${geometry.longitude.toFixed(
-              6
-            )}</span>
+          6
+        )}</span>
           </div>
           <div class="attribute-row">
             <span class="attribute-label">Latitude:</span>
@@ -4420,6 +4437,8 @@ async function toggleMeasurement() {
     // Activate measurement
     btn.classList.add("active");
     closeSidePanel(); // Close any open panels
+    const { stateManager } = getState();
+    const sketchViewModel = stateManager.getSketchViewModel();
     if (sketchViewModel) {
       sketchViewModel.cancel();
     }
@@ -4440,9 +4459,8 @@ function updateMeasurementResults(measurement) {
       <div class="measurement-item">
         <i class="fas fa-ruler-horizontal"></i>
         <span class="measurement-label">Distance:</span>
-        <span class="measurement-value">${measurement.distance.toFixed(2)} ${
-      measurement.distanceUnit
-    }</span>
+        <span class="measurement-value">${measurement.distance.toFixed(2)} ${measurement.distanceUnit
+      }</span>
       </div>
     `;
   } else if (measurement.area !== undefined) {
@@ -4451,16 +4469,14 @@ function updateMeasurementResults(measurement) {
       <div class="measurement-item">
         <i class="fas fa-vector-square"></i>
         <span class="measurement-label">Area:</span>
-        <span class="measurement-value">${measurement.area.toFixed(2)} ${
-      measurement.areaUnit
-    }</span>
+        <span class="measurement-value">${measurement.area.toFixed(2)} ${measurement.areaUnit
+      }</span>
       </div>
       <div class="measurement-item">
         <i class="fas fa-draw-polygon"></i>
         <span class="measurement-label">Perimeter:</span>
-        <span class="measurement-value">${measurement.perimeter.toFixed(2)} ${
-      measurement.perimeterUnit
-    }</span>
+        <span class="measurement-value">${measurement.perimeter.toFixed(2)} ${measurement.perimeterUnit
+      }</span>
       </div>
     `;
   }
@@ -4479,7 +4495,7 @@ async function toggleSwipe() {
 
     // Temporarily suppress console warnings for deprecated widget
     const originalWarn = console.warn;
-    console.warn = () => {};
+    console.warn = () => { };
 
     try {
       const [Swipe] = await Promise.all([loadModule("esri/widgets/Swipe")]);
@@ -4966,9 +4982,8 @@ async function flashFeature(feature) {
 function updatePagination() {
   const totalPages = Math.ceil(filteredData.length / recordsPerPage);
 
-  document.getElementById("tablePaginationInfo").textContent = `${
-    filteredData.length
-  } record${filteredData.length !== 1 ? "s" : ""}`;
+  document.getElementById("tablePaginationInfo").textContent = `${filteredData.length
+    } record${filteredData.length !== 1 ? "s" : ""}`;
   document.getElementById(
     "tablePageInfo"
   ).textContent = `Page ${currentPage} of ${totalPages}`;
@@ -5963,11 +5978,10 @@ function createClassificationLegend(stats, colors, fieldName) {
     <div class="widget-header" style="margin: -12px -12px 12px; padding: 12px;">
       <h3 style="font-size: 16px; display: flex; align-items: center; gap: 8px;">
         <i class="fas fa-list" style="color: var(--primary-color);"></i>
-        ${
-          fieldName === "GARDENSTATUS"
-            ? "حالة الحديقة"
-            : formatFieldName(fieldName)
-        }
+        ${fieldName === "GARDENSTATUS"
+      ? "حالة الحديقة"
+      : formatFieldName(fieldName)
+    }
       </h3>
       <button class="widget-close" onclick="removeClassificationLegend()">
         <i class="fas fa-times"></i>
@@ -6296,6 +6310,8 @@ function closeIntersectModal() {
   modal.classList.add("hidden");
 
   // Cancel any active drawing
+  const { stateManager } = getState();
+  const sketchViewModel = stateManager.getSketchViewModel();
   if (sketchViewModel) {
     sketchViewModel.cancel();
   }
@@ -6365,17 +6381,20 @@ async function startIntersectDrawing(featureNum) {
   const modal = document.getElementById("intersectModal");
   modal.classList.add("drawing-active");
 
+  const { stateManager } = getState();
+  let sketchViewModel = stateManager.getSketchViewModel();
+
   if (!sketchViewModel) {
-    await initializeSketchViewModel();
+    sketchViewModel = await initializeSketchViewModel();
   }
 
   // Clear previous drawing for this feature
-  if (featureNum === 1 && getState().stateManager.getDrawnFeatures().intersect1) {
-    getState().stateManager.getDrawLayer().remove(getState().stateManager.getDrawnFeatures().intersect1);
-    getState().stateManager.setIntersectFeature1(null);
-  } else if (featureNum === 2 && getState().stateManager.getDrawnFeatures().intersect2) {
-    getState().stateManager.getDrawLayer().remove(getState().stateManager.getDrawnFeatures().intersect2);
-    getState().stateManager.setIntersectFeature2(null);
+  if (featureNum === 1 && stateManager.getDrawnFeatures().intersect1) {
+    stateManager.getDrawLayer().remove(stateManager.getDrawnFeatures().intersect1);
+    stateManager.setIntersectFeature1(null);
+  } else if (featureNum === 2 && stateManager.getDrawnFeatures().intersect2) {
+    stateManager.getDrawLayer().remove(stateManager.getDrawnFeatures().intersect2);
+    stateManager.setIntersectFeature2(null);
   }
 
   // Set custom symbology for intersection polygons
@@ -6469,6 +6488,8 @@ window.cancelIntersectDrawing = function () {
   const modal = document.getElementById("intersectModal");
   modal.classList.remove("drawing-active");
 
+  const { stateManager } = getState();
+  const sketchViewModel = stateManager.getSketchViewModel();
   if (sketchViewModel) {
     sketchViewModel.cancel();
   }
@@ -7069,8 +7090,10 @@ window.setDistanceSource = async function (source) {
     }
 
     // Initialize sketch for point drawing
+    const { stateManager } = getState();
+    let sketchViewModel = stateManager.getSketchViewModel();
     if (!sketchViewModel) {
-      await initializeSketchViewModel();
+      sketchViewModel = await initializeSketchViewModel();
     }
 
     // Clear any previous distance drawing handler
@@ -7146,8 +7169,10 @@ async function setDistanceSource(source) {
     distanceFeatures = [];
 
     // Make sure sketch view model is initialized
+    const { stateManager } = getState();
+    let sketchViewModel = stateManager.getSketchViewModel();
     if (!sketchViewModel) {
-      await initializeSketchViewModel();
+      sketchViewModel = await initializeSketchViewModel();
     }
 
     let pointCount = 0;
@@ -7690,7 +7715,7 @@ function playTimeAnimation() {
           start: fullExtent.start,
           end: new Date(
             fullExtent.start.getTime() +
-              (currentEnd - timeSlider.timeExtent.start)
+            (currentEnd - timeSlider.timeExtent.start)
           ),
         };
       }
@@ -7740,8 +7765,7 @@ updateLayerList = function () {
       <input type="checkbox" class="layer-checkbox" 
              ${analysisLayer.visible ? "checked" : ""} 
              onchange="analysisLayer.visible = this.checked">
-      <label class="layer-name">Analysis Results (${
-        analysisLayer.graphics.length
+      <label class="layer-name">Analysis Results (${analysisLayer.graphics.length
       })</label>
       <div class="layer-actions">
         <button onclick="clearAnalysisResults()" title="Clear results">
@@ -7845,8 +7869,7 @@ window.toggleModalMinimize = function (modalId) {
     const indicator = document.createElement("div");
     indicator.className = "modal-minimized-indicator";
     indicator.innerHTML = `
-      <span>${
-        modalId === "bufferModal" ? "Buffer" : "Intersection"
+      <span>${modalId === "bufferModal" ? "Buffer" : "Intersection"
       } Analysis</span>
       <button onclick="toggleModalMinimize('${modalId}')">
         <i class="fas fa-window-maximize"></i>
@@ -7886,11 +7909,10 @@ async function startBufferDrawing(type) {
     `;
     indicator.innerHTML = `
       <i class="fas fa-pencil-alt"></i>
-      <span>Drawing ${type}. ${
-      type === "point"
+      <span>Drawing ${type}. ${type === "point"
         ? "Click to place point"
         : "Click to add vertices, double-click to complete"
-    }.</span>
+      }.</span>
       <button onclick="cancelBufferDrawing()" style="
         background: white;
         color: var(--primary-color);
@@ -7905,14 +7927,18 @@ async function startBufferDrawing(type) {
   }
 
   // Initialize SketchViewModel if needed
+  const { stateManager } = getState();
+  let sketchViewModel = stateManager.getSketchViewModel();
   if (!sketchViewModel) {
-    await initializeSketchViewModel();
+    sketchViewModel = await initializeSketchViewModel();
   }
 
   // Cancel any existing drawing
   if (sketchViewModel) {
     sketchViewModel.cancel();
   }
+
+  const view = stateManager.getView();
 
   getState().stateManager.setAnalysisDrawing(true);
   getState().stateManager.setAnalysisDrawType(type);
@@ -8060,7 +8086,7 @@ function getAnalysisDrawSymbol(type) {
 function stopAnalysisDrawing() {
   const stateManager = getState().stateManager;
   const sketchViewModel = stateManager.getSketchViewModel();
-  
+
   stateManager.setAnalysisDrawing(false);
   stateManager.setAnalysisDrawType(null);
 
