@@ -35,8 +35,8 @@ export function bindWindowFunctions(managers) {
     mapInitializer,
     panelManager,
     toolbarManager,
+    tabSystem,
     // Future managers will be added here as they're created:
-    // tabSystem,
     // searchManager,
     // layerManager,
     // uploadHandler,
@@ -275,11 +275,11 @@ export function bindWindowFunctions(managers) {
 
   // ============================================================================
   // TAB SYSTEM
-  // Future module: js/ui/tab-system.js
+  // Module: js/ui/tab-system.js ✅
   // ============================================================================
   
   window.redirectToTabPlatform = (tabType) => {
-    return scriptFunctions.redirectToTabPlatform(tabType);
+    return tabSystem.redirectToTabPlatform(tabType);
   };
 
   // ============================================================================

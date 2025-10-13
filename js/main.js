@@ -7,6 +7,7 @@ import { NotificationManager } from "./ui/notification-manager.js";
 import { MapInitializer } from "./core/map-initializer.js";
 import { PanelManager } from "./ui/panel-manager.js";
 import { ToolbarManager } from "./ui/toolbar-manager.js";
+import { TabSystem } from "./ui/tab-system.js";
 import { bindWindowFunctions } from "./window-bindings.js";
 import { initializeMap } from "../script.js";
 
@@ -28,6 +29,9 @@ const panelManager = new PanelManager(stateManager, notificationManager);
 // Create ToolbarManager instance
 const toolbarManager = new ToolbarManager(stateManager, panelManager, notificationManager);
 
+// Create TabSystem instance
+const tabSystem = new TabSystem(notificationManager);
+
 // Initialize application
 async function initializeApplication() {
   try {
@@ -37,9 +41,13 @@ async function initializeApplication() {
     console.log("MapInitializer created and ready");
     console.log("PanelManager created and ready");
     console.log("ToolbarManager created and ready");
+    console.log("TabSystem created and ready");
 
     // Initialize the map with injected dependencies
     await initializeMap(stateManager, mapInitializer, notificationManager, panelManager, toolbarManager);
+
+    // Initialize tab system
+    tabSystem.initializeMapTabs();
 
     // Bind window functions for HTML event handlers (CRITICAL for inline onclick, onchange, etc.)
     bindWindowFunctions({
@@ -48,6 +56,7 @@ async function initializeApplication() {
       mapInitializer,
       panelManager,
       toolbarManager,
+      tabSystem,
       // Future managers will be added here as they're created
     });
 

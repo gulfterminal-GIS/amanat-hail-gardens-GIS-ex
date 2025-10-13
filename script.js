@@ -245,126 +245,130 @@ async function initializeMap(
 //   }
 // }
 
+// ============================================================================
+// COMMENTED OUT - Moved to js/ui/tab-system.js
+// ============================================================================
 // Tab System configuration managed by StateManager
-const tabConfig = {
-  messages: {
-    gardens: "التوجه الى منصة الحدائق الذكية",
-    projects: "يلزم الربط بمنصة قرار لعرض المشروعات",
-    assets: "يلزم الربط بالتشغيل و الصيانة لعرض الأصول",
-    smartEye: "يلزم الربط بمنصة العين الذكية"
-  },
-  buttons: {
-    gardens: {
-      text: "ربط بمنصة الحدائق الذكية",
-      url: "https://intelli.it.com/"
-    },
-    projects: {
-      text: "ربط بمنصة قرار",
-      url: "https://qarar2025.azurewebsites.net/"
-    },
-    assets: {
-      text: "ربط بالتشغيل و الصيانة",
-      url: "https://gt-ams.azurewebsites.net/"
-    },
-    smartEye: {
-      text: "ربط بمنصة العين الذكية",
-      url: "http://hayel.dtsit.net/dashboard"
-    }
-  }
-};
+// const tabConfig = {
+//   messages: {
+//     gardens: "التوجه الى منصة الحدائق الذكية",
+//     projects: "يلزم الربط بمنصة قرار لعرض المشروعات",
+//     assets: "يلزم الربط بالتشغيل و الصيانة لعرض الأصول",
+//     smartEye: "يلزم الربط بمنصة العين الذكية"
+//   },
+//   buttons: {
+//     gardens: {
+//       text: "ربط بمنصة الحدائق الذكية",
+//       url: "https://intelli.it.com/"
+//     },
+//     projects: {
+//       text: "ربط بمنصة قرار",
+//       url: "https://qarar2025.azurewebsites.net/"
+//     },
+//     assets: {
+//       text: "ربط بالتشغيل و الصيانة",
+//       url: "https://gt-ams.azurewebsites.net/"
+//     },
+//     smartEye: {
+//       text: "ربط بمنصة العين الذكية",
+//       url: "http://hayel.dtsit.net/dashboard"
+//     }
+//   }
+// };
 
 // Initialize tabs
-function initializeMapTabs() {
-  const { stateManager } = getState();
+// function initializeMapTabs() {
+//   const { stateManager } = getState();
 
-  const tabButtons = document.querySelectorAll(".tab-button");
-  const backdrop = document.getElementById("tabBackdrop");
-  const contentCard = backdrop.querySelector(".tab-content-card");
+//   const tabButtons = document.querySelectorAll(".tab-button");
+//   const backdrop = document.getElementById("tabBackdrop");
+//   const contentCard = backdrop.querySelector(".tab-content-card");
 
-  tabButtons.forEach((button) => {
-    button.addEventListener("click", function () {
-      const tabType = this.getAttribute("data-tab");
+//   tabButtons.forEach((button) => {
+//     button.addEventListener("click", function () {
+//       const tabType = this.getAttribute("data-tab");
 
-      // // If it's gardens tab, just activate it and hide backdrop
-      // if (tabType === "gardens") {
-      //   // Remove active from all tabs
-      //   tabButtons.forEach((btn) => btn.classList.remove("active"));
-      //   // Set this tab as active
-      //   this.classList.add("active");
-      //   // Hide backdrop
-      //   backdrop.classList.add("hidden");
-      //   return;
-      // }
+//       // // If it's gardens tab, just activate it and hide backdrop
+//       // if (tabType === "gardens") {
+//       //   // Remove active from all tabs
+//       //   tabButtons.forEach((btn) => btn.classList.remove("active"));
+//       //   // Set this tab as active
+//       //   this.classList.add("active");
+//       //   // Hide backdrop
+//       //   backdrop.classList.add("hidden");
+//       //   return;
+//       // }
 
-      // For other tabs, show the message
-      const message = tabConfig.messages[tabType];
-      const buttonInfo = tabConfig.buttons[tabType];
+//       // For other tabs, show the message
+//       const message = tabConfig.messages[tabType];
+//       const buttonInfo = tabConfig.buttons[tabType];
 
-      if (message && buttonInfo) {
-        // Update content
-        contentCard.innerHTML = `
-          <div class="tab-icon-container">
-            <img src="images/plug.gif" alt="Loading" class="tab-gif-icon" />
-          </div>
+//       if (message && buttonInfo) {
+//         // Update content
+//         contentCard.innerHTML = `
+//           <div class="tab-icon-container">
+//             <img src="images/plug.gif" alt="Loading" class="tab-gif-icon" />
+//           </div>
           
-          <p class="tab-message-text">${message}</p>
+//           <p class="tab-message-text">${message}</p>
           
-          <button class="tab-action-button" onclick="redirectToTabPlatform('${tabType}')">
-            <span>${buttonInfo.text}</span>
-            <i class="fas fa-external-link-alt"></i>
-          </button>
-        `;
+//           <button class="tab-action-button" onclick="redirectToTabPlatform('${tabType}')">
+//             <span>${buttonInfo.text}</span>
+//             <i class="fas fa-external-link-alt"></i>
+//           </button>
+//         `;
 
-        // Show backdrop
-        backdrop.classList.remove("hidden");
-      }
-    });
-  });
+//         // Show backdrop
+//         backdrop.classList.remove("hidden");
+//       }
+//     });
+//   });
 
-  // Close backdrop when clicking outside
-  backdrop.addEventListener("click", function (e) {
-    if (e.target === this) {
-      this.classList.add("hidden");
-      // Return to gardens tab
-      tabButtons.forEach((btn) => btn.classList.remove("active"));
-      document.querySelector('[data-tab="gardens"]').classList.add("active");
-    }
-  });
-}
+//   // Close backdrop when clicking outside
+//   backdrop.addEventListener("click", function (e) {
+//     if (e.target === this) {
+//       this.classList.add("hidden");
+//       // Return to gardens tab
+//       tabButtons.forEach((btn) => btn.classList.remove("active"));
+//       document.querySelector('[data-tab="gardens"]').classList.add("active");
+//     }
+//   });
+// }
 
 // Add this function to handle platform redirect
-function redirectToTabPlatform(tabType) {
-  const { notificationManager } = getState();
-  const buttonInfo = tabConfig.buttons[tabType];
-  if (buttonInfo && buttonInfo.url) {
-    notificationManager.showSuccess(`جاري التوجيه إلى ${buttonInfo.text}...`);
+// function redirectToTabPlatform(tabType) {
+//   const { notificationManager } = getState();
+//   const buttonInfo = tabConfig.buttons[tabType];
+//   if (buttonInfo && buttonInfo.url) {
+//     notificationManager.showSuccess(`جاري التوجيه إلى ${buttonInfo.text}...`);
 
-    // Simulate loading state
-    const button = event.target.closest(".tab-action-button");
-    button.disabled = true;
-    button.innerHTML = `
-      <span>جاري التحميل...</span>
-      <i class="fas fa-spinner fa-spin"></i>
-    `;
+//     // Simulate loading state
+//     const button = event.target.closest(".tab-action-button");
+//     button.disabled = true;
+//     button.innerHTML = `
+//       <span>جاري التحميل...</span>
+//       <i class="fas fa-spinner fa-spin"></i>
+//     `;
 
-    setTimeout(() => {
-      window.open(buttonInfo.url, "_blank");
-      console.log(`Redirecting to: ${buttonInfo.url}`);
+//     setTimeout(() => {
+//       window.open(buttonInfo.url, "_blank");
+//       console.log(`Redirecting to: ${buttonInfo.url}`);
 
-      // Close the backdrop
-      document.getElementById("tabBackdrop").classList.add("hidden");
+//       // Close the backdrop
+//       document.getElementById("tabBackdrop").classList.add("hidden");
 
-      // Reset to gardens tab
-      document
-        .querySelectorAll(".tab-button")
-        .forEach((btn) => btn.classList.remove("active"));
-      document.querySelector('[data-tab="gardens"]').classList.add("active");
-    }, 1500);
-  }
-}
+//       // Reset to gardens tab
+//       document
+//         .querySelectorAll(".tab-button")
+//         .forEach((btn) => btn.classList.remove("active"));
+//       document.querySelector('[data-tab="gardens"]').classList.add("active");
+//     }, 1500);
+//   }
+// }
 
 // Export the function through ES modules
 // export { redirectToTabPlatform };
+// ============================================================================
 
 // ============================================================================
 // COMMENTED OUT - Moved to js/core/map-initializer.js
@@ -1191,8 +1195,8 @@ function initializeUI(injectedStateManager) {
   // Initialize fullscreen listener
   initializeFullscreenListener();
 
-  // Initialize map tabs (ADD THIS LINE)
-  initializeMapTabs();
+  // Initialize map tabs (MOVED TO TabSystem in main.js)
+  // initializeMapTabs();
 }
 
 // initializeUI is already exported in the module exports section
@@ -8477,9 +8481,9 @@ export {
   closeTourControls,
   manuallyStartTour,
 
-  // Tab system functions (will be moved to tab-system.js)
-  initializeMapTabs,
-  redirectToTabPlatform,
+  // Tab system functions (MOVED to js/ui/tab-system.js) ✅
+  // initializeMapTabs,
+  // redirectToTabPlatform,
 
   // Widget functions (will be moved to widget-manager.js)
   toggleWidget,
