@@ -82,7 +82,8 @@ async function initializeMap(
   notificationManager = new NotificationManager(),
   panelManager = new PanelManager(stateManager, notificationManager),
   toolbarManager = null,
-  layerManager = null
+  layerManager = null,
+  uploadHandler = null
 ) {
   try {
     // Store instances at module level for use by other functions
@@ -92,7 +93,8 @@ async function initializeMap(
       notificationManager,
       panelManager,
       toolbarManager,
-      layerManager
+      layerManager,
+      uploadHandler
     };
 
     // Initialize state
@@ -1219,279 +1221,294 @@ function initializeUI(injectedStateManager) {
 // Panel management is now handled by PanelManager
 // Initialization of panel close button moved to PanelManager class
 
+// ============================================================================
+// FILE UPLOAD - Moved to js/layers/upload-handler.js
+// ============================================================================
+// COMMENTED OUT - Functionality moved to UploadHandler class
 // Initialize file upload functionality
+// function initializeFileUpload() {
+//   const { stateManager } = getState();
+
+//   const dropZone = document.getElementById("dropZone");
+//   const fileInput = document.getElementById("fileInput");
+
+//   // Prevent default drag behaviors
+//   ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+//     dropZone.addEventListener(eventName, preventDefaults, false);
+//     document.body.addEventListener(eventName, preventDefaults, false);
+//   });
+
+//   // Highlight drop zone when item is dragged over it
+//   ["dragenter", "dragover"].forEach((eventName) => {
+//     dropZone.addEventListener(
+//       eventName,
+//       () => {
+//         dropZone.classList.add("drag-over");
+//       },
+//       false
+//     );
+//   });
+
+//   ["dragleave", "drop"].forEach((eventName) => {
+//     dropZone.addEventListener(
+//       eventName,
+//       () => {
+//         dropZone.classList.remove("drag-over");
+//       },
+//       false
+//     );
+//   });
+
+//   // Handle dropped files
+//   dropZone.addEventListener("drop", handleDrop, false);
+
+//   // Handle file input change
+//   fileInput.addEventListener("change", (e) => {
+//     handleFiles(e.target.files);
+//   });
+
+//   function preventDefaults(e) {
+//     e.preventDefault();
+//     e.stopPropagation();
+//   }
+
+//   function handleDrop(e) {
+//     const dt = e.dataTransfer;
+//     const files = dt.files;
+//     handleFiles(files);
+//   }
+// }
+
+// Stub function for backward compatibility - delegates to UploadHandler
 function initializeFileUpload() {
-  const { stateManager } = getState();
-
-  const dropZone = document.getElementById("dropZone");
-  const fileInput = document.getElementById("fileInput");
-
-  // Prevent default drag behaviors
-  ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
-    dropZone.addEventListener(eventName, preventDefaults, false);
-    document.body.addEventListener(eventName, preventDefaults, false);
-  });
-
-  // Highlight drop zone when item is dragged over it
-  ["dragenter", "dragover"].forEach((eventName) => {
-    dropZone.addEventListener(
-      eventName,
-      () => {
-        dropZone.classList.add("drag-over");
-      },
-      false
-    );
-  });
-
-  ["dragleave", "drop"].forEach((eventName) => {
-    dropZone.addEventListener(
-      eventName,
-      () => {
-        dropZone.classList.remove("drag-over");
-      },
-      false
-    );
-  });
-
-  // Handle dropped files
-  dropZone.addEventListener("drop", handleDrop, false);
-
-  // Handle file input change
-  fileInput.addEventListener("change", (e) => {
-    handleFiles(e.target.files);
-  });
-
-  function preventDefaults(e) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-
-  function handleDrop(e) {
-    const dt = e.dataTransfer;
-    const files = dt.files;
-    handleFiles(files);
+  const { uploadHandler } = getState();
+  if (uploadHandler) {
+    uploadHandler.initializeFileUpload();
   }
 }
 
+// COMMENTED OUT - Functionality moved to UploadHandler class
 // Handle uploaded files
-async function handleFiles(files) {
-  for (let file of files) {
-    const extension = file.name.split(".").pop().toLowerCase();
+// async function handleFiles(files) {
+//   for (let file of files) {
+//     const extension = file.name.split(".").pop().toLowerCase();
 
-    if (!["csv", "geojson", "json"].includes(extension)) {
-      /* Continuing script.js */
+//     if (!["csv", "geojson", "json"].includes(extension)) {
+//       /* Continuing script.js */
 
-      showNotification(
-        "Error: Only CSV and GeoJSON files are supported",
-        "error"
-      );
-      continue;
-    }
+//       showNotification(
+//         "Error: Only CSV and GeoJSON files are supported",
+//         "error"
+//       );
+//       continue;
+//     }
 
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const content = e.target.result;
+//     const reader = new FileReader();
+//     reader.onload = async (e) => {
+//       try {
+//         const content = e.target.result;
 
-        if (extension === "csv") {
-          await loadCSV(content, file.name);
-        } else if (extension === "geojson" || extension === "json") {
-          await loadGeoJSON(content, file.name);
-        }
+//         if (extension === "csv") {
+//           await loadCSV(content, file.name);
+//         } else if (extension === "geojson" || extension === "json") {
+//           await loadGeoJSON(content, file.name);
+//         }
 
-        showNotification(`Successfully loaded: ${file.name}`, "success");
-      } catch (error) {
-        console.error("Error loading file:", error);
-        showNotification(
-          `Error loading ${file.name}: ${error.message}`,
-          "error"
-        );
-      }
-    };
+//         showNotification(`Successfully loaded: ${file.name}`, "success");
+//       } catch (error) {
+//         console.error("Error loading file:", error);
+//         showNotification(
+//           `Error loading ${file.name}:
+//         );
+//       }
+//     };
 
-    reader.readAsText(file);
-  }
-}
+//     reader.readAsText(file);
+//   }
+// }
 
+// ============================================================================
+// COMMENTED OUT - Moved to js/layers/upload-handler.js
+// ============================================================================
 // Replace loadCSV function with this improved version
-async function loadCSV(content, filename) {
-  const [FeatureLayer, Graphic, Point] = await Promise.all([
-    loadModule("esri/layers/FeatureLayer"),
-    loadModule("esri/Graphic"),
-    loadModule("esri/geometry/Point"),
-  ]);
+// async function loadCSV(content, filename) {
+//   const [FeatureLayer, Graphic, Point] = await Promise.all([
+//     loadModule("esri/layers/FeatureLayer"),
+//     loadModule("esri/Graphic"),
+//     loadModule("esri/geometry/Point"),
+//   ]);
 
-  // Parse CSV more robustly
-  const lines = content.trim().split(/\r?\n/); // Handle different line endings
-  if (lines.length < 2) {
-    throw new Error("CSV file is empty or has no data");
-  }
+//   // Parse CSV more robustly
+//   const lines = content.trim().split(/\r?\n/); // Handle different line endings
+//   if (lines.length < 2) {
+//     throw new Error("CSV file is empty or has no data");
+//   }
 
-  // Parse headers - handle quoted values and trim spaces
-  const headers = parseCSVLine(lines[0]).map((h) => h.trim());
-  console.log("CSV Headers:", headers);
+//   // Parse headers - handle quoted values and trim spaces
+//   const headers = parseCSVLine(lines[0]).map((h) => h.trim());
+//   console.log("CSV Headers:", headers);
 
-  // Find coordinate columns with more flexible matching
-  let latIndex = -1;
-  let lonIndex = -1;
+//   // Find coordinate columns with more flexible matching
+//   let latIndex = -1;
+//   let lonIndex = -1;
 
-  headers.forEach((header, index) => {
-    const lowerHeader = header.toLowerCase();
-    // Check for latitude
-    if (
-      latIndex === -1 &&
-      (lowerHeader === "latitude" ||
-        lowerHeader === "lat" ||
-        lowerHeader === "y" ||
-        lowerHeader.includes("latitud"))
-    ) {
-      latIndex = index;
-    }
-    // Check for longitude
-    if (
-      lonIndex === -1 &&
-      (lowerHeader === "longitude" ||
-        lowerHeader === "lon" ||
-        lowerHeader === "lng" ||
-        lowerHeader === "long" ||
-        lowerHeader === "x" ||
-        lowerHeader.includes("longitud"))
-    ) {
-      lonIndex = index;
-    }
-  });
+//   headers.forEach((header, index) => {
+//     const lowerHeader = header.toLowerCase();
+//     // Check for latitude
+//     if (
+//       latIndex === -1 &&
+//       (lowerHeader === "latitude" ||
+//         lowerHeader === "lat" ||
+//         lowerHeader === "y" ||
+//         lowerHeader.includes("latitud"))
+//     ) {
+//       latIndex = index;
+//     }
+//     // Check for longitude
+//     if (
+//       lonIndex === -1 &&
+//       (lowerHeader === "longitude" ||
+//         lowerHeader === "lon" ||
+//         lowerHeader === "lng" ||
+//         lowerHeader === "long" ||
+//         lowerHeader === "x" ||
+//         lowerHeader.includes("longitud"))
+//     ) {
+//       lonIndex = index;
+//     }
+//   });
 
-  if (latIndex === -1 || lonIndex === -1) {
-    console.error("Could not find coordinate columns. Headers:", headers);
-    throw new Error(
-      `CSV must contain latitude and longitude columns. Found headers: ${headers.join(
-        ", "
-      )}`
-    );
-  }
+//   if (latIndex === -1 || lonIndex === -1) {
+//     console.error("Could not find coordinate columns. Headers:", headers);
+//     throw new Error(
+//       `CSV must contain latitude and longitude columns. Found headers: ${headers.join(
+//         ", "
+//       )}`
+//     );
+//   }
 
-  // Create fields definition for all columns
-  const fields = headers.map((header, idx) => {
-    // Determine field type based on first data row
-    let fieldType = "string";
-    if (lines.length > 1) {
-      const firstDataRow = parseCSVLine(lines[1]);
-      const sampleValue = firstDataRow[idx];
-      if (sampleValue && !isNaN(sampleValue)) {
-        fieldType = sampleValue.includes(".") ? "double" : "integer";
-      }
-    }
+//   // Create fields definition for all columns
+//   const fields = headers.map((header, idx) => {
+//     // Determine field type based on first data row
+//     let fieldType = "string";
+//     if (lines.length > 1) {
+//       const firstDataRow = parseCSVLine(lines[1]);
+//       const sampleValue = firstDataRow[idx];
+//       if (sampleValue && !isNaN(sampleValue)) {
+//         fieldType = sampleValue.includes(".") ? "double" : "integer";
+//       }
+//     }
 
-    return {
-      name: header,
-      alias: header,
-      type: fieldType,
-    };
-  });
+//     return {
+//       name: header,
+//       alias: header,
+//       type: fieldType,
+//     };
+//   });
 
-  // Add ObjectID field
-  fields.unshift({
-    name: "ObjectID",
-    alias: "ObjectID",
-    type: "oid",
-  });
+//   // Add ObjectID field
+//   fields.unshift({
+//     name: "ObjectID",
+//     alias: "ObjectID",
+//     type: "oid",
+//   });
 
-  // Create features
-  const features = [];
-  let objectId = 1;
+//   // Create features
+//   const features = [];
+//   let objectId = 1;
 
-  for (let i = 1; i < lines.length; i++) {
-    if (!lines[i].trim()) continue; // Skip empty lines
+//   for (let i = 1; i < lines.length; i++) {
+//     if (!lines[i].trim()) continue; // Skip empty lines
 
-    const values = parseCSVLine(lines[i]);
-    const lat = parseFloat(values[latIndex]);
-    const lon = parseFloat(values[lonIndex]);
+//     const values = parseCSVLine(lines[i]);
+//     const lat = parseFloat(values[latIndex]);
+//     const lon = parseFloat(values[lonIndex]);
 
-    if (!isNaN(lat) && !isNaN(lon)) {
-      const attributes = {
-        ObjectID: objectId++,
-      };
+//     if (!isNaN(lat) && !isNaN(lon)) {
+//       const attributes = {
+//         ObjectID: objectId++,
+//       };
 
-      // Add all attributes
-      headers.forEach((header, idx) => {
-        let value = values[idx]?.trim() || "";
+//       // Add all attributes
+//       headers.forEach((header, idx) => {
+//         let value = values[idx]?.trim() || "";
 
-        // Convert numeric values
-        if (value && !isNaN(value)) {
-          value = value.includes(".") ? parseFloat(value) : parseInt(value);
-        }
+//         // Convert numeric values
+//         if (value && !isNaN(value)) {
+//           value = value.includes(".") ? parseFloat(value) : parseInt(value);
+//         }
 
-        attributes[header] = value;
-      });
+//         attributes[header] = value;
+//       });
 
-      const graphic = new Graphic({
-        geometry: new Point({
-          longitude: lon,
-          latitude: lat,
-        }),
-        attributes: attributes,
-      });
+//       const graphic = new Graphic({
+//         geometry: new Point({
+//           longitude: lon,
+//           latitude: lat,
+//         }),
+//         attributes: attributes,
+//       });
 
-      features.push(graphic);
-    }
-  }
+//       features.push(graphic);
+//     }
+//   }
 
-  console.log(`Created ${features.length} features from CSV`);
+//   console.log(`Created ${features.length} features from CSV`);
 
-  // Create feature layer
-  const layer = new FeatureLayer({
-    source: features,
-    objectIdField: "ObjectID",
-    fields: fields,
-    title: filename,
-    outFields: ["*"],
-    renderer: {
-      type: "simple",
-      symbol: {
-        type: "simple-marker",
-        size: 8,
-        color: [51, 122, 183, 0.8],
-        outline: {
-          color: [255, 255, 255, 1],
-          width: 1,
-        },
-      },
-    },
-  });
+//   // Create feature layer
+//   const layer = new FeatureLayer({
+//     source: features,
+//     objectIdField: "ObjectID",
+//     fields: fields,
+//     title: filename,
+//     outFields: ["*"],
+//     renderer: {
+//       type: "simple",
+//       symbol: {
+//         type: "simple-marker",
+//         size: 8,
+//         color: [51, 122, 183, 0.8],
+//         outline: {
+//           color: [255, 255, 255, 1],
+//           width: 1,
+//         },
+//       },
+//     },
+//   });
 
-  const { stateManager } = getState();
-  displayMap.add(layer);
-  stateManager.addUploadedLayer(layer);
-  updateLayerList();
+//   const { stateManager } = getState();
+//   displayMap.add(layer);
+//   stateManager.addUploadedLayer(layer);
+//   updateLayerList();
 
-  // Zoom to features
-  if (features.length > 0) {
-    await stateManager.getView().goTo(features);
-  }
-}
+//   // Zoom to features
+//   if (features.length > 0) {
+//     await stateManager.getView().goTo(features);
+//   }
+// }
 
 // Helper function to parse CSV line handling quoted values
-function parseCSVLine(line) {
-  const result = [];
-  let current = "";
-  let inQuotes = false;
+// function parseCSVLine(line) {
+//   const result = [];
+//   let current = "";
+//   let inQuotes = false;
 
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
+//   for (let i = 0; i < line.length; i++) {
+//     const char = line[i];
 
-    if (char === '"') {
-      inQuotes = !inQuotes;
-    } else if (char === "," && !inQuotes) {
-      result.push(current);
-      current = "";
-    } else {
-      current += char;
-    }
-  }
+//     if (char === '"') {
+//       inQuotes = !inQuotes;
+//     } else if (char === "," && !inQuotes) {
+//       result.push(current);
+//       current = "";
+//     } else {
+//       current += char;
+//     }
+//   }
 
-  result.push(current); // Don't forget the last value
-  return result;
-}
+//   result.push(current); // Don't forget the last value
+//   return result;
+// }
 
 // // Replace loadGeoJSON function with this fixed version
 // async function loadGeoJSON(content, filename) {
@@ -1547,218 +1564,221 @@ function parseCSVLine(line) {
 //   URL.revokeObjectURL(url);
 // }
 
-async function loadGeoJSON(content, filename) {
-  const [GeoJSONLayer] = await Promise.all([
-    loadModule("esri/layers/GeoJSONLayer"),
-  ]);
+// ============================================================================
+// COMMENTED OUT - Moved to js/layers/upload-handler.js
+// ============================================================================
+// async function loadGeoJSON(content, filename) {
+//   const [GeoJSONLayer] = await Promise.all([
+//     loadModule("esri/layers/GeoJSONLayer"),
+//   ]);
 
-  // Parse GeoJSON to check structure
-  let geojsonData;
-  let nullFields = [];
+//   // Parse GeoJSON to check structure
+//   let geojsonData;
+//   let nullFields = [];
 
-  try {
-    geojsonData = JSON.parse(content);
-    console.log("GeoJSON loaded with features:", geojsonData.features?.length);
+//   try {
+//     geojsonData = JSON.parse(content);
+//     console.log("GeoJSON loaded with features:", geojsonData.features?.length);
 
-    // Analyze fields for null values
-    if (geojsonData.features && geojsonData.features.length > 0) {
-      const fieldNullCounts = {};
+//     // Analyze fields for null values
+//     if (geojsonData.features && geojsonData.features.length > 0) {
+//       const fieldNullCounts = {};
 
-      // Check all features for null fields
-      geojsonData.features.forEach((feature) => {
-        if (feature.properties) {
-          Object.entries(feature.properties).forEach(([key, value]) => {
-            if (value === null || value === undefined) {
-              fieldNullCounts[key] = (fieldNullCounts[key] || 0) + 1;
-            }
-          });
-        }
-      });
+//       // Check all features for null fields
+//       geojsonData.features.forEach((feature) => {
+//         if (feature.properties) {
+//           Object.entries(feature.properties).forEach(([key, value]) => {
+//             if (value === null || value === undefined) {
+//               fieldNullCounts[key] = (fieldNullCounts[key] || 0) + 1;
+//             }
+//           });
+//         }
+//       });
 
-      // Find fields that are null in ALL features
-      const totalFeatures = geojsonData.features.length;
-      Object.entries(fieldNullCounts).forEach(([field, count]) => {
-        if (count === totalFeatures) {
-          nullFields.push(field);
-        }
-      });
-    }
+//       // Find fields that are null in ALL features
+//       const totalFeatures = geojsonData.features.length;
+//       Object.entries(fieldNullCounts).forEach(([field, count]) => {
+//         if (count === totalFeatures) {
+//           nullFields.push(field);
+//         }
+//       });
+//     }
 
-    // Fix geometry types if needed
-    let hasGeometryFixes = false;
-    if (geojsonData.features) {
-      geojsonData.features.forEach((feature) => {
-        if (feature.geometry) {
-          // Fix common geometry type issues
-          if (
-            feature.geometry.type === "Polyline" ||
-            feature.geometry.type === "Line"
-          ) {
-            feature.geometry.type = "LineString";
-            hasGeometryFixes = true;
-          } else if (feature.geometry.type === "Polylines") {
-            feature.geometry.type = "MultiLineString";
-            hasGeometryFixes = true;
-          }
-        }
-      });
-    }
+//     // Fix geometry types if needed
+//     let hasGeometryFixes = false;
+//     if (geojsonData.features) {
+//       geojsonData.features.forEach((feature) => {
+//         if (feature.geometry) {
+//           // Fix common geometry type issues
+//           if (
+//             feature.geometry.type === "Polyline" ||
+//             feature.geometry.type === "Line"
+//           ) {
+//             feature.geometry.type = "LineString";
+//             hasGeometryFixes = true;
+//           } else if (feature.geometry.type === "Polylines") {
+//             feature.geometry.type = "MultiLineString";
+//             hasGeometryFixes = true;
+//           }
+//         }
+//       });
+//     }
 
-    // If we made geometry fixes, update the content
-    if (hasGeometryFixes) {
-      content = JSON.stringify(geojsonData);
-      console.log("Fixed geometry types in GeoJSON");
-    }
-  } catch (error) {
-    throw new Error("Invalid GeoJSON format");
-  }
+//     // If we made geometry fixes, update the content
+//     if (hasGeometryFixes) {
+//       content = JSON.stringify(geojsonData);
+//       console.log("Fixed geometry types in GeoJSON");
+//     }
+//   } catch (error) {
+//     throw new Error("Invalid GeoJSON format");
+//   }
 
-  // Create blob URL from content
-  const blob = new Blob([content], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
+//   // Create blob URL from content
+//   const blob = new Blob([content], { type: "application/json" });
+//   const url = URL.createObjectURL(blob);
 
-  // Temporarily suppress console warnings
-  const originalWarn = console.warn;
-  const warnings = [];
-  console.warn = (msg) => {
-    if (
-      msg &&
-      msg.includes &&
-      msg.includes("fields types couldn't be inferred")
-    ) {
-      warnings.push(msg);
-    } else {
-      originalWarn(msg);
-    }
-  };
+//   // Temporarily suppress console warnings
+//   const originalWarn = console.warn;
+//   const warnings = [];
+//   console.warn = (msg) => {
+//     if (
+//       msg &&
+//       msg.includes &&
+//       msg.includes("fields types couldn't be inferred")
+//     ) {
+//       warnings.push(msg);
+//     } else {
+//       originalWarn(msg);
+//     }
+//   };
 
-  try {
-    // Detect geometry type for proper rendering
-    let geometryType = null;
-    let renderer = null;
+//   try {
+//     // Detect geometry type for proper rendering
+//     let geometryType = null;
+//     let renderer = null;
 
-    if (geojsonData.features && geojsonData.features.length > 0) {
-      const firstFeature = geojsonData.features[0];
-      if (firstFeature.geometry) {
-        switch (firstFeature.geometry.type) {
-          case "Point":
-            geometryType = "point";
-            renderer = {
-              type: "simple",
-              symbol: {
-                type: "simple-marker",
-                size: 8,
-                color: [51, 122, 183, 0.8],
-                outline: {
-                  color: [255, 255, 255, 1],
-                  width: 1,
-                },
-              },
-            };
-            break;
-          case "LineString":
-          case "MultiLineString":
-            geometryType = "polyline";
-            renderer = {
-              type: "simple",
-              symbol: {
-                type: "simple-line",
-                color: [51, 122, 183, 1],
-                width: 3,
-                style: "solid",
-              },
-            };
-            break;
-          case "Polygon":
-          case "MultiPolygon":
-            geometryType = "polygon";
-            renderer = {
-              type: "simple",
-              symbol: {
-                type: "simple-fill",
-                color: [51, 122, 183, 0.4],
-                outline: {
-                  color: [51, 122, 183, 1],
-                  width: 2,
-                },
-              },
-            };
-            break;
-        }
-      }
-    }
+//     if (geojsonData.features && geojsonData.features.length > 0) {
+//       const firstFeature = geojsonData.features[0];
+//       if (firstFeature.geometry) {
+//         switch (firstFeature.geometry.type) {
+//           case "Point":
+//             geometryType = "point";
+//             renderer = {
+//               type: "simple",
+//               symbol: {
+//                 type: "simple-marker",
+//                 size: 8,
+//                 color: [51, 122, 183, 0.8],
+//                 outline: {
+//                   color: [255, 255, 255, 1],
+//                   width: 1,
+//                 },
+//               },
+//             };
+//             break;
+//           case "LineString":
+//           case "MultiLineString":
+//             geometryType = "polyline";
+//             renderer = {
+//               type: "simple",
+//               symbol: {
+//                 type: "simple-line",
+//                 color: [51, 122, 183, 1],
+//                 width: 3,
+//                 style: "solid",
+//               },
+//             };
+//             break;
+//           case "Polygon":
+//           case "MultiPolygon":
+//             geometryType = "polygon";
+//             renderer = {
+//               type: "simple",
+//               symbol: {
+//                 type: "simple-fill",
+//                 color: [51, 122, 183, 0.4],
+//                 outline: {
+//                   color: [51, 122, 183, 1],
+//                   width: 2,
+//                 },
+//               },
+//             };
+//             break;
+//         }
+//       }
+//     }
 
-    const layer = new GeoJSONLayer({
-      url: url,
-      title: filename,
-      outFields: ["*"],
-      renderer: renderer || {
-        type: "simple",
-        symbol: {
-          type: "simple-fill",
-          color: [51, 122, 183, 0.4],
-          outline: {
-            color: [51, 122, 183, 1],
-            width: 2,
-          },
-        },
-      },
-    });
+//     const layer = new GeoJSONLayer({
+//       url: url,
+//       title: filename,
+//       outFields: ["*"],
+//       renderer: renderer || {
+//         type: "simple",
+//         symbol: {
+//           type: "simple-fill",
+//           color: [51, 122, 183, 0.4],
+//           outline: {
+//             color: [51, 122, 183, 1],
+//             width: 2,
+//           },
+//         },
+//       },
+//     });
 
-    // Wait for layer to load
-    await layer.load();
+//     // Wait for layer to load
+//     await layer.load();
 
-    // Restore console.warn
-    console.warn = originalWarn;
+//     // Restore console.warn
+//     console.warn = originalWarn;
 
-    // Log fields to debug
-    console.log("Layer loaded successfully");
-    console.log("Geometry type:", layer.geometryType);
-    console.log(
-      "Number of fields loaded:",
-      layer.fields ? layer.fields.length : 0
-    );
+//     // Log fields to debug
+//     console.log("Layer loaded successfully");
+//     console.log("Geometry type:", layer.geometryType);
+//     console.log(
+//       "Number of fields loaded:",
+//       layer.fields ? layer.fields.length : 0
+//     );
 
-    displayMap.add(layer);
-    const { stateManager } = getState();
-    stateManager.addUploadedLayer(layer);
-    updateLayerList();
+//     displayMap.add(layer);
+//     const { stateManager } = getState();
+//     stateManager.addUploadedLayer(layer);
+//     updateLayerList();
 
-    // Zoom to layer extent
-    if (layer.fullExtent) {
-      await stateManager.getView().goTo(layer.fullExtent.expand(1.1));
-    }
+//     // Zoom to layer extent
+//     if (layer.fullExtent) {
+//       await stateManager.getView().goTo(layer.fullExtent.expand(1.1));
+//     }
 
-    // Clean up blob URL
-    URL.revokeObjectURL(url);
+//     // Clean up blob URL
+//     URL.revokeObjectURL(url);
 
-    // Show appropriate notifications
-    const validFields = layer.fields
-      ? layer.fields.filter((f) => f.name !== "OBJECTID").length
-      : 0;
-    const featureCount = geojsonData.features?.length || 0;
+//     // Show appropriate notifications
+//     const validFields = layer.fields
+//       ? layer.fields.filter((f) => f.name !== "OBJECTID").length
+//       : 0;
+//     const featureCount = geojsonData.features?.length || 0;
 
-    // // Main success notification
-    // showNotification(`Successfully loaded: ${filename} (${featureCount} features, ${validFields} fields)`, 'success');
+//     // // Main success notification
+//     // showNotification(`Successfully loaded: ${filename} (${featureCount} features, ${validFields} fields)`, 'success');
 
-    // // Warning about null fields if any
-    // if (nullFields.length > 0) {
-    //   setTimeout(() => {
-    //     showNotification(
-    //       `Note: ${nullFields.length} field(s) were excluded because they contain only null values: ${nullFields.join(', ')}`,
-    //       'warning'
-    //     );
-    //   }, 500);
-    // }
-  } catch (error) {
-    console.error("Error loading GeoJSON:", error);
-    console.warn = originalWarn; // Restore console.warn
-    URL.revokeObjectURL(url);
+//     // // Warning about null fields if any
+//     // if (nullFields.length > 0) {
+//     //   setTimeout(() => {
+//     //     showNotification(
+//     //       `Note: ${nullFields.length} field(s) were excluded because they contain only null values: ${nullFields.join(', ')}`,
+//     //       'warning'
+//     //     );
+//     //   }, 500);
+//     // }
+//   } catch (error) {
+//     console.error("Error loading GeoJSON:", error);
+//     console.warn = originalWarn; // Restore console.warn
+//     URL.revokeObjectURL(url);
 
-    // showNotification(`Error loading ${filename}: ${error.message}`, 'error');
-    throw error;
-  }
-}
+//     // showNotification(`Error loading ${filename}: ${error.message}`, 'error');
+//     throw error;
+//   }
+// }
 
 // ============================================================================
 // LAYER MANAGEMENT - Delegated to js/layers/layer-manager.js
@@ -8563,9 +8583,9 @@ export {
   zoomToLayer,
 
   // File upload functions (will be moved to upload-handler.js)
-  loadGeoJSON,
-  loadCSV,
-  handleFiles,
+  // loadGeoJSON,
+  // loadCSV,
+  // handleFiles,
 
   // Drawing functions (will be moved to drawing-manager.js)
   startDrawingWithTool,

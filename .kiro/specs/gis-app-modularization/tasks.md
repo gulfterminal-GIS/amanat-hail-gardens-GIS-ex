@@ -256,7 +256,7 @@
     - Update references to use LayerManager through StateManager
     - _Requirements: 1.2, 1.3, 1.5_
   
-  - [ ] 6.2 Create js/layers/upload-handler.js for file processing
+  - [x] 6.2 Create js/layers/upload-handler.js for file processing
     - Extract handleFiles, loadGeoJSON, loadCSV, parseCSVLine from script.js
     - Extract initializeFileUpload, initializeDropZone functions
     - Create UploadHandler class with file processing methods

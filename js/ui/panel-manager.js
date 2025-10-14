@@ -3,7 +3,7 @@
  * Handles opening/closing panels, toolbar states, and panel-specific initialization
  */
 
-import { handleFiles } from "../../script.js";
+import { UploadHandler } from "../layers/upload-handler.js";
 
 export class PanelManager {
   constructor(stateManager, notificationManager) {
@@ -124,7 +124,7 @@ export class PanelManager {
       (e) => {
         const dt = e.dataTransfer;
         const files = dt.files;
-        handleFiles(files);
+        UploadHandler.handleFiles(files);
       },
       false
     );
@@ -136,7 +136,7 @@ export class PanelManager {
 
     // Handle file input change
     fileInput.addEventListener("change", (e) => {
-      handleFiles(e.target.files);
+      UploadHandler.handleFiles(e.target.files);
     });
   }  /**
 
