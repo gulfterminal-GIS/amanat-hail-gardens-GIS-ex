@@ -38,10 +38,10 @@ export function bindWindowFunctions(managers) {
     tabSystem,
     searchManager,
     layerManager,
+    drawingManager,
     // Future managers will be added here as they're created:
     // uploadHandler,
     // basemapManager,
-    // drawingManager,
     // analysisManager,
     // measurementManager,
     // visualizationManager,
@@ -284,11 +284,15 @@ export function bindWindowFunctions(managers) {
 
   // ============================================================================
   // DRAWING TOOLS
-  // Future module: js/tools/drawing-manager.js
+  // Module: js/tools/drawing-manager.js ✅
   // ============================================================================
   
   window.clearAll = () => {
-    return scriptFunctions.clearAll();
+    return drawingManager.clearAll();
+  };
+
+  window.startDrawingWithTool = (tool) => {
+    return drawingManager.startDrawingWithTool(tool);
   };
 
   // ============================================================================
@@ -310,12 +314,7 @@ export function bindWindowFunctions(managers) {
     };
   }
 
-  // Drawing tool functions (if exists)
-  if (typeof scriptFunctions.startDrawingWithTool === 'function') {
-    window.startDrawingWithTool = (tool) => {
-      return scriptFunctions.startDrawingWithTool(tool);
-    };
-  }
+  // Drawing tool functions - now handled by DrawingManager above
 
   // Classification field selection (if exists)
   if (typeof scriptFunctions.updateClassificationField === 'function') {

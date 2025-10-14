@@ -84,7 +84,8 @@ async function initializeMap(
   toolbarManager = null,
   layerManager = null,
   uploadHandler = null,
-  basemapManager = null
+  basemapManager = null,
+  drawingManager = null
 ) {
   try {
     // Store instances at module level for use by other functions
@@ -96,7 +97,8 @@ async function initializeMap(
       toolbarManager,
       layerManager,
       uploadHandler,
-      basemapManager
+      basemapManager,
+      drawingManager
     };
 
     // Initialize state
@@ -2024,123 +2026,125 @@ function registerLayerManagerCallbacks(layerManager) {
 //   }
 // }
 
+// EXTRACTED TO: js/tools/drawing-manager.js
 // Add this new function for drawing panel initialization:
-function initializeDrawingPanel() {
-  // Re-initialize drawing tool buttons in the new panel
-  const drawToolBtns = document.querySelectorAll(
-    "#sidePanelContent .draw-tool-btn"
-  );
+// function initializeDrawingPanel() {
+//   // Re-initialize drawing tool buttons in the new panel
+//   const drawToolBtns = document.querySelectorAll(
+//     "#sidePanelContent .draw-tool-btn"
+//   );
 
-  drawToolBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const tool = btn.dataset.tool;
+//   drawToolBtns.forEach((btn) => {
+//     btn.addEventListener("click", () => {
+//       const tool = btn.dataset.tool;
 
-      // Update active state
-      drawToolBtns.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
+//       // Update active state
+//       drawToolBtns.forEach((b) => b.classList.remove("active"));
+//       btn.classList.add("active");
 
-      // Start drawing
-      const { stateManager } = getState();
-      stateManager.setActiveDrawingTool(tool);
-      startDrawingWithTool(tool);
-    });
-  });
+//       // Start drawing
+//       const { stateManager } = getState();
+//       stateManager.setActiveDrawingTool(tool);
+//       startDrawingWithTool(tool);
+//     });
+//   });
 
-  // Re-initialize clear button
-  const clearBtn = document.querySelector("#sidePanelContent #clearDrawings");
-  if (clearBtn) {
-    clearBtn.addEventListener("click", () => {
-      if (confirm("Clear all drawings?")) {
-        const { stateManager } = getState();
-        const drawLayer = stateManager.getDrawLayer();
-        const sketchViewModel = stateManager.getSketchViewModel();
-        if (drawLayer) drawLayer.removeAll();
-        if (sketchViewModel) sketchViewModel.cancel();
-        resetDrawingTools();
-      }
-    });
-  }
+//   // Re-initialize clear button
+//   const clearBtn = document.querySelector("#sidePanelContent #clearDrawings");
+//   if (clearBtn) {
+//     clearBtn.addEventListener("click", () => {
+//       if (confirm("Clear all drawings?")) {
+//         const { stateManager } = getState();
+//         const drawLayer = stateManager.getDrawLayer();
+//         const sketchViewModel = stateManager.getSketchViewModel();
+//         if (drawLayer) drawLayer.removeAll();
+//         if (sketchViewModel) sketchViewModel.cancel();
+//         resetDrawingTools();
+//       }
+//     });
+//   }
 
-  // Re-initialize color and opacity controls
-  const colorInput = document.querySelector("#sidePanelContent #drawColor");
-  const opacityInput = document.querySelector("#sidePanelContent #drawOpacity");
-  const opacityValue = document.querySelector(
-    "#sidePanelContent .slider-value"
-  );
+//   // Re-initialize color and opacity controls
+//   const colorInput = document.querySelector("#sidePanelContent #drawColor");
+//   const opacityInput = document.querySelector("#sidePanelContent #drawOpacity");
+//   const opacityValue = document.querySelector(
+//     "#sidePanelContent .slider-value"
+//   );
 
-  if (colorInput) {
-    colorInput.addEventListener("change", updateActiveGraphicsSymbology);
-  }
+//   if (colorInput) {
+//     colorInput.addEventListener("change", updateActiveGraphicsSymbology);
+//   }
 
-  if (opacityInput) {
-    opacityInput.addEventListener("input", (e) => {
-      if (opacityValue) {
-        opacityValue.textContent = e.target.value + "%";
-      }
-      updateActiveGraphicsSymbology();
-    });
-  }
-}
+//   if (opacityInput) {
+//     opacityInput.addEventListener("input", (e) => {
+//       if (opacityValue) {
+//         opacityValue.textContent = e.target.value + "%";
+//       }
+//       updateActiveGraphicsSymbology();
+//     });
+//   }
+// }
 
+// EXTRACTED TO: js/tools/drawing-manager.js
 // Initialize SketchViewModel
-async function initializeSketchViewModel() {
-  const { stateManager } = getState();
-  let sketchViewModel = stateManager.getSketchViewModel();
+// async function initializeSketchViewModel() {
+//   const { stateManager } = getState();
+//   let sketchViewModel = stateManager.getSketchViewModel();
 
-  if (!sketchViewModel) {
-    const [SketchViewModel, GraphicsLayer] = await Promise.all([
-      loadModule("esri/widgets/Sketch/SketchViewModel"),
-      loadModule("esri/layers/GraphicsLayer"),
-    ]);
+//   if (!sketchViewModel) {
+//     const [SketchViewModel, GraphicsLayer] = await Promise.all([
+//       loadModule("esri/widgets/Sketch/SketchViewModel"),
+//       loadModule("esri/layers/GraphicsLayer"),
+//     ]);
 
-    const view = stateManager.getView();
-    const displayMap = stateManager.getMap();
-    let drawLayer = stateManager.getDrawLayer();
+//     const view = stateManager.getView();
+//     const displayMap = stateManager.getMap();
+//     let drawLayer = stateManager.getDrawLayer();
 
-    // Create graphics layer if it doesn't exist
-    if (!drawLayer) {
-      drawLayer = new GraphicsLayer({
-        title: "Drawings",
-        listMode: "show",
-      });
-      displayMap.add(drawLayer);
-      stateManager.setDrawLayer(drawLayer);
-    }
+//     // Create graphics layer if it doesn't exist
+//     if (!drawLayer) {
+//       drawLayer = new GraphicsLayer({
+//         title: "Drawings",
+//         listMode: "show",
+//       });
+//       displayMap.add(drawLayer);
+//       stateManager.setDrawLayer(drawLayer);
+//     }
 
-    // Create SketchViewModel with proper configuration
-    sketchViewModel = new SketchViewModel({
-      view: view,
-      layer: drawLayer,
-      updateOnGraphicClick: false,
-      defaultUpdateOptions: {
-        toggleToolOnClick: false,
-        enableRotation: false,
-        enableScaling: false,
-        enableZ: false,
-      },
-      defaultCreateOptions: {
-        hasZ: false,
-        mode: "click", // Important for proper drawing
-      },
-    });
+//     // Create SketchViewModel with proper configuration
+//     sketchViewModel = new SketchViewModel({
+//       view: view,
+//       layer: drawLayer,
+//       updateOnGraphicClick: false,
+//       defaultUpdateOptions: {
+//         toggleToolOnClick: false,
+//         enableRotation: false,
+//         enableScaling: false,
+//         enableZ: false,
+//       },
+//       defaultCreateOptions: {
+//         hasZ: false,
+//         mode: "click", // Important for proper drawing
+//       },
+//     });
 
-    // Store in StateManager
-    stateManager.setSketchViewModel(sketchViewModel);
+//     // Store in StateManager
+//     stateManager.setSketchViewModel(sketchViewModel);
 
-    console.log("SketchViewModel initialized");
+//     console.log("SketchViewModel initialized");
 
-    // Set up permanent event listeners
-    sketchViewModel.on("create", (event) => {
-      if (event.state === "start") {
-        view.container.style.cursor = "crosshair";
-      } else if (event.state === "complete" || event.state === "cancel") {
-        view.container.style.cursor = "default";
-      }
-    });
-  }
+//     // Set up permanent event listeners
+//     sketchViewModel.on("create", (event) => {
+//       if (event.state === "start") {
+//         view.container.style.cursor = "crosshair";
+//       } else if (event.state === "complete" || event.state === "cancel") {
+//         view.container.style.cursor = "default";
+//       }
+//     });
+//   }
 
-  return sketchViewModel;
-}
+//   return sketchViewModel;
+// }
 
 window.cancelBufferDrawing = function () {
   console.log("Canceling buffer drawing");
@@ -2244,167 +2248,167 @@ function disableDrawingMode(modalId) {
 }
 
 // Setup SketchViewModel events
-function setupSketchViewModelEvents() {
-  const { stateManager } = getState();
-  const sketchViewModel = stateManager.getSketchViewModel();
+// function setupSketchViewModelEvents() {
+//   const { stateManager } = getState();
+//   const sketchViewModel = stateManager.getSketchViewModel();
 
-  if (!sketchViewModel) {
-    console.warn('SketchViewModel not initialized');
-    return;
-  }
+//   if (!sketchViewModel) {
+//     console.warn('SketchViewModel not initialized');
+//     return;
+//   }
 
-  // Handle create events
-  sketchViewModel.on("create", (event) => {
-    if (event.state === "complete") {
-      // Apply custom symbology when creation is complete
-      applyCustomSymbology(event.graphic);
+//   // Handle create events
+//   sketchViewModel.on("create", (event) => {
+//     if (event.state === "complete") {
+//       // Apply custom symbology when creation is complete
+//       applyCustomSymbology(event.graphic);
 
-      // Continue drawing if tool is still active
-      if (getState().stateManager.getActiveDrawingTool()) {
-        setTimeout(() => {
-          if (getState().stateManager.getActiveDrawingTool()) {
-            startDrawingWithTool(getState().stateManager.getActiveDrawingTool());
-          }
-        }, 100);
-      }
-    }
-  });
+//       // Continue drawing if tool is still active
+//       if (getState().stateManager.getActiveDrawingTool()) {
+//         setTimeout(() => {
+//           if (getState().stateManager.getActiveDrawingTool()) {
+//             startDrawingWithTool(getState().stateManager.getActiveDrawingTool());
+//           }
+//         }, 100);
+//       }
+//     }
+//   });
 
-  // Handle update events
-  sketchViewModel.on("update", (event) => {
-    if (event.state === "complete") {
-      event.graphics.forEach((graphic) => {
-        applyCustomSymbology(graphic);
-      });
-    }
-  });
-}
+//   // Handle update events
+//   sketchViewModel.on("update", (event) => {
+//     if (event.state === "complete") {
+//       event.graphics.forEach((graphic) => {
+//         applyCustomSymbology(graphic);
+//       });
+//     }
+//   });
+// }
 
 // Initialize drawing tool buttons
-function initializeDrawingToolButtons() {
-  const drawToolBtns = document.querySelectorAll(".draw-tool-btn");
-  const clearDrawingsBtn = document.getElementById("clearDrawings");
+// function initializeDrawingToolButtons() {
+//   const drawToolBtns = document.querySelectorAll(".draw-tool-btn");
+//   const clearDrawingsBtn = document.getElementById("clearDrawings");
 
-  // Remove existing listeners first
-  drawToolBtns.forEach((btn) => {
-    const newBtn = btn.cloneNode(true);
-    btn.parentNode.replaceChild(newBtn, btn);
-  });
+//   // Remove existing listeners first
+//   drawToolBtns.forEach((btn) => {
+//     const newBtn = btn.cloneNode(true);
+//     btn.parentNode.replaceChild(newBtn, btn);
+//   });
 
-  // Add new listeners
-  document.querySelectorAll(".draw-tool-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const tool = btn.dataset.tool;
+//   // Add new listeners
+//   document.querySelectorAll(".draw-tool-btn").forEach((btn) => {
+//     btn.addEventListener("click", () => {
+//       const tool = btn.dataset.tool;
 
-      // Update active state
-      document
-        .querySelectorAll(".draw-tool-btn")
-        .forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
+//       // Update active state
+//       document
+//         .querySelectorAll(".draw-tool-btn")
+//         .forEach((b) => b.classList.remove("active"));
+//       btn.classList.add("active");
 
-      // Start drawing
-      const { stateManager } = getState();
-      stateManager.setActiveDrawingTool(tool);
-      startDrawingWithTool(tool);
-    });
-  });
+//       // Start drawing
+//       const { stateManager } = getState();
+//       stateManager.setActiveDrawingTool(tool);
+//       startDrawingWithTool(tool);
+//     });
+//   });
 
-  // Clear drawings button
-  const newClearBtn = clearDrawingsBtn.cloneNode(true);
-  clearDrawingsBtn.parentNode.replaceChild(newClearBtn, clearDrawingsBtn);
+//   // Clear drawings button
+//   const newClearBtn = clearDrawingsBtn.cloneNode(true);
+//   clearDrawingsBtn.parentNode.replaceChild(newClearBtn, clearDrawingsBtn);
 
-  document.getElementById("clearDrawings").addEventListener("click", () => {
-    if (confirm("Clear all drawings?")) {
-      const { stateManager } = getState();
-      const drawLayer = stateManager.getDrawLayer();
-      const sketchViewModel = stateManager.getSketchViewModel();
-      if (drawLayer) drawLayer.removeAll();
-      if (sketchViewModel) sketchViewModel.cancel();
-      resetDrawingTools();
-    }
-  });
+//   document.getElementById("clearDrawings").addEventListener("click", () => {
+//     if (confirm("Clear all drawings?")) {
+//       const { stateManager } = getState();
+//       const drawLayer = stateManager.getDrawLayer();
+//       const sketchViewModel = stateManager.getSketchViewModel();
+//       if (drawLayer) drawLayer.removeAll();
+//       if (sketchViewModel) sketchViewModel.cancel();
+//       resetDrawingTools();
+//     }
+//   });
 
-  // Color and opacity change handlers
-  document
-    .getElementById("drawColor")
-    .addEventListener("change", updateActiveGraphicsSymbology);
-  document
-    .getElementById("drawOpacity")
-    .addEventListener("input", updateActiveGraphicsSymbology);
-}
+//   // Color and opacity change handlers
+//   document
+//     .getElementById("drawColor")
+//     .addEventListener("change", updateActiveGraphicsSymbology);
+//   document
+//     .getElementById("drawOpacity")
+//     .addEventListener("input", updateActiveGraphicsSymbology);
+// }
 
+// EXTRACTED TO: js/tools/drawing-manager.js
 // Start drawing with specific tool
-function startDrawingWithTool(tool) {
-  const { stateManager } = getState();
-  const sketchViewModel = stateManager.getSketchViewModel();
-  const view = stateManager.getView();
+// function startDrawingWithTool(tool) {
+//   const { stateManager } = getState();
+//   const sketchViewModel = stateManager.getSketchViewModel();
+//   const view = stateManager.getView();
 
-  if (!sketchViewModel) {
-    console.error('SketchViewModel not initialized. Call initializeSketchViewModel first.');
-    return;
-  }
+//   if (!sketchViewModel) {
+//     console.error('SketchViewModel not initialized. Call initializeSketchViewModel first.');
+//     return;
+//   }
 
-  // Cancel any active operation
-  sketchViewModel.cancel();
+//   // Cancel any active operation
+//   sketchViewModel.cancel();
 
-  // Set cursor for drawing
-  if (view) {
-    view.container.style.cursor = "crosshair";
-  }
+//   // Set cursor for drawing
+//   if (view) {
+//     view.container.style.cursor = "crosshair";
+//   }
 
-  // Get current symbology settings
-  const color = hexToRgb(
-    document.getElementById("drawColor")?.value || "#2196F3"
-  );
-  const opacity = (document.getElementById("drawOpacity")?.value || 70) / 100;
+//   // Get current symbology settings
+//   const color = hexToRgb(
+//     document.getElementById("drawColor")?.value || "#2196F3"
+//   );
+//   const opacity = (document.getElementById("drawOpacity")?.value || 70) / 100;
 
-  // Set symbology based on tool
-  switch (tool) {
-    case "point":
-      sketchViewModel.pointSymbol = {
-        type: "simple-marker",
-        style: "circle",
-        color: [...color, opacity],
-        size: 12,
-        outline: {
-          color: [255, 255, 255, 1],
-          width: 2,
-        },
-      };
-      break;
-    case "polyline":
-      sketchViewModel.polylineSymbol = {
-        type: "simple-line",
-        color: [...color, opacity],
-        width: 3,
-        cap: "round",
-        join: "round",
-      };
-      break;
-    case "polygon":
-    case "rectangle":
-    case "circle":
-      sketchViewModel.polygonSymbol = {
-        type: "simple-fill",
-        color: [...color, opacity * 0.5],
-        outline: {
-          color: [...color, 1],
-          width: 2,
-        },
-      };
-      break;
-  }
+//   // Set symbology based on tool
+//   switch (tool) {
+//     case "point":
+//       sketchViewModel.pointSymbol = {
+//         type: "simple-marker",
+//         style: "circle",
+//         color: [...color, opacity],
+//         size: 12,
+//         outline: {
+//           color: [255, 255, 255, 1],
+//           width: 2,
+//         },
+//       };
+//       break;
+//     case "polyline":
+//       sketchViewModel.polylineSymbol = {
+//         type: "simple-line",
+//         color: [...color, opacity],
+//         width: 3,
+//         cap: "round",
+//         join: "round",
+//       };
+//       break;
+//     case "polygon":
+//     case "rectangle":
+//     case "circle":
+//       sketchViewModel.polygonSymbol = {
+//         type: "simple-fill",
+//         color: [...color, opacity * 0.5],
+//         outline: {
+//           color: [...color, 1],
+//           width: 2,
+//         },
+//       };
+//       break;
+//   }
 
-  // Create the geometry
-  try {
-    console.log("Starting to draw:", tool);
-    sketchViewModel.create(tool);
-  } catch (error) {
-    console.error("Error creating geometry:", error);
-    showNotification("Error starting drawing tool", "error");
-    view.container.style.cursor = "default";
-  }
-}
+//   // Create
+//     console.log("Starting to draw:", tool);
+//     sketchViewModel.create(tool);
+//   } catch (error) {
+//     console.error("Error creating geometry:", error);
+//     showNotification("Error starting drawing tool", "error");
+//     view.container.style.cursor = "default";
+//   }
+// }
 
 // Apply custom symbology to graphic
 function applyCustomSymbology(graphic) {
@@ -2509,7 +2513,28 @@ function hexToRgb(hex) {
     : [33, 150, 243];
 }
 
-// Replace the startDrawing function:
+// Replace the existing createGraphic function with this version:
+async function createGraphic(event, tool, color, opacity) {
+  const [Graphic] = await Promise.all([loadModule("esri/Graphic")]);
+
+  // Clear preview
+  view.graphics.removeAll();
+
+  const symbol = getSymbolForTool(tool, color, opacity);
+
+  const graphic = new Graphic({
+    geometry: event.geometry, 
+    symbol: symbol
+  });
+
+  drawLayer.add(graphic);
+
+  // Don't automatically restart drawing here
+  // Let the tool button or UI control handle starting new drawings
+  // Remove the startDrawing() call
+}
+
+// Update startDrawing to handle continuous drawing mode
 async function startDrawing(tool) {
   try {
     stopDrawing(); // Stop any existing drawing
@@ -2519,12 +2544,12 @@ async function startDrawing(tool) {
 
     const [Draw, Graphic] = await Promise.all([
       loadModule("esri/views/draw/Draw"),
-      loadModule("esri/Graphic"),
+      loadModule("esri/Graphic")
     ]);
 
     // Create new Draw instance
     draw = new Draw({
-      view: view,
+      view: view
     });
 
     // Get drawing options
@@ -2533,7 +2558,7 @@ async function startDrawing(tool) {
 
     // Create the drawing action
     let action;
-    switch (tool) {
+    switch(tool) {
       case "point":
         action = draw.create("point");
         break;
@@ -2559,7 +2584,7 @@ async function startDrawing(tool) {
       updateGraphicPreview(event, tool, color, opacity);
     });
 
-    // Handle cursor update for preview
+    // Handle cursor update for preview  
     action.on("cursor-update", (event) => {
       updateGraphicPreview(event, tool, color, opacity);
     });
@@ -2567,12 +2592,84 @@ async function startDrawing(tool) {
     // Handle drawing completion
     action.on("draw-complete", (event) => {
       createGraphic(event, tool, color, opacity);
+      
+      // Only restart if continuous drawing mode is enabled
+      // This should be controlled by a UI setting
+      if (drawingActive && currentDrawTool === tool) {
+        setTimeout(() => startDrawing(tool), 100);
+      }
     });
+
   } catch (error) {
     console.error("Error starting drawing:", error);
     showNotification("Error starting drawing tool", "error");
   }
 }
+
+// Replace the startDrawing function:
+// async function startDrawing(tool) {
+//   try {
+//     stopDrawing(); // Stop any existing drawing
+
+//     currentDrawTool = tool;
+//     drawingActive = true;
+
+//     const [Draw, Graphic] = await Promise.all([
+//       loadModule("esri/views/draw/Draw"),
+//       loadModule("esri/Graphic"),
+//     ]);
+
+//     // Create new Draw instance
+//     draw = new Draw({
+//       view: view,
+//     });
+
+//     // Get drawing options
+//     const color = hexToRgb(document.getElementById("drawColor").value);
+//     const opacity = document.getElementById("drawOpacity").value / 100;
+
+//     // Create the drawing action
+//     let action;
+//     switch (tool) {
+//       case "point":
+//         action = draw.create("point");
+//         break;
+//       case "polyline":
+//         action = draw.create("polyline");
+//         break;
+//       case "polygon":
+//         action = draw.create("polygon");
+//         break;
+//       case "rectangle":
+//         action = draw.create("rectangle");
+//         break;
+//       case "circle":
+//         action = draw.create("circle");
+//         break;
+//       default:
+//         console.error("Unknown drawing tool:", tool);
+//         return;
+//     }
+
+//     // Handle vertex add for preview
+//     action.on("vertex-add", (event) => {
+//       updateGraphicPreview(event, tool, color, opacity);
+//     });
+
+//     // Handle cursor update for preview
+//     action.on("cursor-update", (event) => {
+//       updateGraphicPreview(event, tool, color, opacity);
+//     });
+
+//     // Handle drawing completion
+//     action.on("draw-complete", (event) => {
+//       createGraphic(event, tool, color, opacity);
+//     });
+//   } catch (error) {
+//     console.error("Error starting drawing:", error);
+//     showNotification("Error starting drawing tool", "error");
+//   }
+// }
 // Add preview function
 async function updateGraphicPreview(event, tool, color, opacity) {
   const [Graphic] = await Promise.all([loadModule("esri/Graphic")]);
@@ -2622,31 +2719,31 @@ async function updateGraphicPreview(event, tool, color, opacity) {
   }
 }
 // Replace the createGraphic function:
-async function createGraphic(event, tool, color, opacity) {
-  const [Graphic] = await Promise.all([loadModule("esri/Graphic")]);
+// async function createGraphic(event, tool, color, opacity) {
+//   const [Graphic] = await Promise.all([loadModule("esri/Graphic")]);
 
-  // Clear preview
-  view.graphics.removeAll();
+//   // Clear preview
+//   view.graphics.removeAll();
 
-  const symbol = getSymbolForTool(tool, color, opacity);
+//   const symbol = getSymbolForTool(tool, color, opacity);
 
-  const graphic = new Graphic({
-    geometry: event.geometry,
-    symbol: symbol,
-  });
+//   const graphic = new Graphic({
+//     geometry: event.geometry,
+//     symbol: symbol,
+//   });
 
-  drawLayer.add(graphic);
+//   drawLayer.add(graphic);
 
-  // Continue drawing if still active
-  if (drawingActive && currentDrawTool === tool) {
-    // Small delay to prevent immediate drawing
-    setTimeout(() => {
-      if (drawingActive && currentDrawTool === tool) {
-        startDrawing(tool);
-      }
-    }, 100);
-  }
-}
+//   // Continue drawing if still active
+//   if (drawingActive && currentDrawTool === tool) {
+//     // Small delay to prevent immediate drawing
+//     setTimeout(() => {
+//       if (drawingActive && currentDrawTool === tool) {
+//         startDrawing(tool);
+//       }
+//     }, 100);
+//   }
+// }
 // Add helper function for symbols
 function getSymbolForTool(tool, color, opacity) {
   let symbol;
@@ -8592,10 +8689,10 @@ export {
   // handleFiles,
 
   // Drawing functions (will be moved to drawing-manager.js)
-  startDrawingWithTool,
-  clearAll,
-  initializeSketchViewModel,
-  initializeDrawingPanel,
+  // startDrawingWithTool,
+  // clearAll,
+  // initializeSketchViewModel,
+  // initializeDrawingPanel,
 
   // Classification functions (will be moved to classification-manager.js)
   initializeClassificationPanel,

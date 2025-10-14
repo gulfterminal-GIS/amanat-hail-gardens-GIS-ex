@@ -17,11 +17,12 @@
 import { loadModule } from '../core/module-loader.js';
 
 export class ToolbarManager {
-  constructor(stateManager, panelManager, notificationManager) {
+  constructor(stateManager, panelManager, notificationManager, drawingManager) {
     this.stateManager = stateManager;
     this.panelManager = panelManager;
     this.notificationManager = notificationManager;
-    
+    this.drawingManager = drawingManager;
+
     // Store references to toolbar elements
     this.mobileToggle = null;
     this.mobileMenu = null;
@@ -202,10 +203,7 @@ export class ToolbarManager {
         break;
       case "draw":
         this.panelManager.openSidePanel("Drawing Tools", "drawingPanelTemplate");
-        // Note: initializeDrawingPanel will be handled by DrawingManager in future
-        if (window.initializeDrawingPanel) {
-          window.initializeDrawingPanel();
-        }
+        this.drawingManager.initializeDrawingPanel();
         break;
       case "locate":
         this.locateUser();
@@ -243,6 +241,7 @@ export class ToolbarManager {
       // Deactivate draw
       btn.classList.remove("active");
       this.panelManager.closeSidePanel();
+      this.drawingManager.stopDrawing();
       
       const sketchViewModel = this.stateManager.getSketchViewModel();
       if (sketchViewModel) {
@@ -271,13 +270,8 @@ export class ToolbarManager {
       btn.classList.add("active");
       this.panelManager.openSidePanel("Drawing Tools", "drawingPanelTemplate");
       
-      // Note: These will be handled by DrawingManager in future
-      if (window.initializeSketchViewModel) {
-        await window.initializeSketchViewModel();
-      }
-      if (window.initializeDrawingPanel) {
-        window.initializeDrawingPanel();
-      }
+      await this.drawingManager.initializeSketchViewModel();
+      this.drawingManager.initializeDrawingPanel();
     }
   }
 

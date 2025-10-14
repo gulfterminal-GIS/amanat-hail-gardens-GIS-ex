@@ -12,6 +12,7 @@ import { SearchManager } from "./ui/search-manager.js";
 import { LayerManager } from "./layers/layer-manager.js";
 import { UploadHandler } from "./layers/upload-handler.js";
 import { BasemapManager } from "./layers/basemap-manager.js";
+import { DrawingManager } from "./tools/drawing-manager.js";
 import { bindWindowFunctions } from "./window-bindings.js";
 import { initializeMap } from "../script.js";
 
@@ -33,8 +34,11 @@ const basemapManager = new BasemapManager(stateManager, notificationManager);
 // Create PanelManager instance
 const panelManager = new PanelManager(stateManager, notificationManager, basemapManager);
 
+// Create DrawingManager instance
+const drawingManager = new DrawingManager(stateManager, notificationManager);
+
 // Create ToolbarManager instance
-const toolbarManager = new ToolbarManager(stateManager, panelManager, notificationManager);
+const toolbarManager = new ToolbarManager(stateManager, panelManager, notificationManager, drawingManager);
 
 // Create TabSystem instance
 const tabSystem = new TabSystem(notificationManager);
@@ -47,6 +51,7 @@ const layerManager = new LayerManager(stateManager, notificationManager);
 
 // Create UploadHandler instance
 const uploadHandler = new UploadHandler(stateManager, layerManager, notificationManager);
+
 
 // Initialize application
 async function initializeApplication() {
@@ -62,6 +67,7 @@ async function initializeApplication() {
     console.log("LayerManager created and ready");
     console.log("UploadHandler created and ready");
     console.log("BasemapManager created and ready");
+    console.log("DrawingManager created and ready");
 
     // Initialize the map with injected dependencies
     await initializeMap(
@@ -72,7 +78,8 @@ async function initializeApplication() {
       toolbarManager,
       layerManager,
       uploadHandler,
-      basemapManager
+      basemapManager,
+      drawingManager
     );
 
     // Initialize tab system
@@ -93,6 +100,7 @@ async function initializeApplication() {
       layerManager,
       uploadHandler,
       basemapManager,
+      drawingManager,
       // Future managers will be added here as they're created
     });
 
