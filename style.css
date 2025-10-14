@@ -405,7 +405,7 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--bg-primary);
+  background: rgba(0, 0, 0, 0.25);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   box-shadow: var(--shadow-xl);
   transform: translateY(100%);
@@ -423,23 +423,23 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-md);
-  border-bottom: 1px solid var(--border-color);
+  padding: var(--spacing-sm) var(--spacing-md);
+  /* border-bottom: 1px solid black; */
   position: sticky;
   top: 0;
-  background: var(--bg-primary);
+  background: rgba(0, 0, 0, 0.75);
 }
 
 .mobile-menu-header h3 {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: white;
 }
 
 .mobile-menu-close {
   background: none;
   border: none;
-  color: var(--text-secondary);
+  color: white;
   cursor: pointer;
   padding: var(--spacing-sm);
   font-size: 20px;
@@ -459,18 +459,18 @@ body {
   justify-content: center;
   gap: var(--spacing-xs);
   padding: var(--spacing-md);
-  background: var(--bg-secondary);
+  background: rgba(0, 0, 0, 0.5);
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all var(--transition-fast);
-  color: var(--text-secondary);
+  color: white;
 }
 
 .mobile-menu-item:hover,
 .mobile-menu-item.active {
-  background: var(--primary-color);
-  color: var(--text-white);
+  background: rgba(255, 255, 255, 0.75);
+  color: black;
   transform: translateY(-2px);
 }
 
@@ -3054,7 +3054,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 }
 
 .shepherd-header {
-  background: var(--primary-color);
+  background: transparent;
   padding: 1rem;
   position: relative;
 }
@@ -3085,7 +3085,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.5);
   pointer-events: none;
 }
 
@@ -3101,17 +3101,22 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 
 .shepherd-text {
   font-size: 14px;
+  color: white;
+  font-weight: bold;
+  letter-spacing: 0.25px;
   line-height: 1.6;
   padding: 1.5rem;
+  background-color: rgba(255, 255, 255, 0.25);
 }
 
 .shepherd-footer {
   padding: 0 1rem 1rem;
+  background-color: rgba(255, 255, 255, 0.25);
 }
 
 .shepherd-button {
-  background: var(--primary-color);
-  border: none;
+  background: black;
+  border: 1px solid black;
   border-radius: var(--radius-md);
   color: white;
   cursor: pointer;
@@ -3122,32 +3127,37 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 }
 
 .shepherd-button:hover {
-  background: var(--primary-dark);
+  background: white !important;
+  color: black !important;
   transform: translateY(-1px);
 }
 
 .shepherd-button-secondary {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.5) !important;
+  color: white !important;
+  border: 1px solid white !important;
 }
 
 .shepherd-button-secondary:hover {
   background: var(--bg-primary);
 }
 
-
+.shepherd-enabled.shepherd-element {
+  background-color: transparent !important;
+}
 
 /* Override Shepherd default gray background */
-.shepherd-has-title .shepherd-content .shepherd-header {
-  background: var(--primary-color) !important;
+/* .shepherd-has-title .shepherd-content .shepherd-header {
+  background: transparent !important;
   padding: 1rem !important;
-}
+} */
 
 /* Ensure consistent styling across all shepherd headers */
 .shepherd-element .shepherd-header,
 .shepherd-has-title .shepherd-content .shepherd-header {
-  background: var(--primary-color) !important;
-  background-color: var(--primary-color) !important;
+  background: rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  /* background-color: var(--primary-color) !important; */
 }
 
 /* Make sure the title and close button remain white */
