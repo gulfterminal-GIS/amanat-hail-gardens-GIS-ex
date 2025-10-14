@@ -419,7 +419,12 @@ export class DrawingManager {
     const view = this.stateManager.getView();
 
     if (sketchViewModel) {
-      sketchViewModel.cancel();
+    try {
+      sketchViewModel.complete(); // Complete any active drawing
+      sketchViewModel.cancel();   // Then cancel/cleanup
+    } catch (e) {
+      console.warn("Error during drawing cleanup:", e);
+    }
     }
 
     if (view) {
@@ -427,6 +432,12 @@ export class DrawingManager {
     }
 
     this.resetDrawingTools();
+
+    // Force graphics layer refresh
+    const drawLayer = this.stateManager.getDrawLayer();
+    if (drawLayer) {
+      drawLayer.refresh();
+    }
   }
 
   /**

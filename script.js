@@ -2410,201 +2410,205 @@ function disableDrawingMode(modalId) {
 //   }
 // }
 
+// EXTRACTED TO: js/tools/drawing-manager.js
 // Apply custom symbology to graphic
-function applyCustomSymbology(graphic) {
-  if (!graphic) return;
+// function applyCustomSymbology(graphic) {
+//   if (!graphic) return;
 
-  const color = hexToRgb(document.getElementById("drawColor").value);
-  const opacity = document.getElementById("drawOpacity").value / 100;
+//   const color = hexToRgb(document.getElementById("drawColor").value);
+//   const opacity = document.getElementById("drawOpacity").value / 100;
 
-  switch (graphic.geometry.type) {
-    case "point":
-      graphic.symbol = {
-        type: "simple-marker",
-        style: "circle",
-        color: [...color, opacity],
-        size: 12,
-        outline: {
-          color: [255, 255, 255, 1],
-          width: 2,
-        },
-      };
-      break;
-    case "polyline":
-      graphic.symbol = {
-        type: "simple-line",
-        color: [...color, opacity],
-        width: 3,
-        cap: "round",
-        join: "round",
-      };
-      break;
-    case "polygon":
-      graphic.symbol = {
-        type: "simple-fill",
-        color: [...color, opacity * 0.5],
-        outline: {
-          color: [...color, 1],
-          width: 2,
-        },
-      };
-      break;
-  }
-}
+//   switch (graphic.geometry.type) {
+//     case "point":
+//       graphic.symbol = {
+//         type: "simple-marker",
+//         style: "circle",
+//         color: [...color, opacity],
+//         size: 12,
+//         outline: {
+//           color: [255, 255, 255, 1],
+//           width: 2,
+//         },
+//       };
+//       break;
+//     case "polyline":
+//       graphic.symbol = {
+//         type: "simple-line",
+//         color: [...color, opacity],
+//         width: 3,
+//         cap: "round",
+//         join: "round",
+//       };
+//       break;
+//     case "polygon":
+//       graphic.symbol = {
+//         type: "simple-fill",
+//         color: [...color, opacity * 0.5],
+//         outline: {
+//           color: [...color, 1],
+//           width: 2,
+//         },
+//       };
+//       break;
+//   }
+// }
 
+// EXTRACTED TO: js/tools/drawing-manager.js
 // Update symbology of active graphics
-function updateActiveGraphicsSymbology() {
-  const { stateManager } = getState();
-  const drawLayer = stateManager.getDrawLayer();
-  if (!drawLayer) return;
+// function updateActiveGraphicsSymbology() {
+//   const { stateManager } = getState();
+//   const drawLayer = stateManager.getDrawLayer();
+//   if (!drawLayer) return;
 
-  drawLayer.graphics.forEach((graphic) => {
-    applyCustomSymbology(graphic);
-  });
-}
+//   drawLayer.graphics.forEach((graphic) => {
+//     applyCustomSymbology(graphic);
+//   });
+// }
 
+// EXTRACTED TO: js/tools/drawing-manager.js
 // Reset drawing tools
-function resetDrawingTools() {
-  const { stateManager } = getState();
-  stateManager.setActiveDrawingTool(null);
-  document.querySelectorAll(".draw-tool-btn").forEach((btn) => {
-    btn.classList.remove("active");
-  });
-  const sketchViewModel = stateManager.getSketchViewModel();
-  if (sketchViewModel) {
-    sketchViewModel.cancel();
-  }
-}
+// function resetDrawingTools() {
+//   const { stateManager } = getState();
+//   stateManager.setActiveDrawingTool(null);
+//   document.querySelectorAll(".draw-tool-btn").forEach((btn) => {
+//     btn.classList.remove("active");
+//   });
+//   const sketchViewModel = stateManager.getSketchViewModel();
+//   if (sketchViewModel) {
+//     sketchViewModel.cancel();
+//   }
+// }
 
+// EXTRACTED TO: js/tools/drawing-manager.js
 // Update the clearAll function
-function clearAll() {
-  if (confirm("Clear all drawings and measurements?")) {
-    const { stateManager } = getState();
-    const drawLayer = stateManager.getDrawLayer();
-    const view = stateManager.getView();
-    const measurementWidget = stateManager.getMeasurementWidget();
-    const sketchViewModel = stateManager.getSketchViewModel();
+// function clearAll() {
+//   if (confirm("Clear all drawings and measurements?")) {
+//     const { stateManager } = getState();
+//     const drawLayer = stateManager.getDrawLayer();
+//     const view = stateManager.getView();
+//     const measurementWidget = stateManager.getMeasurementWidget();
+//     const sketchViewModel = stateManager.getSketchViewModel();
 
-    if (drawLayer) {
-      drawLayer.removeAll();
-    }
-    if (view) {
-      view.graphics.removeAll();
-    }
-    if (measurementWidget) {
-      measurementWidget.clear();
-    }
-    if (sketchViewModel) {
-      sketchViewModel.cancel();
-    }
-    resetDrawingTools();
-  }
-}
+//     if (drawLayer) {
+//       drawLayer.removeAll();
+//     }
+//     if (view) {
+//       view.graphics.removeAll();
+//     }
+//     if (measurementWidget) {
+//       measurementWidget.clear();
+//     }
+//     if (sketchViewModel) {
+//       sketchViewModel.cancel();
+//     }
+//     resetDrawingTools();
+//   }
+// }
 
 // Make sure hexToRgb function exists
-function hexToRgb(hex) {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result
-    ? [
-      parseInt(result[1], 16),
-      parseInt(result[2], 16),
-      parseInt(result[3], 16),
-    ]
-    : [33, 150, 243];
-}
+// function hexToRgb(hex) {
+//   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+//   return result
+//     ? [
+//       parseInt(result[1], 16),
+//       parseInt(result[2], 16),
+//       parseInt(result[3], 16),
+//     ]
+//     : [33, 150, 243];
+// }
 
 // Replace the existing createGraphic function with this version:
-async function createGraphic(event, tool, color, opacity) {
-  const [Graphic] = await Promise.all([loadModule("esri/Graphic")]);
+// async function createGraphic(event, tool, color, opacity) {
+//   const [Graphic] = await Promise.all([loadModule("esri/Graphic")]);
 
-  // Clear preview
-  view.graphics.removeAll();
+//   // Clear preview
+//   view.graphics.removeAll();
 
-  const symbol = getSymbolForTool(tool, color, opacity);
+//   const symbol = getSymbolForTool(tool, color, opacity);
 
-  const graphic = new Graphic({
-    geometry: event.geometry, 
-    symbol: symbol
-  });
+//   const graphic = new Graphic({
+//     geometry: event.geometry, 
+//     symbol: symbol
+//   });
 
-  drawLayer.add(graphic);
+//   drawLayer.add(graphic);
 
-  // Don't automatically restart drawing here
-  // Let the tool button or UI control handle starting new drawings
-  // Remove the startDrawing() call
-}
+//   // Don't automatically restart drawing here
+//   // Let the tool button or UI control handle starting new drawings
+//   // Remove the startDrawing() call
+// }
 
 // Update startDrawing to handle continuous drawing mode
-async function startDrawing(tool) {
-  try {
-    stopDrawing(); // Stop any existing drawing
+// async function startDrawing(tool) {
+//   try {
+//     stopDrawing(); // Stop any existing drawing
 
-    currentDrawTool = tool;
-    drawingActive = true;
+//     currentDrawTool = tool;
+//     drawingActive = true;
 
-    const [Draw, Graphic] = await Promise.all([
-      loadModule("esri/views/draw/Draw"),
-      loadModule("esri/Graphic")
-    ]);
+//     const [Draw, Graphic] = await Promise.all([
+//       loadModule("esri/views/draw/Draw"),
+//       loadModule("esri/Graphic")
+//     ]);
 
-    // Create new Draw instance
-    draw = new Draw({
-      view: view
-    });
+//     // Create new Draw instance
+//     draw = new Draw({
+//       view: view
+//     });
 
-    // Get drawing options
-    const color = hexToRgb(document.getElementById("drawColor").value);
-    const opacity = document.getElementById("drawOpacity").value / 100;
+//     // Get drawing options
+//     const color = hexToRgb(document.getElementById("drawColor").value);
+//     const opacity = document.getElementById("drawOpacity").value / 100;
 
-    // Create the drawing action
-    let action;
-    switch(tool) {
-      case "point":
-        action = draw.create("point");
-        break;
-      case "polyline":
-        action = draw.create("polyline");
-        break;
-      case "polygon":
-        action = draw.create("polygon");
-        break;
-      case "rectangle":
-        action = draw.create("rectangle");
-        break;
-      case "circle":
-        action = draw.create("circle");
-        break;
-      default:
-        console.error("Unknown drawing tool:", tool);
-        return;
-    }
+//     // Create the drawing action
+//     let action;
+//     switch(tool) {
+//       case "point":
+//         action = draw.create("point");
+//         break;
+//       case "polyline":
+//         action = draw.create("polyline");
+//         break;
+//       case "polygon":
+//         action = draw.create("polygon");
+//         break;
+//       case "rectangle":
+//         action = draw.create("rectangle");
+//         break;
+//       case "circle":
+//         action = draw.create("circle");
+//         break;
+//       default:
+//         console.error("Unknown drawing tool:", tool);
+//         return;
+//     }
 
-    // Handle vertex add for preview
-    action.on("vertex-add", (event) => {
-      updateGraphicPreview(event, tool, color, opacity);
-    });
+//     // Handle vertex add for preview
+//     action.on("vertex-add", (event) => {
+//       updateGraphicPreview(event, tool, color, opacity);
+//     });
 
-    // Handle cursor update for preview  
-    action.on("cursor-update", (event) => {
-      updateGraphicPreview(event, tool, color, opacity);
-    });
+//     // Handle cursor update for preview  
+//     action.on("cursor-update", (event) => {
+//       updateGraphicPreview(event, tool, color, opacity);
+//     });
 
-    // Handle drawing completion
-    action.on("draw-complete", (event) => {
-      createGraphic(event, tool, color, opacity);
+//     // Handle drawing completion
+//     action.on("draw-complete", (event) => {
+//       createGraphic(event, tool, color, opacity);
       
-      // Only restart if continuous drawing mode is enabled
-      // This should be controlled by a UI setting
-      if (drawingActive && currentDrawTool === tool) {
-        setTimeout(() => startDrawing(tool), 100);
-      }
-    });
+//       // Only restart if continuous drawing mode is enabled
+//       // This should be controlled by a UI setting
+//       if (drawingActive && currentDrawTool === tool) {
+//         setTimeout(() => startDrawing(tool), 100);
+//       }
+//     });
 
-  } catch (error) {
-    console.error("Error starting drawing:", error);
-    showNotification("Error starting drawing tool", "error");
-  }
-}
+//   } catch (error) {
+//     console.error("Error starting drawing:", error);
+//     showNotification("Error starting drawing tool", "error");
+//   }
+// }
 
 // Replace the startDrawing function:
 // async function startDrawing(tool) {
@@ -2671,53 +2675,54 @@ async function startDrawing(tool) {
 //   }
 // }
 // Add preview function
-async function updateGraphicPreview(event, tool, color, opacity) {
-  const [Graphic] = await Promise.all([loadModule("esri/Graphic")]);
+// async function updateGraphicPreview(event, tool, color, opacity) {
+//   const [Graphic] = await Promise.all([loadModule("esri/Graphic")]);
 
-  // Remove previous preview
-  view.graphics.removeAll();
+//   // Remove previous preview
+//   view.graphics.removeAll();
 
-  if (!event.vertices || event.vertices.length === 0) return;
+//   if (!event.vertices || event.vertices.length === 0) return;
 
-  let geometry;
+//   let geometry;
 
-  switch (tool) {
-    case "point":
-      geometry = {
-        type: "point",
-        longitude: event.coordinates[0],
-        latitude: event.coordinates[1],
-        spatialReference: view.spatialReference,
-      };
-      break;
-    case "polyline":
-      geometry = {
-        type: "polyline",
-        paths: [event.vertices],
-        spatialReference: view.spatialReference,
-      };
-      break;
-    case "polygon":
-    case "rectangle":
-    case "circle":
-      geometry = {
-        type: "polygon",
-        rings: [event.vertices],
-        spatialReference: view.spatialReference,
-      };
-      break;
-  }
+//   switch (tool) {
+//     case "point":
+//       geometry = {
+//         type: "point",
+//         longitude: event.coordinates[0],
+//         latitude: event.coordinates[1],
+//         spatialReference: view.spatialReference,
+//       };
+//       break;
+//     case "polyline":
+//       geometry = {
+//         type: "polyline",
+//         paths: [event.vertices],
+//         spatialReference: view.spatialReference,
+//       };
+//       break;
+//     case "polygon":
+//     case "rectangle":
+//     case "circle":
+//       geometry = {
+//         type: "polygon",
+//         rings: [event.vertices],
+//         spatialReference: view.spatialReference,
+//       };
+//       break;
+//   }
 
-  if (geometry) {
-    const symbol = getSymbolForTool(tool, color, opacity);
-    const graphic = new Graphic({
-      geometry: geometry,
-      symbol: symbol,
-    });
+//   if (geometry) {
+//     const symbol = getSymbolForTool(tool, color, opacity);
+//     const graphic = new Graphic({
+//       geometry: geometry,
+//       symbol: symbol,
+//     });
 
-    view.graphics.add(graphic);
-  }
-}
+//     view.graphics.add(graphic);
+//   }
+// }
+
 // Replace the createGraphic function:
 // async function createGraphic(event, tool, color, opacity) {
 //   const [Graphic] = await Promise.all([loadModule("esri/Graphic")]);
@@ -2745,70 +2750,71 @@ async function updateGraphicPreview(event, tool, color, opacity) {
 //   }
 // }
 // Add helper function for symbols
-function getSymbolForTool(tool, color, opacity) {
-  let symbol;
+// function getSymbolForTool(tool, color, opacity) {
+//   let symbol;
 
-  switch (tool) {
-    case "point":
-      symbol = {
-        type: "simple-marker",
-        style: "circle",
-        color: [...color, opacity],
-        size: 12,
-        outline: {
-          color: [255, 255, 255, 1],
-          width: 2,
-        },
-      };
-      break;
-    case "polyline":
-      symbol = {
-        type: "simple-line",
-        color: [...color, opacity],
-        width: 3,
-        cap: "round",
-        join: "round",
-      };
-      break;
-    case "polygon":
-    case "rectangle":
-    case "circle":
-      symbol = {
-        type: "simple-fill",
-        color: [...color, opacity * 0.5],
-        outline: {
-          color: [...color, 1],
-          width: 2,
-        },
-      };
-      break;
-  }
+//   switch (tool) {
+//     case "point":
+//       symbol = {
+//         type: "simple-marker",
+//         style: "circle",
+//         color: [...color, opacity],
+//         size: 12,
+//         outline: {
+//           color: [255, 255, 255, 1],
+//           width: 2,
+//         },
+//       };
+//       break;
+//     case "polyline":
+//       symbol = {
+//         type: "simple-line",
+//         color: [...color, opacity],
+//         width: 3,
+//         cap: "round",
+//         join: "round",
+//       };
+//       break;
+//     case "polygon":
+//     case "rectangle":
+//     case "circle":
+//       symbol = {
+//         type: "simple-fill",
+//         color: [...color, opacity * 0.5],
+//         outline: {
+//           color: [...color, 1],
+//           width: 2,
+//         },
+//       };
+//       break;
+//   }
 
-  return symbol;
-}
+//   return symbol;
+// }
+
 // Update the stopDrawing function:
-function stopDrawing() {
-  drawingActive = false;
-  currentDrawTool = null;
+// function stopDrawing() {
+//   drawingActive = false;
+//   currentDrawTool = null;
 
-  // Clear preview graphics
-  view.graphics.removeAll();
+//   // Clear preview graphics
+//   view.graphics.removeAll();
 
-  if (draw) {
-    try {
-      draw.complete(); // Complete any active drawing
-      draw.destroy(); // Destroy the draw instance
-    } catch (e) {
-      // Ignore errors during cleanup
-    }
-    draw = null;
-  }
+//   if (draw) {
+//     try {
+//       draw.complete(); // Complete any active drawing
+//       draw.destroy(); // Destroy the draw instance
+//     } catch (e) {
+//       // Ignore errors during cleanup
+//     }
+//     draw = null;
+//   }
 
-  // Reset all drawing tool buttons
-  document.querySelectorAll(".draw-tool-btn").forEach((btn) => {
-    btn.classList.remove("active");
-  });
-}
+//   // Reset all drawing tool buttons
+//   document.querySelectorAll(".draw-tool-btn").forEach((btn) => {
+//     btn.classList.remove("active");
+//   });
+// }
 
 // Locate user
 // Locate user - Fixed version
@@ -4568,7 +4574,7 @@ window.zoomOut = zoomOut;
 
 async function toggleMeasurement() {
   // FUNCTION COMMENTED OUT - Remove this line to re-enable
-  return;
+  // return;
 
   const btn = document.getElementById("measureBtn");
   const resultsDiv = document.getElementById("measurementResults");
@@ -4663,12 +4669,12 @@ async function toggleMeasurement() {
     // Activate measurement
     btn.classList.add("active");
     closeSidePanel(); // Close any open panels
-    const { stateManager } = getState();
+    const { stateManager, drawingManager } = getState();
     const sketchViewModel = stateManager.getSketchViewModel();
     if (sketchViewModel) {
       sketchViewModel.cancel();
     }
-    resetDrawingTools();
+    drawingManager.resetDrawingTools();
   }
 }
 
@@ -6615,11 +6621,11 @@ async function startIntersectDrawing(featureNum) {
   const modal = document.getElementById("intersectModal");
   modal.classList.add("drawing-active");
 
-  const { stateManager } = getState();
+  const { stateManager, drawingManager } = getState();
   let sketchViewModel = stateManager.getSketchViewModel();
 
   if (!sketchViewModel) {
-    sketchViewModel = await initializeSketchViewModel();
+    sketchViewModel = await drawingManager.initializeSketchViewModel();
   }
 
   // Clear previous drawing for this feature

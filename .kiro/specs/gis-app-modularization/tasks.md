@@ -270,8 +270,10 @@
     - Update main.js to import and initialize BasemapManager
     - _Requirements: 1.2, 1.5, 3.2_
 
-- [ ] 7. Extract drawing and analysis tool modules
+- [-] 7. Extract drawing and analysis tool modules
+
   - [-] 7.1 Create js/tools/drawing-manager.js for sketch functionality
+
 
     - Extract initializeSketchViewModel, initializeDrawingPanel, initializeDrawingToolButtons
     - Extract startDrawingWithTool, applyCustomSymbology, updateActiveGraphicsSymbology
