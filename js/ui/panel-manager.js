@@ -6,9 +6,10 @@
 import { UploadHandler } from "../layers/upload-handler.js";
 
 export class PanelManager {
-  constructor(stateManager, notificationManager) {
+  constructor(stateManager, notificationManager, basemapManager = null) {
     this.stateManager = stateManager;
     this.notificationManager = notificationManager;
+    this.basemapManager = basemapManager;
     
     // Initialize panel close button event listener
     this.initializePanelCloseButton();
@@ -51,7 +52,10 @@ export class PanelManager {
       if (templateId === "uploadPanelTemplate") {
         this.initializeUploadPanel();
       } else if (templateId === "basemapPanelTemplate") {
-        this.initializeBasemapPanel();
+        // Delegate to BasemapManager if available
+        if (this.basemapManager) {
+          this.basemapManager.initializeBasemapPanel();
+        }
       }
     }
   }  /**
@@ -138,31 +142,33 @@ export class PanelManager {
     fileInput.addEventListener("change", (e) => {
       UploadHandler.handleFiles(e.target.files);
     });
-  }  /**
-
-   * Initialize basemap panel functionality when opened
-   * Sets up basemap selection and switching
-   */
-  initializeBasemapPanel() {
-    const basemapItems = document.querySelectorAll(
-      "#sidePanelContent .basemap-item"
-    );
-
-    basemapItems.forEach((item) => {
-      item.addEventListener("click", () => {
-        const basemap = item.dataset.basemap;
-        const map = this.stateManager.getMap();
-        
-        if (map) {
-          map.basemap = basemap;
-
-          // Update active state
-          basemapItems.forEach((b) => b.classList.remove("active"));
-          item.classList.add("active");
-        }
-      });
-    });
   }
+
+  // COMMENTED OUT - Moved to js/layers/basemap-manager.js
+  // /**
+  //  * Initialize basemap panel functionality when opened
+  //  * Sets up basemap selection and switching
+  //  */
+  // initializeBasemapPanel() {
+  //   const basemapItems = document.querySelectorAll(
+  //     "#sidePanelContent .basemap-item"
+  //   );
+
+  //   basemapItems.forEach((item) => {
+  //     item.addEventListener("click", () => {
+  //       const basemap = item.dataset.basemap;
+  //       const map = this.stateManager.getMap();
+  //       
+  //       if (map) {
+  //         map.basemap = basemap;
+
+  //         // Update active state
+  //         basemapItems.forEach((b) => b.classList.remove("active"));
+  //         item.classList.add("active");
+  //       }
+  //     });
+  //   });
+  // }
 
   /**
    * Initialize panel close button event listener

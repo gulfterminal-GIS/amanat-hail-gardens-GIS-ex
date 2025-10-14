@@ -83,7 +83,8 @@ async function initializeMap(
   panelManager = new PanelManager(stateManager, notificationManager),
   toolbarManager = null,
   layerManager = null,
-  uploadHandler = null
+  uploadHandler = null,
+  basemapManager = null
 ) {
   try {
     // Store instances at module level for use by other functions
@@ -94,7 +95,8 @@ async function initializeMap(
       panelManager,
       toolbarManager,
       layerManager,
-      uploadHandler
+      uploadHandler,
+      basemapManager
     };
 
     // Initialize state
@@ -1171,22 +1173,23 @@ function initializeUI(injectedStateManager) {
   //   this.classList.toggle("active");
   // });
 
+  // COMMENTED OUT - Moved to js/layers/basemap-manager.js
   // Initialize basemap switcher
-  const basemapItems = document.querySelectorAll(".basemap-item");
-  basemapItems.forEach((item) => {
-    item.addEventListener("click", () => {
-      const { stateManager } = getState();
-      const map = stateManager.getMap();
-      const basemap = item.dataset.basemap;
+  // const basemapItems = document.querySelectorAll(".basemap-item");
+  // basemapItems.forEach((item) => {
+  //   item.addEventListener("click", () => {
+  //     const { stateManager } = getState();
+  //     const map = stateManager.getMap();
+  //     const basemap = item.dataset.basemap;
 
-      if (map) {
-        map.basemap = basemap;
-        // Update active state
-        basemapItems.forEach((b) => b.classList.remove("active"));
-        item.classList.add("active");
-      }
-    });
-  });
+  //     if (map) {
+  //       map.basemap = basemap;
+  //       // Update active state
+  //       basemapItems.forEach((b) => b.classList.remove("active"));
+  //       item.classList.add("active");
+  //     }
+  //   });
+  // });
 
   // Initialize file upload
   initializeFileUpload();
@@ -1981,45 +1984,45 @@ function registerLayerManagerCallbacks(layerManager) {
 //   }
 // }
 
-async function toggleDraw() {
-  const btn = document.getElementById("drawBtn");
+// async function toggleDraw() {
+//   const btn = document.getElementById("drawBtn");
 
-  // Check if button exists before using it
-  if (!btn) {
-    console.error("Draw button not found");
-    return;
-  }
+//   // Check if button exists before using it
+//   if (!btn) {
+//     console.error("Draw button not found");
+//     return;
+//   }
 
-  if (btn.classList.contains("active")) {
-    // Deactivate draw
-    btn.classList.remove("active");
-    closeSidePanel();
-    const { stateManager } = getState();
-    const sketchViewModel = stateManager.getSketchViewModel();
-    if (sketchViewModel) {
-      sketchViewModel.cancel();
-    }
-    resetDrawingTools();
-  } else {
-    // Deactivate other tools
-    const { stateManager } = getState();
-    const measureBtn = document.getElementById("measureBtn");
-    if (measureBtn) {
-      measureBtn.classList.remove("active");
-    }
-    const measurementWidget = stateManager.getMeasurementWidget();
-    const view = stateManager.getView();
-    if (measurementWidget && view) {
-      measurementWidget.clear();
-      view.ui.remove(measurementWidget);
-    }
+//   if (btn.classList.contains("active")) {
+//     // Deactivate draw
+//     btn.classList.remove("active");
+//     closeSidePanel();
+//     const { stateManager } = getState();
+//     const sketchViewModel = stateManager.getSketchViewModel();
+//     if (sketchViewModel) {
+//       sketchViewModel.cancel();
+//     }
+//     resetDrawingTools();
+//   } else {
+//     // Deactivate other tools
+//     const { stateManager } = getState();
+//     const measureBtn = document.getElementById("measureBtn");
+//     if (measureBtn) {
+//       measureBtn.classList.remove("active");
+//     }
+//     const measurementWidget = stateManager.getMeasurementWidget();
+//     const view = stateManager.getView();
+//     if (measurementWidget && view) {
+//       measurementWidget.clear();
+//       view.ui.remove(measurementWidget);
+//     }
 
-    btn.classList.add("active");
-    openSidePanel("Drawing Tools", "drawingPanelTemplate");
-    await initializeSketchViewModel();
-    initializeDrawingPanel();
-  }
-}
+//     btn.classList.add("active");
+//     openSidePanel("Drawing Tools", "drawingPanelTemplate");
+//     await initializeSketchViewModel();
+//     initializeDrawingPanel();
+//   }
+// }
 
 // Add this new function for drawing panel initialization:
 function initializeDrawingPanel() {
@@ -4261,53 +4264,54 @@ async function goToBookmark(bookmark) {
   await view.goTo(extent);
 }
 
+// COMMENTED OUT - Moved to js/layers/basemap-manager.js
 // Basemap Gallery Widget
-async function toggleBasemapGallery() {
-  if (!activeWidgets.has("basemapGallery")) {
-    const [BasemapGallery, Expand] = await Promise.all([
-      loadModule("esri/widgets/BasemapGallery"),
-      loadModule("esri/widgets/Expand"),
-    ]);
+// async function toggleBasemapGallery() {
+//   if (!activeWidgets.has("basemapGallery")) {
+//     const [BasemapGallery, Expand] = await Promise.all([
+//       loadModule("esri/widgets/BasemapGallery"),
+//       loadModule("esri/widgets/Expand"),
+//     ]);
 
-    const basemapGallery = new BasemapGallery({
-      view: view,
-    });
+//     const basemapGallery = new BasemapGallery({
+//       view: view,
+//     });
 
-    const expand = new Expand({
-      view: view,
-      content: basemapGallery,
-      expandIconClass: "esri-icon-basemap",
-      expandTooltip: "Basemap Gallery",
-    });
+//     const expand = new Expand({
+//       view: view,
+//       content: basemapGallery,
+//       expandIconClass: "esri-icon-basemap",
+//       expandTooltip: "Basemap Gallery",
+//     });
 
-    view.ui.add(expand, "top-left");
-    activeWidgets.set("basemapGallery", expand);
-  } else {
-    const expand = activeWidgets.get("basemapGallery");
-    view.ui.remove(expand);
-    expand.destroy();
-    activeWidgets.delete("basemapGallery");
-  }
-}
+//     view.ui.add(expand, "top-left");
+//     activeWidgets.set("basemapGallery", expand);
+//   } else {
+//     const expand = activeWidgets.get("basemapGallery");
+//     view.ui.remove(expand);
+//     expand.destroy();
+//     activeWidgets.delete("basemapGallery");
+//   }
+// }
 
 // Compass Widget
-async function toggleCompass() {
-  if (!activeWidgets.has("compass")) {
-    const [Compass] = await Promise.all([loadModule("esri/widgets/Compass")]);
+// async function toggleCompass() {
+//   if (!activeWidgets.has("compass")) {
+//     const [Compass] = await Promise.all([loadModule("esri/widgets/Compass")]);
 
-    const compass = new Compass({
-      view: view,
-    });
+//     const compass = new Compass({
+//       view: view,
+//     });
 
-    view.ui.add(compass, "top-left");
-    activeWidgets.set("compass", compass);
-  } else {
-    const compass = activeWidgets.get("compass");
-    view.ui.remove(compass);
-    compass.destroy();
-    activeWidgets.delete("compass");
-  }
-}
+//     view.ui.add(compass, "top-left");
+//     activeWidgets.set("compass", compass);
+//   } else {
+//     const compass = activeWidgets.get("compass");
+//     view.ui.remove(compass);
+//     compass.destroy();
+//     activeWidgets.delete("compass");
+//   }
+// }
 
 // Replace toggleFullscreen with this improved implementation
 async function toggleFullscreen() {

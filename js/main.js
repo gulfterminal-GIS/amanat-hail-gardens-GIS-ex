@@ -11,6 +11,7 @@ import { TabSystem } from "./ui/tab-system.js";
 import { SearchManager } from "./ui/search-manager.js";
 import { LayerManager } from "./layers/layer-manager.js";
 import { UploadHandler } from "./layers/upload-handler.js";
+import { BasemapManager } from "./layers/basemap-manager.js";
 import { bindWindowFunctions } from "./window-bindings.js";
 import { initializeMap } from "../script.js";
 
@@ -26,8 +27,11 @@ const notificationManager = new NotificationManager();
 // Create MapInitializer instance
 const mapInitializer = new MapInitializer(stateManager, notificationManager, CONFIG);
 
+// Create BasemapManager instance (needed by PanelManager)
+const basemapManager = new BasemapManager(stateManager, notificationManager);
+
 // Create PanelManager instance
-const panelManager = new PanelManager(stateManager, notificationManager);
+const panelManager = new PanelManager(stateManager, notificationManager, basemapManager);
 
 // Create ToolbarManager instance
 const toolbarManager = new ToolbarManager(stateManager, panelManager, notificationManager);
@@ -57,9 +61,19 @@ async function initializeApplication() {
     console.log("SearchManager created and ready");
     console.log("LayerManager created and ready");
     console.log("UploadHandler created and ready");
+    console.log("BasemapManager created and ready");
 
     // Initialize the map with injected dependencies
-    await initializeMap(stateManager, mapInitializer, notificationManager, panelManager, toolbarManager, layerManager, uploadHandler);
+    await initializeMap(
+      stateManager,
+      mapInitializer,
+      notificationManager,
+      panelManager,
+      toolbarManager,
+      layerManager,
+      uploadHandler,
+      basemapManager
+    );
 
     // Initialize tab system
     tabSystem.initializeMapTabs();
@@ -78,6 +92,7 @@ async function initializeApplication() {
       searchManager,
       layerManager,
       uploadHandler,
+      basemapManager,
       // Future managers will be added here as they're created
     });
 

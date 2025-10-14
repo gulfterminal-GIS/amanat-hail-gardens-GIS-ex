@@ -173,7 +173,6 @@
     - **PRIORITY**: This must be done before extracting layer management modules
     - _Requirements: 1.2, 1.3, 1.5_
 
-
   - [x] 4.4 **URGENT: Fix other global variable usage in script.js**
 
     - Replace `view` with `stateManager.getView()` in all remaining functions (partially done)
@@ -188,7 +187,6 @@
     - _Requirements: 1.2, 1.3, 1.5_
 
   - [x] 4.5 **Optimize StateManager: Remove scope-limited globals**
-
 
     - Identify globals that can be scoped to specific functions/modules instead of StateManager
     - Remove UI element references that can be queried when needed: `chevronIcon`, `chevronBtn`, `featureDetails`
@@ -212,7 +210,6 @@
     - **Benefits**: Single file to audit, easier migration path, clear API surface, better security
     - _Requirements: 1.2, 1.5, 3.2_
     - _Reference: .kiro/specs/gis-app-modularization/window-functions.md_
-
 
 - [x] 5. Extract UI foundation modules
   - [x] 5.1 Create js/ui/panel-manager.js for side panel system
@@ -247,7 +244,8 @@
     - Update main.js to import and initialize SearchManager
     - _Requirements: 1.2, 1.5, 3.2_
 
-- [-] 6. Extract layer management modules
+- [x] 6. Extract layer management modules
+
   - [x] 6.1 Create js/layers/layer-manager.js for layer operations
     - Extract toggleLayer, removeLayer, zoomToLayer, updateLayerList from script.js
     - Create LayerManager class with layer CRUD and visibility methods
@@ -264,7 +262,8 @@
     - Update main.js to import and initialize UploadHandler
     - _Requirements: 1.2, 1.5, 3.2_
   
-  - [ ] 6.3 Create js/layers/basemap-manager.js for basemap functionality
+  - [x] 6.3 Create js/layers/basemap-manager.js for basemap functionality
+
     - Extract basemap switching logic from initializeBasemapPanel
     - Create BasemapManager class with basemap selection methods
     - Comment out original basemap code in script.js
