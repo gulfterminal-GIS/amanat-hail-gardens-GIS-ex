@@ -1,15 +1,5 @@
-/**
- * DrawingManager - Manages all drawing and sketch functionality
- *
- * This module handles:
- * - SketchViewModel initialization and configuration
- * - Drawing panel UI and event handlers
- * - Drawing tool buttons and symbology controls
- * - Custom symbology application
- * - Drawing state management
- *
- * Extracted from script.js as part of the modularization effort.
- */
+// DrawingManager - Handles all drawing and sketch functionality
+// Manages SketchViewModel, drawing tools, symbology, and drawing panel
 
 import { loadModule } from "../core/module-loader.js";
 
@@ -21,7 +11,7 @@ export class DrawingManager {
 
   /**
    * Initialize SketchViewModel for drawing functionality
-   * Creates the SketchViewModel and drawing layer if they don't exist
+   * @returns {Promise<SketchViewModel>} The initialized SketchViewModel
    */
   async initializeSketchViewModel() {
     let sketchViewModel = this.stateManager.getSketchViewModel();
@@ -77,56 +67,38 @@ export class DrawingManager {
         }
       });
 
-      // Setup additional event handlers
-      this.setupSketchViewModelEvents();
+      // Handle create completion
+      sketchViewModel.on("create", (event) => {
+        if (event.state === "complete") {
+          // Apply custom symbology when creation is complete
+          this.applyCustomSymbology(event.graphic);
+
+          // Continue drawing if tool is still active
+          if (this.stateManager.getActiveDrawingTool()) {
+            setTimeout(() => {
+              if (this.stateManager.getActiveDrawingTool()) {
+                this.startDrawingWithTool(this.stateManager.getActiveDrawingTool());
+              }
+            }, 100);
+          }
+        }
+      });
+
+      // Handle update events
+      sketchViewModel.on("update", (event) => {
+        if (event.state === "complete") {
+          event.graphics.forEach((graphic) => {
+            this.applyCustomSymbology(graphic);
+          });
+        }
+      });
     }
 
     return sketchViewModel;
   }
 
   /**
-   * Setup SketchViewModel event handlers for create and update events
-   */
-  setupSketchViewModelEvents() {
-    const sketchViewModel = this.stateManager.getSketchViewModel();
-
-    if (!sketchViewModel) {
-      console.warn("SketchViewModel not initialized");
-      return;
-    }
-
-    // Handle create events
-    sketchViewModel.on("create", (event) => {
-      if (event.state === "complete") {
-        // Apply custom symbology when creation is complete
-        this.applyCustomSymbology(event.graphic);
-
-        // Continue drawing if tool is still active
-        if (this.stateManager.getActiveDrawingTool()) {
-          setTimeout(() => {
-            if (this.stateManager.getActiveDrawingTool()) {
-              this.startDrawingWithTool(
-                this.stateManager.getActiveDrawingTool()
-              );
-            }
-          }, 100);
-        }
-      }
-    });
-
-    // Handle update events
-    sketchViewModel.on("update", (event) => {
-      if (event.state === "complete") {
-        event.graphics.forEach((graphic) => {
-          this.applyCustomSymbology(graphic);
-        });
-      }
-    });
-  }
-
-  /**
-   * Initialize drawing panel UI and event handlers
-   * Called when the drawing panel is opened
+   * Initialize drawing panel with event listeners
    */
   initializeDrawingPanel() {
     // Re-initialize drawing tool buttons in the new panel
@@ -164,17 +136,13 @@ export class DrawingManager {
 
     // Re-initialize color and opacity controls
     const colorInput = document.querySelector("#sidePanelContent #drawColor");
-    const opacityInput = document.querySelector(
-      "#sidePanelContent #drawOpacity"
-    );
+    const opacityInput = document.querySelector("#sidePanelContent #drawOpacity");
     const opacityValue = document.querySelector(
       "#sidePanelContent .slider-value"
     );
 
     if (colorInput) {
-      colorInput.addEventListener("change", () =>
-        this.updateActiveGraphicsSymbology()
-      );
+      colorInput.addEventListener("change", () => this.updateActiveGraphicsSymbology());
     }
 
     if (opacityInput) {
@@ -189,7 +157,6 @@ export class DrawingManager {
 
   /**
    * Initialize drawing tool buttons (for main toolbar)
-   * Sets up event handlers for drawing tool buttons outside the panel
    */
   initializeDrawingToolButtons() {
     const drawToolBtns = document.querySelectorAll(".draw-tool-btn");
@@ -235,38 +202,28 @@ export class DrawingManager {
     }
 
     // Color and opacity change handlers
-    const colorEl = document.getElementById("drawColor");
-    const opacityEl = document.getElementById("drawOpacity");
-
-    if (colorEl) {
-      colorEl.addEventListener("change", () =>
-        this.updateActiveGraphicsSymbology()
-      );
+    const drawColor = document.getElementById("drawColor");
+    const drawOpacity = document.getElementById("drawOpacity");
+    
+    if (drawColor) {
+      drawColor.addEventListener("change", () => this.updateActiveGraphicsSymbology());
     }
-
-    if (opacityEl) {
-      opacityEl.addEventListener("input", () =>
-        this.updateActiveGraphicsSymbology()
-      );
+    if (drawOpacity) {
+      drawOpacity.addEventListener("input", () => this.updateActiveGraphicsSymbology());
     }
   }
 
   /**
-   * Start drawing with a specific tool
-   * @param {string} tool - The drawing tool to use (point, polyline, polygon, rectangle, circle)
+   * Start drawing with specific tool
+   * @param {string} tool - The drawing tool type (point, polyline, polygon, rectangle, circle)
    */
   startDrawingWithTool(tool) {
     const sketchViewModel = this.stateManager.getSketchViewModel();
     const view = this.stateManager.getView();
 
     if (!sketchViewModel) {
-      console.error(
-        "SketchViewModel not initialized. Call initializeSketchViewModel first."
-      );
-      this.notificationManager.showNotification(
-        "Drawing tools not initialized",
-        "error"
-      );
+      console.error('SketchViewModel not initialized. Call initializeSketchViewModel first.');
+      this.notificationManager.showNotification('Drawing tools not ready. Please try again.', 'error');
       return;
     }
 
@@ -321,16 +278,13 @@ export class DrawingManager {
         break;
     }
 
-    // Create the geometry
+    // Start drawing
     try {
       console.log("Starting to draw:", tool);
       sketchViewModel.create(tool);
     } catch (error) {
       console.error("Error creating geometry:", error);
-      this.notificationManager.showNotification(
-        "Error starting drawing tool",
-        "error"
-      );
+      this.notificationManager.showNotification("Error starting drawing tool", "error");
       if (view) {
         view.container.style.cursor = "default";
       }
@@ -338,17 +292,19 @@ export class DrawingManager {
   }
 
   /**
-   * Apply custom symbology to a graphic based on current color/opacity settings
-   * @param {esri/Graphic} graphic - The graphic to apply symbology to
+   * Apply custom symbology to a graphic
+   * @param {Graphic} graphic - The graphic to apply symbology to
    */
   applyCustomSymbology(graphic) {
     if (!graphic) return;
 
-    const colorEl = document.getElementById("drawColor");
-    const opacityEl = document.getElementById("drawOpacity");
+    const colorInput = document.getElementById("drawColor");
+    const opacityInput = document.getElementById("drawOpacity");
+    
+    if (!colorInput || !opacityInput) return;
 
-    const color = this.hexToRgb(colorEl?.value || "#2196F3");
-    const opacity = (opacityEl?.value || 70) / 100;
+    const color = this.hexToRgb(colorInput.value);
+    const opacity = opacityInput.value / 100;
 
     switch (graphic.geometry.type) {
       case "point":
@@ -412,24 +368,6 @@ export class DrawingManager {
   }
 
   /**
-   * Stop any active drawing operation
-   */
-  stopDrawing() {
-    const sketchViewModel = this.stateManager.getSketchViewModel();
-    const view = this.stateManager.getView();
-
-    if (sketchViewModel) {
-      sketchViewModel.cancel();
-    }
-
-    if (view) {
-      view.container.style.cursor = "default";
-    }
-
-    this.resetDrawingTools();
-  }
-
-  /**
    * Clear all drawings and measurements
    */
   clearAll() {
@@ -456,18 +394,36 @@ export class DrawingManager {
   }
 
   /**
+   * Stop any active drawing operation
+   */
+  stopDrawing() {
+    const sketchViewModel = this.stateManager.getSketchViewModel();
+    const view = this.stateManager.getView();
+    
+    if (sketchViewModel) {
+      sketchViewModel.cancel();
+    }
+    
+    if (view) {
+      view.container.style.cursor = "default";
+    }
+    
+    this.resetDrawingTools();
+  }
+
+  /**
    * Convert hex color to RGB array
-   * @param {string} hex - Hex color string (e.g., "#2196F3")
+   * @param {string} hex - Hex color string
    * @returns {number[]} RGB array [r, g, b]
    */
   hexToRgb(hex) {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result
       ? [
-          parseInt(result[1], 16),
-          parseInt(result[2], 16),
-          parseInt(result[3], 16),
-        ]
+        parseInt(result[1], 16),
+        parseInt(result[2], 16),
+        parseInt(result[3], 16),
+      ]
       : [33, 150, 243]; // Default blue color
   }
 }
