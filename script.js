@@ -911,7 +911,7 @@ function closeTourPopup() {
   }
 }
 
-window.closeTourPopup = closeTourPopup;
+// window.closeTourPopup = closeTourPopup;
 
 // Update tour info panel
 // Update tour info panel
@@ -2146,7 +2146,7 @@ function registerLayerManagerCallbacks(layerManager) {
 //   return sketchViewModel;
 // }
 
-window.cancelBufferDrawing = function () {
+function cancelBufferDrawing () {
   console.log("Canceling buffer drawing");
 
   // Get stateManager instance
@@ -2182,52 +2182,53 @@ window.cancelBufferDrawing = function () {
     btn.classList.remove("active");
   });
 };
-window.debugDrawing = function () {
-  const { stateManager } = getState();
-  const sketchViewModel = stateManager.getSketchViewModel();
-  const view = stateManager.getView();
-  const drawLayer = stateManager.getDrawLayer();
 
-  console.log("Debug Info:");
-  console.log("- SketchViewModel exists:", !!sketchViewModel);
-  console.log("- View exists:", !!view);
-  console.log("- DrawLayer exists:", !!drawLayer);
-  console.log("- Analysis drawing active:", stateManager.isAnalysisDrawing());
-  if (view) {
-    console.log("- Current cursor:", view.container.style.cursor);
-  }
+// window.debugDrawing = function () {
+//   const { stateManager } = getState();
+//   const sketchViewModel = stateManager.getSketchViewModel();
+//   const view = stateManager.getView();
+//   const drawLayer = stateManager.getDrawLayer();
 
-  if (sketchViewModel) {
-    console.log("- SketchViewModel state:", sketchViewModel.state);
-    console.log("- SketchViewModel layer:", sketchViewModel.layer);
-  }
-};
+//   console.log("Debug Info:");
+//   console.log("- SketchViewModel exists:", !!sketchViewModel);
+//   console.log("- View exists:", !!view);
+//   console.log("- DrawLayer exists:", !!drawLayer);
+//   console.log("- Analysis drawing active:", stateManager.isAnalysisDrawing());
+//   if (view) {
+//     console.log("- Current cursor:", view.container.style.cursor);
+//   }
+
+//   if (sketchViewModel) {
+//     console.log("- SketchViewModel state:", sketchViewModel.state);
+//     console.log("- SketchViewModel layer:", sketchViewModel.layer);
+//   }
+// };
 
 // Function to move modal for drawing
-function enableDrawingMode(modalId) {
-  const modal = document.getElementById(modalId);
-  const modalContent = modal.querySelector(".modal-content");
+// function enableDrawingMode(modalId) {
+//   const modal = document.getElementById(modalId);
+//   const modalContent = modal.querySelector(".modal-content");
 
-  // Create a temporary container outside the modal
-  let tempContainer = document.getElementById("tempModalContainer");
-  if (!tempContainer) {
-    tempContainer = document.createElement("div");
-    tempContainer.id = "tempModalContainer";
-    tempContainer.style.cssText = `
-      position: fixed;
-      top: 80px;
-      right: 20px;
-      z-index: 50;
-      max-width: 400px;
-    `;
-    document.body.appendChild(tempContainer);
-  }
+//   // Create a temporary container outside the modal
+//   let tempContainer = document.getElementById("tempModalContainer");
+//   if (!tempContainer) {
+//     tempContainer = document.createElement("div");
+//     tempContainer.id = "tempModalContainer";
+//     tempContainer.style.cssText = `
+//       position: fixed;
+//       top: 80px;
+//       right: 20px;
+//       z-index: 50;
+//       max-width: 400px;
+//     `;
+//     document.body.appendChild(tempContainer);
+//   }
 
-  // Move modal content to temp container
-  modal.setAttribute("data-drawing", "true");
-  modal.style.display = "none";
-  tempContainer.appendChild(modalContent);
-}
+//   // Move modal content to temp container
+//   modal.setAttribute("data-drawing", "true");
+//   modal.style.display = "none";
+//   tempContainer.appendChild(modalContent);
+// }
 
 // Function to restore modal
 function disableDrawingMode(modalId) {
@@ -3969,8 +3970,8 @@ function copyFeatureInfo() {
 }
 
 // Export functions for popup actions
-window.zoomToFeature = zoomToFeature;
-window.copyFeatureInfo = copyFeatureInfo;
+// window.zoomToFeature = zoomToFeature;
+// window.copyFeatureInfo = copyFeatureInfo;
 
 // Close custom popup
 function closeCustomPopup() {
@@ -4569,8 +4570,8 @@ async function zoomOut() {
 }
 
 // Export zoom functions
-window.zoomIn = zoomIn;
-window.zoomOut = zoomOut;
+// window.zoomIn = zoomIn;
+// window.zoomOut = zoomOut;
 
 async function toggleMeasurement() {
   // FUNCTION COMMENTED OUT - Remove this line to re-enable
@@ -4875,39 +4876,39 @@ function closeMeasurementResults() {
 }
 
 // Add this debug function to check what attributes are available
-function debugLayerAttributes() {
-  console.log("=== Layer Attributes Debug ===");
-  getState().stateManager.getUploadedLayers().forEach((layer, index) => {
-    console.log(`\nLayer ${index}: ${layer.title}`);
-    console.log("Fields:", layer.fields);
-    console.log("OutFields:", layer.outFields);
+// function debugLayerAttributes() {
+//   console.log("=== Layer Attributes Debug ===");
+//   getState().stateManager.getUploadedLayers().forEach((layer, index) => {
+//     console.log(`\nLayer ${index}: ${layer.title}`);
+//     console.log("Fields:", layer.fields);
+//     console.log("OutFields:", layer.outFields);
 
-    // Query first feature to see attributes
-    if (layer.queryFeatures) {
-      const query = layer.createQuery();
-      query.where = "1=1";
-      query.outFields = ["*"];
-      query.num = 1;
+//     // Query first feature to see attributes
+//     if (layer.queryFeatures) {
+//       const query = layer.createQuery();
+//       query.where = "1=1";
+//       query.outFields = ["*"];
+//       query.num = 1;
 
-      layer.queryFeatures(query).then((result) => {
-        if (result.features.length > 0) {
-          console.log(
-            "Sample feature attributes:",
-            result.features[0].attributes
-          );
-        }
-      });
-    }
-  });
-}
+//       layer.queryFeatures(query).then((result) => {
+//         if (result.features.length > 0) {
+//           console.log(
+//             "Sample feature attributes:",
+//             result.features[0].attributes
+//           );
+//         }
+//       });
+//     }
+//   });
+// }
 
-// Export for console access
-window.debugLayerAttributes = debugLayerAttributes;
+// // Export for console access
+// window.debugLayerAttributes = debugLayerAttributes;
 
 // Export global functions for widget management
-window.toggleWidget = toggleWidget;
-window.deleteBookmark = deleteBookmark;
-window.closeMeasurementResults = closeMeasurementResults;
+// window.toggleWidget = toggleWidget;
+// window.deleteBookmark = deleteBookmark;
+// window.closeMeasurementResults = closeMeasurementResults;
 
 // Attribute Table System
 let currentTableLayer = null;
@@ -5405,75 +5406,75 @@ function downloadFile(content, filename, mimeType) {
 }
 
 // Statistics panel for attribute table
-function showTableStatistics() {
-  if (!currentTableLayer || tableData.length === 0) return;
+// function showTableStatistics() {
+//   if (!currentTableLayer || tableData.length === 0) return;
 
-  const stats = calculateStatistics(tableData);
-  let html = '<div class="table-statistics">';
-  html += "<h4>Statistics</h4>";
+//   const stats = calculateStatistics(tableData);
+//   let html = '<div class="table-statistics">';
+//   html += "<h4>Statistics</h4>";
 
-  Object.entries(stats).forEach(([field, stat]) => {
-    if (stat.type === "numeric") {
-      html += `
-        <div class="stat-group">
-          <h5>${formatFieldName(field)}</h5>
-          <div class="stat-row">
-            <span>Count:</span> <span>${stat.count}</span>
-          </div>
-          <div class="stat-row">
-            <span>Min:</span> <span>${stat.min.toFixed(2)}</span>
-          </div>
-          <div class="stat-row">
-            <span>Max:</span> <span>${stat.max.toFixed(2)}</span>
-          </div>
-          <div class="stat-row">
-            <span>Average:</span> <span>${stat.avg.toFixed(2)}</span>
-          </div>
-          <div class="stat-row">
-            <span>Sum:</span> <span>${stat.sum.toFixed(2)}</span>
-          </div>
-        </div>
-      `;
-    }
-  });
+//   Object.entries(stats).forEach(([field, stat]) => {
+//     if (stat.type === "numeric") {
+//       html += `
+//         <div class="stat-group">
+//           <h5>${formatFieldName(field)}</h5>
+//           <div class="stat-row">
+//             <span>Count:</span> <span>${stat.count}</span>
+//           </div>
+//           <div class="stat-row">
+//             <span>Min:</span> <span>${stat.min.toFixed(2)}</span>
+//           </div>
+//           <div class="stat-row">
+//             <span>Max:</span> <span>${stat.max.toFixed(2)}</span>
+//           </div>
+//           <div class="stat-row">
+//             <span>Average:</span> <span>${stat.avg.toFixed(2)}</span>
+//           </div>
+//           <div class="stat-row">
+//             <span>Sum:</span> <span>${stat.sum.toFixed(2)}</span>
+//           </div>
+//         </div>
+//       `;
+//     }
+//   });
 
-  html += "</div>";
+//   html += "</div>";
 
-  // Show in a modal or panel
-  showStatisticsModal(html);
-}
+//   // Show in a modal or panel
+//   showStatisticsModal(html);
+// }
 
 // Calculate statistics for numeric fields
-function calculateStatistics(data) {
-  const stats = {};
+// function calculateStatistics(data) {
+//   const stats = {};
 
-  if (data.length === 0) return stats;
+//   if (data.length === 0) return stats;
 
-  // Get numeric fields
-  const firstRow = data[0];
-  Object.keys(firstRow).forEach((field) => {
-    if (field.startsWith("_")) return;
+//   // Get numeric fields
+//   const firstRow = data[0];
+//   Object.keys(firstRow).forEach((field) => {
+//     if (field.startsWith("_")) return;
 
-    const values = data
-      .map((row) => row[field])
-      .filter(
-        (val) => val !== null && val !== undefined && typeof val === "number"
-      );
+//     const values = data
+//       .map((row) => row[field])
+//       .filter(
+//         (val) => val !== null && val !== undefined && typeof val === "number"
+//       );
 
-    if (values.length > 0) {
-      stats[field] = {
-        type: "numeric",
-        count: values.length,
-        min: Math.min(...values),
-        max: Math.max(...values),
-        sum: values.reduce((a, b) => a + b, 0),
-        avg: values.reduce((a, b) => a + b, 0) / values.length,
-      };
-    }
-  });
+//     if (values.length > 0) {
+//       stats[field] = {
+//         type: "numeric",
+//         count: values.length,
+//         min: Math.min(...values),
+//         max: Math.max(...values),
+//         sum: values.reduce((a, b) => a + b, 0),
+//         avg: values.reduce((a, b) => a + b, 0) / values.length,
+//       };
+//     }
+//   });
 
-  return stats;
-}
+//   return stats;
+// }
 
 // ============================================================================
 // COMMENTED OUT - updateLayerList moved to js/layers/layer-manager.js
@@ -5492,15 +5493,15 @@ function calculateStatistics(data) {
 // ============================================================================
 
 // Export functions for global access
-window.toggleAttributeTable = toggleAttributeTable;
-window.refreshTable = refreshTable;
-window.previousPage = previousPage;
-window.nextPage = nextPage;
-window.sortTable = sortTable;
-window.selectTableRow = selectTableRow;
-window.showExportOptions = showExportOptions;
-window.closeExportModal = closeExportModal;
-window.exportData = exportData;
+// window.toggleAttributeTable = toggleAttributeTable;
+// window.refreshTable = refreshTable;
+// window.previousPage = previousPage;
+// window.nextPage = nextPage;
+// window.sortTable = sortTable;
+// window.selectTableRow = selectTableRow;
+// window.showExportOptions = showExportOptions;
+// window.closeExportModal = closeExportModal;
+// window.exportData = exportData;
 
 // Heatmap Visualization System - declare as global
 window.heatmapEnabled = false;
@@ -5553,7 +5554,7 @@ const heatmapColorSchemes = {
 
 // Make sure toggleHeatmap is defined as a global function
 // In your toggleHeatmap function, make sure to show controls:
-window.toggleHeatmap = async function () {
+async function toggleHeatmap() {
   const toggle = document.getElementById("heatmapToggle");
   const layerSelect = document.getElementById("heatmapLayerSelect");
   const settingsBtn = document.getElementById("heatmapSettingsBtn");
@@ -5833,11 +5834,11 @@ async function applyHeatmapSettings() {
 // });
 
 // Export functions
-window.toggleHeatmap = toggleHeatmap;
-window.showHeatmapSettings = showHeatmapSettings;
-window.closeHeatmapSettings = closeHeatmapSettings;
-window.selectColorScheme = selectColorScheme;
-window.applyHeatmapSettings = applyHeatmapSettings;
+// window.toggleHeatmap = toggleHeatmap;
+// window.showHeatmapSettings = showHeatmapSettings;
+// window.closeHeatmapSettings = closeHeatmapSettings;
+// window.selectColorScheme = selectColorScheme;
+// window.applyHeatmapSettings = applyHeatmapSettings;
 
 // Classification System
 function initializeClassificationPanel() {
@@ -6580,25 +6581,38 @@ function closeIntersectModal() {
   }
 }
 
-// Fix setIntersectSource to properly handle the event
-function setIntersectSource(featureNum, source) {
-  // Get the buttons from the correct parent element
-  const settingGroups = document.querySelectorAll(
-    "#intersectModal .setting-group"
-  );
-  const targetGroup = featureNum === 1 ? settingGroups[1] : settingGroups[2];
-  const buttons = targetGroup.querySelectorAll(".source-btn");
+// Fix setIntersectSource with proper event handling
+function setIntersectSource (featureNum, source) {
+  // Find the correct section in the modal
+  const modal = document.getElementById("intersectModal");
+  const sections = modal.querySelectorAll(".feature-section");
+  const targetSection = sections[featureNum - 1];
 
+  if (!targetSection) {
+    console.error("Could not find feature section for feature", featureNum);
+    return;
+  }
+
+  // Update button states within this section
+  const buttons = targetSection.querySelectorAll(".button-group-item");
   buttons.forEach((btn) => {
     btn.classList.remove("active");
-    if (
-      (source === "layer" && btn.textContent.includes("Layer")) ||
-      (source === "draw" && btn.textContent.includes("Draw"))
-    ) {
-      btn.classList.add("active");
-    }
   });
 
+  // Find and activate the correct button
+  const activeButton = Array.from(buttons).find((btn) => {
+    const buttonText = btn.textContent.toLowerCase();
+    return (
+      (source === "layer" && buttonText.includes("layer")) ||
+      (source === "draw" && buttonText.includes("draw"))
+    );
+  });
+
+  if (activeButton) {
+    activeButton.classList.add("active");
+  }
+
+  // Show/hide sections
   const layerSection = document.getElementById(
     `intersectLayer${featureNum}Section`
   );
@@ -6606,14 +6620,16 @@ function setIntersectSource(featureNum, source) {
     `intersectDraw${featureNum}Section`
   );
 
-  if (source === "layer") {
-    layerSection.style.display = "block";
-    drawSection.style.display = "none";
-  } else {
-    layerSection.style.display = "none";
-    drawSection.style.display = "block";
+  if (layerSection && drawSection) {
+    if (source === "layer") {
+      layerSection.style.display = "block";
+      drawSection.style.display = "none";
+    } else {
+      layerSection.style.display = "none";
+      drawSection.style.display = "block";
+    }
   }
-}
+};
 
 // Intersection drawing using existing sketch
 async function startIntersectDrawing(featureNum) {
@@ -6724,7 +6740,7 @@ async function startIntersectDrawing(featureNum) {
 }
 
 // Update cancel function
-window.cancelIntersectDrawing = function () {
+function cancelIntersectDrawing () {
   const modal = document.getElementById("intersectModal");
   modal.classList.remove("drawing-active");
 
@@ -6744,139 +6760,6 @@ window.cancelIntersectDrawing = function () {
   }
 };
 
-// // Update executeIntersection to find buttons correctly
-// async function executeIntersection() {
-//   try {
-//     showNotification('Performing intersection analysis...', 'info');
-
-//     const [geometryEngine, Graphic] = await Promise.all([
-//       loadModule("esri/geometry/geometryEngine"),
-//       loadModule("esri/Graphic")
-//     ]);
-
-//     let features1 = [];
-//     let features2 = [];
-
-//     // Get source toggles
-//     const sourceToggles = document.querySelectorAll('#intersectModal .source-toggle');
-
-//     // Get first set of features
-//     const source1Buttons = sourceToggles[0]?.querySelectorAll('.source-btn');
-//     const source1IsLayer = source1Buttons ?
-//       Array.from(source1Buttons).find(btn => btn.classList.contains('active'))?.textContent.includes('Layer') :
-//       true;
-
-//     if (source1IsLayer) {
-//       const layerIndex = document.getElementById('intersectLayer1Select').value;
-//       if (layerIndex === '') {
-//         showNotification('Please select first layer', 'error');
-//         return;
-//       }
-
-//       const polygonLayers = uploadedLayers.filter(layer => layer.geometryType === 'polygon');
-//       const layer = polygonLayers[parseInt(layerIndex)];
-
-//       const query = layer.createQuery();
-//       query.where = "1=1";
-//       query.returnGeometry = true;
-
-//       const result = await layer.queryFeatures(query);
-//       features1 = result.features;
-//     } else {
-//       if (!drawnFeatures.intersect1) {
-//         showNotification('Please draw the first polygon', 'error');
-//         return;
-//       }
-//       features1 = [drawnFeatures.intersect1];
-//     }
-
-//     // Get second set of features
-//     const source2Buttons = sourceToggles[1]?.querySelectorAll('.source-btn');
-//     const source2IsLayer = source2Buttons ?
-//       Array.from(source2Buttons).find(btn => btn.classList.contains('active'))?.textContent.includes('Layer') :
-//       true;
-
-//     if (source2IsLayer) {
-//       const layerIndex = document.getElementById('intersectLayer2Select').value;
-//       if (layerIndex === '') {
-//         showNotification('Please select second layer', 'error');
-//         return;
-//       }
-
-//       const polygonLayers = uploadedLayers.filter(layer => layer.geometryType === 'polygon');
-//       const layer = polygonLayers[parseInt(layerIndex)];
-
-//       const query = layer.createQuery();
-//       query.where = "1=1";
-//       query.returnGeometry = true;
-
-//       const result = await layer.queryFeatures(query);
-//       features2 = result.features;
-//     } else {
-//       if (!drawnFeatures.intersect2) {
-//         showNotification('Please draw the second polygon', 'error');
-//         return;
-//       }
-//       features2 = [drawnFeatures.intersect2];
-//     }
-
-//     // Clear previous results
-//     analysisLayer.removeAll();
-
-//     // Clear drawn intersection features
-//     if (drawnFeatures.intersect1 && !source1IsLayer) {
-//       drawLayer.remove(drawnFeatures.intersect1);
-//     }
-//     if (drawnFeatures.intersect2 && !source2IsLayer) {
-//       drawLayer.remove(drawnFeatures.intersect2);
-//     }
-
-//     // Perform intersection
-//     let intersectionCount = 0;
-//     features1.forEach(feature1 => {
-//       features2.forEach(feature2 => {
-//         const intersection = geometryEngine.intersect(
-//           feature1.geometry,
-//           feature2.geometry
-//         );
-
-//         if (intersection) {
-//           const graphic = new Graphic({
-//             geometry: intersection,
-//             symbol: {
-//               type: "simple-fill",
-//               color: [0, 255, 0, 0.4],
-//               outline: {
-//                 color: [0, 150, 0, 1],
-//                 width: 2
-//               }
-//             },
-//             attributes: {
-//               type: "Intersection",
-//               source1: source1IsLayer ? "Layer" : "Drawn",
-//               source2: source2IsLayer ? "Layer" : "Drawn"
-//             }
-//           });
-//           analysisLayer.add(graphic);
-//           intersectionCount++;
-//         }
-//       });
-//     });
-
-//     if (intersectionCount > 0) {
-//       await view.goTo(analysisLayer.graphics);
-//       showNotification(`Found ${intersectionCount} intersections`, 'success');
-//     } else {
-//       showNotification('No intersections found', 'info');
-//     }
-
-//     closeIntersectModal();
-
-//   } catch (error) {
-//     console.error('Intersection error:', error);
-//     showNotification('Error performing intersection', 'error');
-//   }
-// }
 
 // Update executeIntersection to show non-intersecting parts
 async function executeIntersection() {
@@ -7187,77 +7070,78 @@ async function executeIntersection() {
   }
 }
 
-async function performIntersection(layer1, layer2) {
-  try {
-    showNotification("Performing intersection analysis...", "info");
+// async function performIntersection(layer1, layer2) {
+//   try {
+//     showNotification("Performing intersection analysis...", "info");
 
-    const [geometryEngine, Graphic] = await Promise.all([
-      loadModule("esri/geometry/geometryEngine"),
-      loadModule("esri/Graphic"),
-    ]);
+//     const [geometryEngine, Graphic] = await Promise.all([
+//       loadModule("esri/geometry/geometryEngine"),
+//       loadModule("esri/Graphic"),
+//     ]);
 
-    // Query features from both layers
-    const query1 = layer1.createQuery();
-    query1.where = "1=1";
-    query1.returnGeometry = true;
+//     // Query features from both layers
+//     const query1 = layer1.createQuery();
+//     query1.where = "1=1";
+//     query1.returnGeometry = true;
 
-    const query2 = layer2.createQuery();
-    query2.where = "1=1";
-    query2.returnGeometry = true;
+//     const query2 = layer2.createQuery();
+//     query2.where = "1=1";
+//     query2.returnGeometry = true;
 
-    const [result1, result2] = await Promise.all([
-      layer1.queryFeatures(query1),
-      layer2.queryFeatures(query2),
-    ]);
+//     const [result1, result2] = await Promise.all([
+//       layer1.queryFeatures(query1),
+//       layer2.queryFeatures(query2),
+//     ]);
 
-    // Clear previous results
-    analysisLayer.removeAll();
+//     // Clear previous results
+//     analysisLayer.removeAll();
 
-    // Perform intersection
-    let intersectionCount = 0;
-    result1.features.forEach((feature1) => {
-      result2.features.forEach((feature2) => {
-        const intersection = geometryEngine.intersect(
-          feature1.geometry,
-          feature2.geometry
-        );
+//     // Perform intersection
+//     let intersectionCount = 0;
+//     result1.features.forEach((feature1) => {
+//       result2.features.forEach((feature2) => {
+//         const intersection = geometryEngine.intersect(
+//           feature1.geometry,
+//           feature2.geometry
+//         );
 
-        if (intersection) {
-          const graphic = new Graphic({
-            geometry: intersection,
-            symbol: {
-              type: "simple-fill",
-              color: [0, 255, 0, 0.4],
-              outline: {
-                color: [0, 150, 0, 1],
-                width: 2,
-              },
-            },
-            attributes: {
-              type: "Intersection",
-              layer1: layer1.title,
-              layer2: layer2.title,
-            },
-          });
-          analysisLayer.add(graphic);
-          intersectionCount++;
-        }
-      });
-    });
+//         if (intersection) {
+//           const graphic = new Graphic({
+//             geometry: intersection,
+//             symbol: {
+//               type: "simple-fill",
+//               color: [0, 255, 0, 0.4],
+//               outline: {
+//                 color: [0, 150, 0, 1],
+//                 width: 2,
+//               },
+//             },
+//             attributes: {
+//               type: "Intersection",
+//               layer1: layer1.title,
+//               layer2: layer2.title,
+//             },
+//           });
+//           analysisLayer.add(graphic);
+//           intersectionCount++;
+//         }
+//       });
+//     });
 
-    if (intersectionCount > 0) {
-      await view.goTo(analysisLayer.graphics);
-      showNotification(`Found ${intersectionCount} intersections`, "success");
-    } else {
-      showNotification("No intersections found", "info");
-    }
-  } catch (error) {
-    console.error("Intersection error:", error);
-    showNotification("Error performing intersection", "error");
-  }
-}
+//     if (intersectionCount > 0) {
+//       await view.goTo(analysisLayer.graphics);
+//       showNotification(`Found ${intersectionCount} intersections`, "success");
+//     } else {
+//       showNotification("No intersections found", "info");
+//     }
+//   } catch (error) {
+//     console.error("Intersection error:", error);
+//     showNotification("Error performing intersection", "error");
+//   }
+// }
 
 // Update distance analysis to support drawing
+
 async function startDistanceAnalysis() {
   await initializeAnalysisLayer();
 
@@ -7297,7 +7181,7 @@ async function startDistanceAnalysis() {
 }
 
 // Fix setDistanceSource function
-window.setDistanceSource = async function (source) {
+async function setDistanceSource (source) {
   const buttons = document.querySelectorAll(
     "#distancePanel .button-group-item"
   );
@@ -7396,120 +7280,6 @@ window.setDistanceSource = async function (source) {
   }
 };
 
-// Update distance drawing to use existing point drawing
-async function setDistanceSource(source) {
-  const buttons = document.querySelectorAll("#distancePanel .source-btn");
-  buttons.forEach((btn) => btn.classList.remove("active"));
-  event.target.classList.add("active");
-
-  const helpText = document.getElementById("distanceHelp");
-
-  if (source === "draw") {
-    helpText.textContent = "Click on map to place two points";
-    distanceFeatures = [];
-
-    // Make sure sketch view model is initialized
-    const { stateManager } = getState();
-    let sketchViewModel = stateManager.getSketchViewModel();
-    if (!sketchViewModel) {
-      sketchViewModel = await initializeSketchViewModel();
-    }
-
-    let pointCount = 0;
-
-    // Set point symbol
-    sketchViewModel.pointSymbol = {
-      type: "simple-marker",
-      style: "circle",
-      color: [255, 0, 255, 0.8],
-      size: 12,
-      outline: {
-        color: [255, 255, 255, 1],
-        width: 2,
-      },
-    };
-
-    // Set up event listener
-    const createHandle = sketchViewModel.on("create", (event) => {
-      if (event.state === "complete") {
-        distanceFeatures.push(event.graphic);
-        pointCount++;
-
-        if (pointCount === 2) {
-          calculateDistance();
-          createHandle.remove();
-        } else {
-          // Create another point
-          sketchViewModel.create("point");
-        }
-      }
-    });
-
-    // Start drawing first point
-    sketchViewModel.create("point");
-  } else {
-    helpText.textContent = "Click on two features to measure distance";
-    stopAnalysisDrawing();
-  }
-}
-
-// Export new functions
-window.setBufferSource = setBufferSource;
-window.startBufferDrawing = startBufferDrawing;
-window.closeIntersectModal = closeIntersectModal;
-// Fix setIntersectSource with proper event handling
-// Replace the existing window.setIntersectSource function:
-window.setIntersectSource = function (featureNum, source) {
-  // Find the correct section in the modal
-  const modal = document.getElementById("intersectModal");
-  const sections = modal.querySelectorAll(".feature-section");
-  const targetSection = sections[featureNum - 1];
-
-  if (!targetSection) {
-    console.error("Could not find feature section for feature", featureNum);
-    return;
-  }
-
-  // Update button states within this section
-  const buttons = targetSection.querySelectorAll(".button-group-item");
-  buttons.forEach((btn) => {
-    btn.classList.remove("active");
-  });
-
-  // Find and activate the correct button
-  const activeButton = Array.from(buttons).find((btn) => {
-    const buttonText = btn.textContent.toLowerCase();
-    return (
-      (source === "layer" && buttonText.includes("layer")) ||
-      (source === "draw" && buttonText.includes("draw"))
-    );
-  });
-
-  if (activeButton) {
-    activeButton.classList.add("active");
-  }
-
-  // Show/hide sections
-  const layerSection = document.getElementById(
-    `intersectLayer${featureNum}Section`
-  );
-  const drawSection = document.getElementById(
-    `intersectDraw${featureNum}Section`
-  );
-
-  if (layerSection && drawSection) {
-    if (source === "layer") {
-      layerSection.style.display = "block";
-      drawSection.style.display = "none";
-    } else {
-      layerSection.style.display = "none";
-      drawSection.style.display = "block";
-    }
-  }
-};
-window.startIntersectDrawing = startIntersectDrawing;
-window.executeIntersection = executeIntersection;
-window.setDistanceSource = setDistanceSource;
 
 // Update handleDistanceClick to ensure it continues working:
 async function handleDistanceClick(event) {
@@ -7977,19 +7747,19 @@ function stopTimeAnimation() {
 }
 
 // Export spatial analysis functions
-window.startBufferAnalysis = startBufferAnalysis;
-window.closeBufferModal = closeBufferModal;
-window.executeBuffer = executeBuffer;
-window.startIntersectAnalysis = startIntersectAnalysis;
-window.startDistanceAnalysis = startDistanceAnalysis;
-window.closeDistancePanel = closeDistancePanel;
-window.clearDistanceMeasurement = clearDistanceMeasurement;
-window.startAreaAnalysis = startAreaAnalysis;
+// window.startBufferAnalysis = startBufferAnalysis;
+// window.closeBufferModal = closeBufferModal;
+// window.executeBuffer = executeBuffer;
+// window.startIntersectAnalysis = startIntersectAnalysis;
+// window.startDistanceAnalysis = startDistanceAnalysis;
+// window.closeDistancePanel = closeDistancePanel;
+// window.clearDistanceMeasurement = clearDistanceMeasurement;
+// window.startAreaAnalysis = startAreaAnalysis;
 
 // Export time control functions
-window.toggleTimeControls = toggleTimeControls;
-window.playTimeAnimation = playTimeAnimation;
-window.stopTimeAnimation = stopTimeAnimation;
+// window.toggleTimeControls = toggleTimeControls;
+// window.playTimeAnimation = playTimeAnimation;
+// window.stopTimeAnimation = stopTimeAnimation;
 
 // ============================================================================
 // COMMENTED OUT - updateLayerList moved to js/layers/layer-manager.js
@@ -8095,7 +7865,7 @@ function setBufferSource(source) {
 }
 
 // Make sure to export it
-window.setBufferSource = setBufferSource;
+// window.setBufferSource = setBufferSource;
 
 // Add this function to minimize/restore modal
 window.toggleModalMinimize = function (modalId) {
@@ -8656,7 +8426,7 @@ function startAppTour() {
 }
 
 // Export the tour function
-window.startAppTour = startAppTour;
+// window.startAppTour = startAppTour;
 // Make initializeMap available globally for main.js
 // window.initializeMap = initializeMap;
 window.setupFeatureTour = setupFeatureTour;
@@ -8731,9 +8501,13 @@ export {
   // Attribute table functions (will be moved to attribute-table.js)
   toggleAttributeTable,
   refreshTable,
-  showExportOptions,
   previousPage,
   nextPage,
+  sortTable,
+  selectTableRow,
+  showExportOptions,
+  closeExportModal,
+  exportData,
 
   // Zoom functions (will be moved to toolbar-manager.js or map-event-handler.js)
   zoomIn,
@@ -8746,13 +8520,19 @@ export {
   startAreaAnalysis,
   executeBuffer,
   executeIntersection,
+  setDistanceSource,
   setBufferSource,
+  setIntersectSource,
   startBufferDrawing,
+  startIntersectDrawing,
+  cancelIntersectDrawing,
+  cancelBufferDrawing,
   closeBufferModal,
   closeIntersectModal,
 
   // Visualization functions (will be moved to visualization-manager.js)
-  // toggleHeatmap,
+  toggleHeatmap,
+  selectColorScheme,
   showHeatmapSettings,
   closeHeatmapSettings,
   applyHeatmapSettings,
@@ -8767,7 +8547,10 @@ export {
 
   // App tour function (will be moved to tour-manager.js)
   startAppTour,
+  closeTourPopup,
 
+  // ============================================================================
+  deleteBookmark,
 };
 
 // Global variables - These will be moved to StateManager

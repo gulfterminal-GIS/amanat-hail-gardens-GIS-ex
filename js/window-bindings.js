@@ -64,6 +64,10 @@ export function bindWindowFunctions(managers) {
     return scriptFunctions.toggleWidget(name);
   };
 
+  window.deleteBookmark = (index) => {
+    return scriptFunctions.deleteBookmark(index);
+  };
+
   // ============================================================================
   // ATTRIBUTE TABLE
   // Future module: js/features/attribute-table.js
@@ -75,6 +79,13 @@ export function bindWindowFunctions(managers) {
 
   window.refreshTable = () => {
     return scriptFunctions.refreshTable();
+  };
+
+  window.sortTable = (column) => {
+    return scriptFunctions.sortTable(column);
+  };
+  window.selectTableRow = (rowId) => {
+    return scriptFunctions.selectTableRow(rowId);
   };
 
   window.showExportOptions = () => {
@@ -116,6 +127,10 @@ export function bindWindowFunctions(managers) {
 
   window.closeTourControls = () => {
     return scriptFunctions.closeTourControls();
+  };
+
+  window.closeTourPopup = () => {
+    return scriptFunctions.closeTourPopup();
   };
 
   // ============================================================================
@@ -164,6 +179,10 @@ export function bindWindowFunctions(managers) {
     return scriptFunctions.setBufferSource(source);
   };
 
+  window.setBufferSource = (source) => {
+    return scriptFunctions.setBufferSource(source);
+  };
+
   window.startBufferDrawing = (tool) => {
     return scriptFunctions.startBufferDrawing(tool);
   };
@@ -176,6 +195,26 @@ export function bindWindowFunctions(managers) {
     return scriptFunctions.closeIntersectModal();
   };
 
+  window.setDistanceSource = (source) => {
+    return scriptFunctions.setDistanceSource(source);
+  };
+
+  window.setIntersectSource = (featureNum, source) => {
+    return scriptFunctions.setIntersectSource(featureNum, source);
+  };
+
+  window.startIntersectDrawing = (featureNum) => {
+    return scriptFunctions.startIntersectDrawing(featureNum);
+  };
+
+  window.cancelIntersectDrawing = () => {
+    return scriptFunctions.cancelIntersectDrawing();
+  };
+
+  window.cancelBufferDrawing = () => {
+    return scriptFunctions.cancelBufferDrawing();
+  };
+
   // ============================================================================
   // VISUALIZATION
   // Future module: js/tools/visualization-manager.js
@@ -183,6 +222,10 @@ export function bindWindowFunctions(managers) {
   
   window.toggleHeatmap = () => {
     return scriptFunctions.toggleHeatmap();
+  };
+
+  window.selectColorScheme = (scheme) => {
+    return scriptFunctions.selectColorScheme(scheme);
   };
 
   window.showHeatmapSettings = () => {
@@ -227,6 +270,10 @@ export function bindWindowFunctions(managers) {
   // Future module: js/tools/measurement-manager.js
   // ============================================================================
   
+  window.closeMeasurementResults = () => {
+    return scriptFunctions.closeMeasurementResults();
+  };
+
   window.closeMeasurementResults = () => {
     return scriptFunctions.closeMeasurementResults();
   };
@@ -376,46 +423,46 @@ export function bindWindowFunctions(managers) {
 /**
  * Unbind all window functions (useful for cleanup or testing)
  */
-export function unbindWindowFunctions() {
-  const functionsToUnbind = [
-    // Widget Management
-    'toggleWidget',
-    // Attribute Table
-    'toggleAttributeTable', 'refreshTable', 'showExportOptions', 'previousPage', 'nextPage',
-    // Tour System
-    'manuallyStartTour', 'startAppTour', 'toggleFeatureTour', 'nextFeature', 'previousFeature', 'closeTourControls',
-    // Zoom Controls
-    'zoomIn', 'zoomOut',
-    // Analysis Tools
-    'startBufferAnalysis', 'startIntersectAnalysis', 'startDistanceAnalysis', 'startAreaAnalysis',
-    'executeBuffer', 'executeIntersect', 'setBufferSource', 'startBufferDrawing',
-    'closeBufferModal', 'closeIntersectModal',
-    // Visualization
-    'toggleHeatmap', 'showHeatmapSettings', 'closeHeatmapSettings', 'applyHeatmapSettings',
-    'toggleTimeControls', 'playTimeAnimation', 'stopTimeAnimation',
-    // Classification
-    'applyClassification', 'resetClassification',
-    // Measurement
-    'closeMeasurementResults', 'closeDistancePanel', 'clearDistanceMeasurement',
-    // Popup
-    'closeCustomPopup', 'zoomToFeature', 'copyFeatureInfo',
-    // Layer Management
-    'toggleLayer', 'zoomToLayer', 'removeLayer',
-    // Tab System
-    'redirectToTabPlatform',
-    // Drawing Tools
-    'clearAll',
-    // Additional
-    'toggleSwipe', 'clearSearch', 'startDrawingWithTool', 'updateClassificationField',
-    'updateHeatmapLayerSelect', 'searchTable', 'exportToCSV', 'exportToGeoJSON', 'exportToExcel',
-    'closeExportModal', 'closeAreaModal'
-  ];
+// export function unbindWindowFunctions() {
+//   const functionsToUnbind = [
+//     // Widget Management
+//     'toggleWidget',
+//     // Attribute Table
+//     'toggleAttributeTable', 'refreshTable', 'showExportOptions', 'previousPage', 'nextPage',
+//     // Tour System
+//     'manuallyStartTour', 'startAppTour', 'toggleFeatureTour', 'nextFeature', 'previousFeature', 'closeTourControls',
+//     // Zoom Controls
+//     'zoomIn', 'zoomOut',
+//     // Analysis Tools
+//     'startBufferAnalysis', 'setIntersectSource', 'startIntersectAnalysis', 'startDistanceAnalysis', 'startAreaAnalysis',
+//     'executeBuffer', 'executeIntersect', 'setBufferSource', 'startBufferDrawing',
+//     'closeBufferModal', 'closeIntersectModal',
+//     // Visualization
+//     'toggleHeatmap', 'showHeatmapSettings', 'closeHeatmapSettings', 'applyHeatmapSettings',
+//     'toggleTimeControls', 'playTimeAnimation', 'stopTimeAnimation',
+//     // Classification
+//     'applyClassification', 'resetClassification',
+//     // Measurement
+//     'closeMeasurementResults', 'closeDistancePanel', 'clearDistanceMeasurement',
+//     // Popup
+//     'closeCustomPopup', 'zoomToFeature', 'copyFeatureInfo',
+//     // Layer Management
+//     'toggleLayer', 'zoomToLayer', 'removeLayer',
+//     // Tab System
+//     'redirectToTabPlatform',
+//     // Drawing Tools
+//     'clearAll',
+//     // Additional
+//     'toggleSwipe', 'clearSearch', 'startDrawingWithTool', 'updateClassificationField',
+//     'updateHeatmapLayerSelect', 'searchTable', 'exportToCSV', 'exportToGeoJSON', 'exportToExcel',
+//     'closeExportModal', 'closeAreaModal'
+//   ];
 
-  functionsToUnbind.forEach(funcName => {
-    if (window[funcName]) {
-      delete window[funcName];
-    }
-  });
+//   functionsToUnbind.forEach(funcName => {
+//     if (window[funcName]) {
+//       delete window[funcName];
+//     }
+//   });
 
-  console.log('🧹 Window bindings cleaned up');
-}
+//   console.log('🧹 Window bindings cleaned up');
+// }
