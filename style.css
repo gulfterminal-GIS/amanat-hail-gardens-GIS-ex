@@ -3669,4 +3669,54 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 
 
 
+/* Swipe Panel Styles */
+.swipe-config {
+  padding: var(--spacing-sm);
+}
 
+.swipe-config .form-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.swipe-config .button-group {
+  background: rgba(0, 0, 0, 0.5);
+  padding: 4px;
+  border-radius: var(--radius-md);
+}
+
+.swipe-config .button-group-item {
+  color: white;
+  background: transparent;
+}
+
+.swipe-config .button-group-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.swipe-config .button-group-item.active {
+  background: var(--primary-color);
+  color: white;
+}
+
+/* Swipe widget custom styling */
+.esri-swipe__container {
+  border-color: var(--primary-color) !important;
+}
+
+.esri-swipe__divider {
+  background-color: var(--primary-color) !important;
+  width: 4px !important;
+}
+
+.esri-swipe__handle {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+  width: 32px !important;
+  height: 32px !important;
+}
+
+/* RTL support for swipe */
+[dir="rtl"] .esri-swipe--horizontal .esri-swipe__container {
+  border-right: 2px solid var(--primary-color);
+  border-left: none;
+}
