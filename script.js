@@ -2882,61 +2882,57 @@ async function locateUser() {
   );
 }
 
-// ============================================================================
-// COMMENTED OUT - Moved to js/ui/search-manager.js
-// ============================================================================
 // Initialize coordinate display
-// Replace your existing initializeCoordinateDisplay function:
-// function initializeCoordinateDisplay(view) {
-//   // Fallback to window.view if not passed (backward compatibility)
-//   const mapView = view || window.view;
-//   if (!mapView) {
-//     console.warn("initializeCoordinateDisplay: view not available");
-//     return;
-//   }
+function initializeCoordinateDisplay(view) {
+  // Fallback to window.view if not passed (backward compatibility)
+  const mapView = view || window.view;
+  if (!mapView) {
+    console.warn("initializeCoordinateDisplay: view not available");
+    return;
+  }
 
-//   let currentCoords = { lat: 0, lon: 0 };
+  let currentCoords = { lat: 0, lon: 0 };
 
-//   mapView.on("pointer-move", (event) => {
-//     const point = mapView.toMap({ x: event.x, y: event.y });
-//     if (point) {
-//       currentCoords.lat = point.latitude.toFixed(6);
-//       currentCoords.lon = point.longitude.toFixed(6);
-//       document.getElementById(
-//         "coordDisplay"
-//       ).textContent = `Lat: ${currentCoords.lat}, Lon: ${currentCoords.lon}`;
-//     }
-//   });
+  mapView.on("pointer-move", (event) => {
+    const point = mapView.toMap({ x: event.x, y: event.y });
+    if (point) {
+      currentCoords.lat = point.latitude.toFixed(6);
+      currentCoords.lon = point.longitude.toFixed(6);
+      document.getElementById(
+        "coordDisplay"
+      ).textContent = `Lat: ${currentCoords.lat}, Lon: ${currentCoords.lon}`;
+    }
+  });
 
-//   // Add copy functionality
-//   const copyBtn = document.getElementById("copyCoords");
-//   if (copyBtn) {
-//     copyBtn.addEventListener("click", () => {
-//       const coordText = `${currentCoords.lat}, ${currentCoords.lon}`;
-//       navigator.clipboard
-//         .writeText(coordText)
-//         .then(() => {
-//           // Visual feedback
-//           copyBtn.classList.add("copied");
-//           const icon = copyBtn.querySelector("i");
-//           icon.classList.remove("fa-copy");
-//           icon.classList.add("fa-check");
+  // Add copy functionality
+  const copyBtn = document.getElementById("copyCoords");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", () => {
+      const coordText = `${currentCoords.lat}, ${currentCoords.lon}`;
+      navigator.clipboard
+        .writeText(coordText)
+        .then(() => {
+          // Visual feedback
+          copyBtn.classList.add("copied");
+          const icon = copyBtn.querySelector("i");
+          icon.classList.remove("fa-copy");
+          icon.classList.add("fa-check");
 
-//           showNotification("Coordinates copied!", "success");
+          showNotification("Coordinates copied!", "success");
 
-//           // Reset after 2 seconds
-//           setTimeout(() => {
-//             copyBtn.classList.remove("copied");
-//             icon.classList.remove("fa-check");
-//             icon.classList.add("fa-copy");
-//           }, 2000);
-//         })
-//         .catch(() => {
-//           showNotification("Failed to copy coordinates", "error");
-//         });
-//     });
-//   }
-// }
+          // Reset after 2 seconds
+          setTimeout(() => {
+            copyBtn.classList.remove("copied");
+            icon.classList.remove("fa-check");
+            icon.classList.add("fa-copy");
+          }, 2000);
+        })
+        .catch(() => {
+          showNotification("Failed to copy coordinates", "error");
+        });
+    });
+  }
+}
 
 // Initialize event handlers
 function initializeEventHandlers(stateManager) {
