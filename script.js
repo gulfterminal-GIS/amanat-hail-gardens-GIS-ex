@@ -1,8 +1,8 @@
-import { StateManager } from './js/core/state-manager.js';
-import { MapInitializer } from './js/core/map-initializer.js';
-import { NotificationManager } from './js/ui/notification-manager.js';
-import { PanelManager } from './js/ui/panel-manager.js';
-import { LayerManager } from './js/layers/layer-manager.js';
+import { StateManager } from "./js/core/state-manager.js";
+import { MapInitializer } from "./js/core/map-initializer.js";
+import { NotificationManager } from "./js/ui/notification-manager.js";
+import { PanelManager } from "./js/ui/panel-manager.js";
+import { LayerManager } from "./js/layers/layer-manager.js";
 import { loadModule, loadModules } from "./js/core/module-loader.js";
 
 // ============================================================================
@@ -24,7 +24,7 @@ function initModuleState(state) {
 // Helper to access state safely
 function getState() {
   if (!moduleState) {
-    throw new Error('Module state not initialized. Call initializeMap first.');
+    throw new Error("Module state not initialized. Call initializeMap first.");
   }
   return moduleState;
 }
@@ -35,18 +35,18 @@ function getState() {
 // Classification state
 const classificationState = {
   currentLayer: null,
-  renderers: new Map()
+  renderers: new Map(),
 };
 
-// Analysis state  
+// Analysis state
 const analysisState = {
   isDrawing: false,
   drawType: null,
   features: {
     buffer: [],
     intersect1: null,
-    intersect2: null
-  }
+    intersect2: null,
+  },
 };
 
 // Feature Tour System state managed by StateManager
@@ -61,8 +61,8 @@ const tourState = {
     auto: null,
     chevronIcon: null,
     chevronBtn: null,
-    details: null
-  }
+    details: null,
+  },
 };
 
 // Other state
@@ -97,7 +97,8 @@ async function initializeMap(
       layerManager,
       uploadHandler,
       basemapManager,
-      drawingManager
+      drawingManager,
+      analysisManager,
     };
 
     // Initialize state
@@ -139,7 +140,6 @@ async function initializeMap(
 //     throw new Error("MapInitializer not available");
 //   }
 // }
-
 
 async function autoApplyDefaultClassification(layer, fieldName) {
   try {
@@ -224,7 +224,11 @@ async function setupFeatureTour(layer) {
     const featureSet = await layer.queryFeatures(query);
     stateManager.setTourFeatures(featureSet.features);
 
-    console.log(`Feature tour setup with ${stateManager.getTourFeatures().length} features`);
+    console.log(
+      `Feature tour setup with ${
+        stateManager.getTourFeatures().length
+      } features`
+    );
 
     // Create tour controls
     createTourControls();
@@ -358,7 +362,9 @@ function startFeatureTour() {
   document.querySelector(".feature-tour-controls").classList.add("active");
 
   // Update play button
-  const autoControl = document.querySelector(".feature-tour-controls .auto-control");
+  const autoControl = document.querySelector(
+    ".feature-tour-controls .auto-control"
+  );
   if (autoControl) {
     autoControl.classList.remove("pause");
     autoControl.classList.add("play");
@@ -368,9 +374,11 @@ function startFeatureTour() {
   goToFeature(stateManager.getCurrentFeatureIndex());
 
   // Auto advance every 3 seconds
-  stateManager.setFeatureTourInterval(setInterval(() => {
-    nextFeature(false); // auto-play
-  }, 7000));
+  stateManager.setFeatureTourInterval(
+    setInterval(() => {
+      nextFeature(false); // auto-play
+    }, 7000)
+  );
 }
 
 // Stop feature tour
@@ -386,7 +394,9 @@ function stopFeatureTour() {
   }
 
   // Update play button
-  const autoControl = document.querySelector(".feature-tour-controls .auto-control");
+  const autoControl = document.querySelector(
+    ".feature-tour-controls .auto-control"
+  );
   if (autoControl) {
     autoControl.classList.add("pause");
     autoControl.classList.remove("play");
@@ -464,7 +474,7 @@ async function goToFeature(index) {
         const layerView = await view.whenLayerView(stateManager.getTourLayer());
         stateManager.setHighlightHandle(layerView.highlight(feature));
       } catch (error) {
-        console.warn('Error creating highlight:', error);
+        console.warn("Error creating highlight:", error);
       }
     }
 
@@ -472,8 +482,9 @@ async function goToFeature(index) {
     updateTourInfo(feature);
 
     // Update progress
-    document.getElementById("tourProgress").textContent = `${index + 1} / ${(stateManager.getTourFeatures() || []).length
-      }`;
+    document.getElementById("tourProgress").textContent = `${index + 1} / ${
+      (stateManager.getTourFeatures() || []).length
+    }`;
 
     // Show popup in left-center position
     showTourPopup(feature);
@@ -485,9 +496,11 @@ async function goToFeature(index) {
 function showCustomPopupTour(graphic) {
   const { stateManager } = getState();
 
-  const featureDetails = document.querySelector('.feature-tour-controls .feature-details');
+  const featureDetails = document.querySelector(
+    ".feature-tour-controls .feature-details"
+  );
   if (!featureDetails) {
-    console.warn('Feature details element not found for tour popup');
+    console.warn("Feature details element not found for tour popup");
     return;
   }
 
@@ -644,7 +657,8 @@ function previousFeature(manual = true) {
 
   const currentIndex = stateManager.getCurrentFeatureIndex();
   const tourFeatures = stateManager.getTourFeatures();
-  const prevIndex = currentIndex === 0 ? tourFeatures.length - 1 : currentIndex - 1;
+  const prevIndex =
+    currentIndex === 0 ? tourFeatures.length - 1 : currentIndex - 1;
   goToFeature(prevIndex);
 }
 
@@ -672,14 +686,13 @@ function manuallyStartTour() {
   }
 }
 
-
 // Initialize UI components
 function initializeUI(injectedStateManager) {
   // Initialize module state with injected StateManager
   initModuleState({
     stateManager: injectedStateManager,
     map: injectedStateManager.getMap(),
-    view: injectedStateManager.getView()
+    view: injectedStateManager.getView(),
   });
 
   const { stateManager } = getState();
@@ -1449,7 +1462,7 @@ function registerLayerManagerCallbacks(layerManager) {
   layerManager.onLayerListUpdate(() => {
     const tableWidget = document.getElementById("attributeTableWidget");
     if (tableWidget && !tableWidget.classList.contains("hidden")) {
-      if (typeof initializeTableLayerSelect === 'function') {
+      if (typeof initializeTableLayerSelect === "function") {
         initializeTableLayerSelect();
       }
     }
@@ -1457,14 +1470,21 @@ function registerLayerManagerCallbacks(layerManager) {
 
   // Callback 2: Update heatmap layer select when layers change
   layerManager.onLayerListUpdate(() => {
-    if (window.heatmapEnabled && typeof updateHeatmapLayerSelect === 'function') {
+    if (
+      window.heatmapEnabled &&
+      typeof updateHeatmapLayerSelect === "function"
+    ) {
       updateHeatmapLayerSelect();
     }
   });
 
   // Callback 3: Add analysis layer to layer list if it has graphics
   layerManager.onLayerListUpdate(() => {
-    if (analysisLayer && analysisLayer.graphics && analysisLayer.graphics.length > 0) {
+    if (
+      analysisLayer &&
+      analysisLayer.graphics &&
+      analysisLayer.graphics.length > 0
+    ) {
       const layerList = document.getElementById("layerList");
       if (layerList) {
         const analysisItem = document.createElement("div");
@@ -1473,7 +1493,9 @@ function registerLayerManagerCallbacks(layerManager) {
           <input type="checkbox" class="layer-checkbox" 
                  ${analysisLayer.visible ? "checked" : ""} 
                  onchange="analysisLayer.visible = this.checked">
-          <label class="layer-name">Analysis Results (${analysisLayer.graphics.length})</label>
+          <label class="layer-name">Analysis Results (${
+            analysisLayer.graphics.length
+          })</label>
           <div class="layer-actions">
             <button onclick="clearAnalysisResults()" title="Clear results">
               <i class="fas fa-trash"></i>
@@ -1485,7 +1507,9 @@ function registerLayerManagerCallbacks(layerManager) {
     }
   });
 
-  console.log('✅ LayerManager callbacks registered (attribute table, heatmap, analysis)');
+  console.log(
+    "✅ LayerManager callbacks registered (attribute table, heatmap, analysis)"
+  );
 }
 
 // ============================================================================
@@ -1514,7 +1538,7 @@ function registerLayerManagerCallbacks(layerManager) {
 //       .map(
 //         (layer, index) => `
 //       <div class="layer-item">
-//         <input type="checkbox" class="layer-checkbox" id="layer-${index}" 
+//         <input type="checkbox" class="layer-checkbox" id="layer-${index}"
 //                ${layer.visible ? "checked" : ""
 //           } onchange="toggleLayer(${index})">
 //         <label for="layer-${index}" class="layer-name">${layer.title}</label>
@@ -1767,42 +1791,42 @@ function registerLayerManagerCallbacks(layerManager) {
 //   return sketchViewModel;
 // }
 
-function cancelBufferDrawing () {
-  console.log("Canceling buffer drawing");
+// function cancelBufferDrawing () {
+//   console.log("Canceling buffer drawing");
 
-  // Get stateManager instance
-  const { stateManager } = getState();
+//   // Get stateManager instance
+//   const { stateManager } = getState();
 
-  // Restore modal
-  disableDrawingMode("bufferModal");
+//   // Restore modal
+//   disableDrawingMode("bufferModal");
 
-  // Reset cursor
-  const view = stateManager.getView();
-  if (view) {
-    view.container.style.cursor = "default";
-  }
+//   // Reset cursor
+//   const view = stateManager.getView();
+//   if (view) {
+//     view.container.style.cursor = "default";
+//   }
 
-  const sketchViewModel = stateManager.getSketchViewModel();
-  if (sketchViewModel) {
-    sketchViewModel.cancel();
-  }
+//   const sketchViewModel = stateManager.getSketchViewModel();
+//   if (sketchViewModel) {
+//     sketchViewModel.cancel();
+//   }
 
-  stateManager.setAnalysisDrawing(false);
+//   stateManager.setAnalysisDrawing(false);
 
-  const indicator = document.getElementById("drawingIndicator");
-  if (indicator) {
-    indicator.remove();
-  }
+//   const indicator = document.getElementById("drawingIndicator");
+//   if (indicator) {
+//     indicator.remove();
+//   }
 
-  if (window.currentBufferHandler) {
-    window.currentBufferHandler.remove();
-  }
+//   if (window.currentBufferHandler) {
+//     window.currentBufferHandler.remove();
+//   }
 
-  // Reset button states
-  document.querySelectorAll(".draw-option-btn").forEach((btn) => {
-    btn.classList.remove("active");
-  });
-};
+//   // Reset button states
+//   document.querySelectorAll(".draw-option-btn").forEach((btn) => {
+//     btn.classList.remove("active");
+//   });
+// };
 
 // window.debugDrawing = function () {
 //   const { stateManager } = getState();
@@ -2149,7 +2173,7 @@ function disableDrawingMode(modalId) {
 //   const symbol = getSymbolForTool(tool, color, opacity);
 
 //   const graphic = new Graphic({
-//     geometry: event.geometry, 
+//     geometry: event.geometry,
 //     symbol: symbol
 //   });
 
@@ -2210,7 +2234,7 @@ function disableDrawingMode(modalId) {
 //       updateGraphicPreview(event, tool, color, opacity);
 //     });
 
-//     // Handle cursor update for preview  
+//     // Handle cursor update for preview
 //     action.on("cursor-update", (event) => {
 //       updateGraphicPreview(event, tool, color, opacity);
 //     });
@@ -2218,7 +2242,7 @@ function disableDrawingMode(modalId) {
 //     // Handle drawing completion
 //     action.on("draw-complete", (event) => {
 //       createGraphic(event, tool, color, opacity);
-      
+
 //       // Only restart if continuous drawing mode is enabled
 //       // This should be controlled by a UI setting
 //       if (drawingActive && currentDrawTool === tool) {
@@ -2628,10 +2652,12 @@ function initializeEventHandlers(stateManager) {
 
         // Hide after 5 seconds
         getState().stateManager.clearCountryInfoTimeout();
-        getState().stateManager.setCountryInfoTimeout(setTimeout(() => {
-          infoDisplay.classList.add("hidden");
-          getState().stateManager.getFlashGraphicsLayer().removeAll();
-        }, 5000));
+        getState().stateManager.setCountryInfoTimeout(
+          setTimeout(() => {
+            infoDisplay.classList.add("hidden");
+            getState().stateManager.getFlashGraphicsLayer().removeAll();
+          }, 5000)
+        );
       }
     } catch (error) {
       console.error("Error querying country:", error);
@@ -2661,8 +2687,9 @@ function initializeEventHandlers(stateManager) {
         if (graphic.layer && graphic.layer.queryFeatures) {
           try {
             const query = graphic.layer.createQuery();
-            query.where = `${graphic.layer.objectIdField} = ${graphic.attributes[graphic.layer.objectIdField]
-              }`;
+            query.where = `${graphic.layer.objectIdField} = ${
+              graphic.attributes[graphic.layer.objectIdField]
+            }`;
             query.outFields = ["*"];
             query.returnGeometry = true;
 
@@ -3321,8 +3348,8 @@ async function updateGeometryDetails(geometry) {
           <div class="attribute-row">
             <span class="attribute-label">Longitude:</span>
             <span class="attribute-value">${geometry.longitude.toFixed(
-          6
-        )}</span>
+              6
+            )}</span>
           </div>
           <div class="attribute-row">
             <span class="attribute-label">Latitude:</span>
@@ -3551,7 +3578,10 @@ function positionPopup(popup, mapPoint) {
 // Popup action functions
 function zoomToFeature() {
   const { stateManager } = getState();
-  if (stateManager.getCurrentPopupFeature() && stateManager.getCurrentPopupFeature().geometry) {
+  if (
+    stateManager.getCurrentPopupFeature() &&
+    stateManager.getCurrentPopupFeature().geometry
+  ) {
     stateManager.getView().goTo({
       target: stateManager.getCurrentPopupFeature().geometry,
       zoom: stateManager.getView().zoom + 2,
@@ -3568,7 +3598,9 @@ function copyFeatureInfo() {
   // Add attributes
   if (getState().stateManager.getCurrentPopupFeature().attributes) {
     text += "Attributes:\n";
-    Object.entries(getState().stateManager.getCurrentPopupFeature().attributes).forEach(([key, value]) => {
+    Object.entries(
+      getState().stateManager.getCurrentPopupFeature().attributes
+    ).forEach(([key, value]) => {
       if (!key.startsWith("_") && key !== "ObjectID" && key !== "FID") {
         text += `${formatFieldName(key)}: ${value || "N/A"}\n`;
       }
@@ -3655,7 +3687,6 @@ function debounce(func, wait) {
     timeout = setTimeout(later, wait);
   };
 }
-
 
 // Wrapper function for backward compatibility
 function showNotification(message, type = "info") {
@@ -3773,10 +3804,12 @@ async function toggleLegend() {
     // Update layer infos every time it's shown
     const legend = activeWidgets.get("legend");
     legend.layerInfos = [
-      ...getState().stateManager.getUploadedLayers().map((layer) => ({
-        layer: layer,
-        title: layer.title,
-      })),
+      ...getState()
+        .stateManager.getUploadedLayers()
+        .map((layer) => ({
+          layer: layer,
+          title: layer.title,
+        })),
       {
         layer: drawLayer,
         title: "Drawings",
@@ -4209,8 +4242,9 @@ function updateMeasurementResults(measurement) {
       <div class="measurement-item">
         <i class="fas fa-ruler-horizontal"></i>
         <span class="measurement-label">Distance:</span>
-        <span class="measurement-value">${measurement.distance.toFixed(2)} ${measurement.distanceUnit
-      }</span>
+        <span class="measurement-value">${measurement.distance.toFixed(2)} ${
+      measurement.distanceUnit
+    }</span>
       </div>
     `;
   } else if (measurement.area !== undefined) {
@@ -4219,14 +4253,16 @@ function updateMeasurementResults(measurement) {
       <div class="measurement-item">
         <i class="fas fa-vector-square"></i>
         <span class="measurement-label">Area:</span>
-        <span class="measurement-value">${measurement.area.toFixed(2)} ${measurement.areaUnit
-      }</span>
+        <span class="measurement-value">${measurement.area.toFixed(2)} ${
+      measurement.areaUnit
+    }</span>
       </div>
       <div class="measurement-item">
         <i class="fas fa-draw-polygon"></i>
         <span class="measurement-label">Perimeter:</span>
-        <span class="measurement-value">${measurement.perimeter.toFixed(2)} ${measurement.perimeterUnit
-      }</span>
+        <span class="measurement-value">${measurement.perimeter.toFixed(2)} ${
+      measurement.perimeterUnit
+    }</span>
       </div>
     `;
   }
@@ -4245,7 +4281,7 @@ async function toggleSwipe() {
 
     // Temporarily suppress console warnings for deprecated widget
     const originalWarn = console.warn;
-    console.warn = () => { };
+    console.warn = () => {};
 
     try {
       const [Swipe] = await Promise.all([loadModule("esri/widgets/Swipe")]);
@@ -4469,12 +4505,14 @@ function initializeTableLayerSelect() {
   const select = document.getElementById("tableLayerSelect");
   select.innerHTML = '<option value="">Select a layer...</option>';
 
-  getState().stateManager.getUploadedLayers().forEach((layer, index) => {
-    const option = document.createElement("option");
-    option.value = index;
-    option.textContent = layer.title;
-    select.appendChild(option);
-  });
+  getState()
+    .stateManager.getUploadedLayers()
+    .forEach((layer, index) => {
+      const option = document.createElement("option");
+      option.value = index;
+      option.textContent = layer.title;
+      select.appendChild(option);
+    });
 
   select.addEventListener("change", async (e) => {
     if (e.target.value !== "") {
@@ -4732,8 +4770,9 @@ async function flashFeature(feature) {
 function updatePagination() {
   const totalPages = Math.ceil(filteredData.length / recordsPerPage);
 
-  document.getElementById("tablePaginationInfo").textContent = `${filteredData.length
-    } record${filteredData.length !== 1 ? "s" : ""}`;
+  document.getElementById("tablePaginationInfo").textContent = `${
+    filteredData.length
+  } record${filteredData.length !== 1 ? "s" : ""}`;
   document.getElementById(
     "tablePageInfo"
   ).textContent = `Page ${currentPage} of ${totalPages}`;
@@ -4763,7 +4802,9 @@ function nextPage() {
 
 function refreshTable() {
   if (currentTableLayer) {
-    const layerIndex = getState().stateManager.getUploadedLayers().indexOf(currentTableLayer);
+    const layerIndex = getState()
+      .stateManager.getUploadedLayers()
+      .indexOf(currentTableLayer);
     if (layerIndex !== -1) {
       loadTableData(layerIndex);
     }
@@ -4777,12 +4818,14 @@ function showExportOptions() {
 
   // Populate layer select
   select.innerHTML = '<option value="">Select a layer...</option>';
-  getState().stateManager.getUploadedLayers().forEach((layer, index) => {
-    const option = document.createElement("option");
-    option.value = index;
-    option.textContent = layer.title;
-    select.appendChild(option);
-  });
+  getState()
+    .stateManager.getUploadedLayers()
+    .forEach((layer, index) => {
+      const option = document.createElement("option");
+      option.value = index;
+      option.textContent = layer.title;
+      select.appendChild(option);
+    });
 
   modal.classList.remove("hidden");
 }
@@ -4799,7 +4842,8 @@ async function exportData(format) {
     return;
   }
 
-  const layer = getState().stateManager.getUploadedLayers()[parseInt(layerIndex)];
+  const layer =
+    getState().stateManager.getUploadedLayers()[parseInt(layerIndex)];
 
   try {
     showNotification("Preparing export...", "info");
@@ -5098,7 +5142,7 @@ async function toggleHeatmap() {
 
     restoreOriginalRenderers();
   }
-};
+}
 
 // Update heatmap layer select
 function updateHeatmapLayerSelect() {
@@ -5106,20 +5150,22 @@ function updateHeatmapLayerSelect() {
   select.innerHTML = '<option value="">Select point layer...</option>';
 
   // Only show point layers
-  getState().stateManager.getUploadedLayers().forEach((layer, index) => {
-    // Check if layer has point geometry
-    if (
-      layer.geometryType === "point" ||
-      (layer.source &&
-        layer.source.length > 0 &&
-        layer.source.items[0]?.geometry?.type === "point")
-    ) {
-      const option = document.createElement("option");
-      option.value = index;
-      option.textContent = layer.title;
-      select.appendChild(option);
-    }
-  });
+  getState()
+    .stateManager.getUploadedLayers()
+    .forEach((layer, index) => {
+      // Check if layer has point geometry
+      if (
+        layer.geometryType === "point" ||
+        (layer.source &&
+          layer.source.length > 0 &&
+          layer.source.items[0]?.geometry?.type === "point")
+      ) {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = layer.title;
+        select.appendChild(option);
+      }
+    });
 
   select.addEventListener("change", async (e) => {
     if (e.target.value && heatmapEnabled) {
@@ -5167,13 +5213,17 @@ async function applyHeatmap(layerIndex) {
 
 // Restore original renderers
 function restoreOriginalRenderers() {
-  getState().stateManager.getUploadedLayers().forEach((layer) => {
-    const originalRenderer = getState().stateManager.getOriginalRenderer(layer.id);
-    if (originalRenderer) {
-      layer.renderer = originalRenderer;
-      getState().stateManager.setOriginalRenderer(layer.id, null);
-    }
-  });
+  getState()
+    .stateManager.getUploadedLayers()
+    .forEach((layer) => {
+      const originalRenderer = getState().stateManager.getOriginalRenderer(
+        layer.id
+      );
+      if (originalRenderer) {
+        layer.renderer = originalRenderer;
+        getState().stateManager.setOriginalRenderer(layer.id, null);
+      }
+    });
   heatmapLayer = null;
 }
 
@@ -5366,12 +5416,14 @@ function initializeClassificationPanel() {
 
   // Populate layers
   layerSelect.innerHTML = '<option value="">Choose a layer...</option>';
-  getState().stateManager.getUploadedLayers().forEach((layer, index) => {
-    const option = document.createElement("option");
-    option.value = index;
-    option.textContent = layer.title;
-    layerSelect.appendChild(option);
-  });
+  getState()
+    .stateManager.getUploadedLayers()
+    .forEach((layer, index) => {
+      const option = document.createElement("option");
+      option.value = index;
+      option.textContent = layer.title;
+      layerSelect.appendChild(option);
+    });
 
   // Layer change handler
   layerSelect.addEventListener("change", async (e) => {
@@ -5383,7 +5435,8 @@ function initializeClassificationPanel() {
       return;
     }
 
-    const layer = getState().stateManager.getUploadedLayers()[parseInt(layerIndex)];
+    const layer =
+      getState().stateManager.getUploadedLayers()[parseInt(layerIndex)];
     getState().stateManager.setCurrentClassificationLayer(layer);
 
     // Populate fields
@@ -5611,9 +5664,13 @@ async function applyClassification() {
     }
 
     // Store original renderer
-    const currentLayer = getState().stateManager.getCurrentClassificationLayer();
+    const currentLayer =
+      getState().stateManager.getCurrentClassificationLayer();
     if (!getState().stateManager.getOriginalRenderer(currentLayer.id)) {
-      getState().stateManager.setOriginalRenderer(currentLayer.id, currentLayer.renderer);
+      getState().stateManager.setOriginalRenderer(
+        currentLayer.id,
+        currentLayer.renderer
+      );
     }
 
     const colors = generateClassificationColors(stats.sortedValues.length);
@@ -5736,10 +5793,11 @@ function createClassificationLegend(stats, colors, fieldName) {
     <div class="widget-header" style="margin: -12px -12px 12px; padding: 12px;">
       <h3 style="font-size: 16px; display: flex; align-items: center; gap: 8px;">
         <i class="fas fa-list" style="color: var(--primary-color);"></i>
-        ${fieldName === "GARDENSTATUS"
-      ? "حالة الحديقة"
-      : formatFieldName(fieldName)
-    }
+        ${
+          fieldName === "GARDENSTATUS"
+            ? "حالة الحديقة"
+            : formatFieldName(fieldName)
+        }
       </h3>
       <button class="widget-close" onclick="removeClassificationLegend()">
         <i class="fas fa-times"></i>
@@ -5769,7 +5827,9 @@ function resetClassification() {
   const currentLayer = getState().stateManager.getCurrentClassificationLayer();
   if (!currentLayer) return;
 
-  const originalRenderer = getState().stateManager.getOriginalRenderer(currentLayer.id);
+  const originalRenderer = getState().stateManager.getOriginalRenderer(
+    currentLayer.id
+  );
   if (originalRenderer) {
     currentLayer.renderer = originalRenderer;
     getState().stateManager.setOriginalRenderer(currentLayer.id, null);
@@ -5792,247 +5852,258 @@ window.applyClassification = applyClassification;
 window.resetClassification = resetClassification;
 window.removeClassificationLegend = removeClassificationLegend;
 
-// Spatial Analysis System
-let analysisLayer = null;
-let distanceMeasurementActive = false;
-let distanceFeatures = [];
+// ============================================================================
+// COMMENTED OUT - Spatial Analysis System moved to js/tools/analysis-manager.js
+// ============================================================================
+// let analysisLayer = null;
+// let distanceMeasurementActive = false;
+// let distanceFeatures = [];
 
-// Initialize analysis layer
-async function initializeAnalysisLayer() {
-  if (!analysisLayer) {
-    const [GraphicsLayer] = await Promise.all([
-      loadModule("esri/layers/GraphicsLayer"),
-    ]);
+// ============================================================================
+// COMMENTED OUT - initializeAnalysisLayer moved to js/tools/analysis-manager.js
+// ============================================================================
+// async function initializeAnalysisLayer() {
+//   if (!analysisLayer) {
+//     const [GraphicsLayer] = await Promise.all([
+//       loadModule("esri/layers/GraphicsLayer"),
+//     ]);
 
-    analysisLayer = new GraphicsLayer({
-      title: "Analysis Results",
-      listMode: "show",
-    });
+//     analysisLayer = new GraphicsLayer({
+//       title: "Analysis Results",
+//       listMode: "show",
+//     });
 
-    displayMap.add(analysisLayer);
-  }
-}
+//     displayMap.add(analysisLayer);
+//   }
+// }
 
+// ============================================================================
+// COMMENTED OUT - closeBufferModal moved to js/tools/analysis-manager.js
+// ============================================================================
 // Update closeBufferModal to have option to keep drawn features
-function closeBufferModal() {
-  // Ensure modal is restored
-  disableDrawingMode("bufferModal");
+// function closeBufferModal() {
+//   // Ensure modal is restored
+//   disableDrawingMode("bufferModal");
 
-  const modal = document.getElementById("bufferModal");
-  modal.classList.remove("drawing-active");
-  modal.classList.add("hidden");
+//   const modal = document.getElementById("bufferModal");
+//   modal.classList.remove("drawing-active");
+//   modal.classList.add("hidden");
 
-  // Cancel any active drawing
-  const { stateManager } = getState();
-  const sketchViewModel = stateManager.getSketchViewModel();
-  if (sketchViewModel) {
-    sketchViewModel.cancel();
-  }
+//   // Cancel any active drawing
+//   const { stateManager } = getState();
+//   const sketchViewModel = stateManager.getSketchViewModel();
+//   if (sketchViewModel) {
+//     sketchViewModel.cancel();
+//   }
 
-  // Remove drawing indicator if exists
-  const indicator = document.getElementById("drawingIndicator");
-  if (indicator) {
-    indicator.remove();
-  }
+//   // Remove drawing indicator if exists
+//   const indicator = document.getElementById("drawingIndicator");
+//   if (indicator) {
+//     indicator.remove();
+//   }
 
-  // Clean up handlers
-  if (window.currentBufferHandler) {
-    window.currentBufferHandler.remove();
-  }
+//   // Clean up handlers
+//   if (window.currentBufferHandler) {
+//     window.currentBufferHandler.remove();
+//   }
 
-  stopAnalysisDrawing();
-}
+//   stopAnalysisDrawing();
+// }
 
+// ============================================================================
+// COMMENTED OUT - executeBuffer moved to js/tools/analysis-manager.js
+// ============================================================================
 // Update executeBuffer to keep the drawn features visible
-async function executeBuffer() {
-  const distance = parseFloat(document.getElementById("bufferDistance").value);
-  const unit = document.getElementById("bufferUnit").value;
-  const unionResults = document.getElementById("bufferUnion").checked;
+// async function executeBuffer() {
+//   const distance = parseFloat(document.getElementById("bufferDistance").value);
+//   const unit = document.getElementById("bufferUnit").value;
+//   const unionResults = document.getElementById("bufferUnion").checked;
 
-  if (!distance || distance <= 0) {
-    showNotification("Please enter a valid buffer distance", "error");
-    return;
-  }
+//   if (!distance || distance <= 0) {
+//     showNotification("Please enter a valid buffer distance", "error");
+//     return;
+//   }
 
-  try {
-    showNotification("Creating buffers...", "info");
+//   try {
+//     showNotification("Creating buffers...", "info");
 
-    const [geometryEngine, Graphic] = await Promise.all([
-      loadModule("esri/geometry/geometryEngine"),
-      loadModule("esri/Graphic"),
-    ]);
+//     const [geometryEngine, Graphic] = await Promise.all([
+//       loadModule("esri/geometry/geometryEngine"),
+//       loadModule("esri/Graphic"),
+//     ]);
 
-    let features = [];
+//     let features = [];
 
-    // Find the active button more reliably
-    const modal = document.getElementById("bufferModal");
-    const activeButton = modal.querySelector(".button-group-item.active");
-    const isUsingLayer =
-      activeButton && activeButton.textContent.includes("From Layer");
+//     // Find the active button more reliably
+//     const modal = document.getElementById("bufferModal");
+//     const activeButton = modal.querySelector(".button-group-item.active");
+//     const isUsingLayer =
+//       activeButton && activeButton.textContent.includes("From Layer");
 
-    console.log(
-      "Active button:",
-      activeButton?.textContent,
-      "Using layer:",
-      isUsingLayer
-    );
+//     console.log(
+//       "Active button:",
+//       activeButton?.textContent,
+//       "Using layer:",
+//       isUsingLayer
+//     );
 
-    if (isUsingLayer) {
-      const layerIndex = document.getElementById("bufferLayerSelect").value;
-      if (layerIndex === "") {
-        showNotification("Please select a layer", "error");
-        return;
-      }
+//     if (isUsingLayer) {
+//       const layerIndex = document.getElementById("bufferLayerSelect").value;
+//       if (layerIndex === "") {
+//         showNotification("Please select a layer", "error");
+//         return;
+//       }
 
-      const layer = getState().stateManager.getUploadedLayers()[parseInt(layerIndex)];
-      const query = layer.createQuery();
-      query.where = "1=1";
-      query.returnGeometry = true;
+//       const layer = getState().stateManager.getUploadedLayers()[parseInt(layerIndex)];
+//       const query = layer.createQuery();
+//       query.where = "1=1";
+//       query.returnGeometry = true;
 
-      const result = await layer.queryFeatures(query);
-      features = result.features;
-    } else {
-      if (getState().stateManager.getDrawnFeatures().buffer.length === 0) {
-        showNotification("Please draw at least one feature", "error");
-        return;
-      }
-      features = getState().stateManager.getDrawnFeatures().buffer;
-    }
+//       const result = await layer.queryFeatures(query);
+//       features = result.features;
+//     } else {
+//       if (getState().stateManager.getDrawnFeatures().buffer.length === 0) {
+//         showNotification("Please draw at least one feature", "error");
+//         return;
+//       }
+//       features = getState().stateManager.getDrawnFeatures().buffer;
+//     }
 
-    // Convert distance to meters
-    let bufferDistance = distance;
-    switch (unit) {
-      case "kilometers":
-        bufferDistance = distance * 1000;
-        break;
-      case "feet":
-        bufferDistance = distance * 0.3048;
-        break;
-      case "miles":
-        bufferDistance = distance * 1609.34;
-        break;
-    }
+//     // Convert distance to meters
+//     let bufferDistance = distance;
+//     switch (unit) {
+//       case "kilometers":
+//         bufferDistance = distance * 1000;
+//         break;
+//       case "feet":
+//         bufferDistance = distance * 0.3048;
+//         break;
+//       case "miles":
+//         bufferDistance = distance * 1609.34;
+//         break;
+//     }
 
-    // Create buffers
-    const buffers = [];
-    features.forEach((feature) => {
-      const buffer = geometryEngine.geodesicBuffer(
-        feature.geometry,
-        bufferDistance,
-        "meters"
-      );
+//     // Create buffers
+//     const buffers = [];
+//     features.forEach((feature) => {
+//       const buffer = geometryEngine.geodesicBuffer(
+//         feature.geometry,
+//         bufferDistance,
+//         "meters"
+//       );
 
-      if (buffer) {
-        buffers.push(buffer);
-      }
-    });
+//       if (buffer) {
+//         buffers.push(buffer);
+//       }
+//     });
 
-    // Union buffers if requested
-    let finalGeometry;
-    if (unionResults && buffers.length > 1) {
-      finalGeometry = geometryEngine.union(buffers);
-    } else {
-      finalGeometry = buffers;
-    }
+//     // Union buffers if requested
+//     let finalGeometry;
+//     if (unionResults && buffers.length > 1) {
+//       finalGeometry = geometryEngine.union(buffers);
+//     } else {
+//       finalGeometry = buffers;
+//     }
 
-    // Clear previous analysis results
-    analysisLayer.removeAll();
+//     // Clear previous analysis results
+//     analysisLayer.removeAll();
 
-    // Add buffer graphics
-    if (Array.isArray(finalGeometry)) {
-      finalGeometry.forEach((geom, index) => {
-        const graphic = new Graphic({
-          geometry: geom,
-          symbol: {
-            type: "simple-fill",
-            color: [255, 0, 0, 0.2],
-            outline: {
-              color: [255, 0, 0, 1],
-              width: 2,
-            },
-          },
-          attributes: {
-            type: "Buffer",
-            distance: `${distance} ${unit}`,
-            featureIndex: index,
-          },
-        });
-        analysisLayer.add(graphic);
-      });
-    } else {
-      const graphic = new Graphic({
-        geometry: finalGeometry,
-        symbol: {
-          type: "simple-fill",
-          color: [255, 0, 0, 0.2],
-          outline: {
-            color: [255, 0, 0, 1],
-            width: 2,
-          },
-        },
-        attributes: {
-          type: "Buffer",
-          distance: `${distance} ${unit}`,
-          union: true,
-        },
-      });
-      analysisLayer.add(graphic);
-    }
+//     // Add buffer graphics
+//     if (Array.isArray(finalGeometry)) {
+//       finalGeometry.forEach((geom, index) => {
+//         const graphic = new Graphic({
+//           geometry: geom,
+//           symbol: {
+//             type: "simple-fill",
+//             color: [255, 0, 0, 0.2],
+//             outline: {
+//               color: [255, 0, 0, 1],
+//               width: 2,
+//             },
+//           },
+//           attributes: {
+//             type: "Buffer",
+//             distance: `${distance} ${unit}`,
+//             featureIndex: index,
+//           },
+//         });
+//         analysisLayer.add(graphic);
+//       });
+//     } else {
+//       const graphic = new Graphic({
+//         geometry: finalGeometry,
+//         symbol: {
+//           type: "simple-fill",
+//           color: [255, 0, 0, 0.2],
+//           outline: {
+//             color: [255, 0, 0, 1],
+//             width: 2,
+//           },
+//         },
+//         attributes: {
+//           type: "Buffer",
+//           distance: `${distance} ${unit}`,
+//           union: true,
+//         },
+//       });
+//       analysisLayer.add(graphic);
+//     }
 
-    // Zoom to results
-    if (analysisLayer.graphics.length > 0) {
-      await view.goTo(analysisLayer.graphics);
-    }
+//     // Zoom to results
+//     if (analysisLayer.graphics.length > 0) {
+//       await view.goTo(analysisLayer.graphics);
+//     }
 
-    closeBufferModal();
-    showNotification(
-      `Created ${analysisLayer.graphics.length} buffer(s)`,
-      "success"
-    );
-  } catch (error) {
-    console.error("Buffer analysis error:", error);
-    showNotification("Error creating buffers: " + error.message, "error");
-  }
-}
+//     closeBufferModal();
+//     showNotification(
+//       `Created ${analysisLayer.graphics.length} buffer(s)`,
+//       "success"
+//     );
+//   } catch (error) {
+//     console.error("Buffer analysis error:", error);
+//     showNotification("Error creating buffers: " + error.message, "error");
+//   }
+// }
 
 // Update intersection analysis to use the new modal
-async function startIntersectAnalysis() {
-  await initializeAnalysisLayer();
+// async function startIntersectAnalysis() {
+//   await initializeAnalysisLayer();
 
-  const modal = document.getElementById("intersectModal");
+//   const modal = document.getElementById("intersectModal");
 
-  if (!modal) {
-    console.error("Intersect modal not found");
-    return;
-  }
+//   if (!modal) {
+//     console.error("Intersect modal not found");
+//     return;
+//   }
 
-  // Reset drawn features
-  getState().stateManager.setIntersectFeature1(null);
-  getState().stateManager.setIntersectFeature2(null);
+//   // Reset drawn features
+//   getState().stateManager.setIntersectFeature1(null);
+//   getState().stateManager.setIntersectFeature2(null);
 
-  // Populate layer selects
-  const polygonLayers = getState().stateManager.getUploadedLayers().filter(
-    (layer) => layer.geometryType === "polygon"
-  );
+//   // Populate layer selects
+//   const polygonLayers = getState().stateManager.getUploadedLayers().filter(
+//     (layer) => layer.geometryType === "polygon"
+//   );
 
-  ["intersectLayer1Select", "intersectLayer2Select"].forEach((selectId) => {
-    const select = document.getElementById(selectId);
-    if (select) {
-      select.innerHTML = '<option value="">Select a layer...</option>';
+//   ["intersectLayer1Select", "intersectLayer2Select"].forEach((selectId) => {
+//     const select = document.getElementById(selectId);
+//     if (select) {
+//       select.innerHTML = '<option value="">Select a layer...</option>';
 
-      polygonLayers.forEach((layer, index) => {
-        const option = document.createElement("option");
-        option.value = index;
-        option.textContent = layer.title;
-        select.appendChild(option);
-      });
-    }
-  });
+//       polygonLayers.forEach((layer, index) => {
+//         const option = document.createElement("option");
+//         option.value = index;
+//         option.textContent = layer.title;
+//         select.appendChild(option);
+//       });
+//     }
+//   });
 
-  // Remove hidden class to show modal
-  modal.classList.remove("hidden");
-  console.log("Intersect modal opened");
-}
+//   // Remove hidden class to show modal
+//   modal.classList.remove("hidden");
+//   console.log("Intersect modal opened");
+// }
+
 window.debugModals = function () {
   const bufferModal = document.getElementById("bufferModal");
   const intersectModal = document.getElementById("intersectModal");
@@ -6062,530 +6133,529 @@ window.debugModals = function () {
   });
 };
 // Update closeIntersectModal to properly clean up
-function closeIntersectModal() {
-  const modal = document.getElementById("intersectModal");
-  modal.classList.remove("drawing-active");
-  modal.classList.add("hidden");
+// function closeIntersectModal() {
+//   const modal = document.getElementById("intersectModal");
+//   modal.classList.remove("drawing-active");
+//   modal.classList.add("hidden");
 
-  // Cancel any active drawing
-  const { stateManager } = getState();
-  const sketchViewModel = stateManager.getSketchViewModel();
-  if (sketchViewModel) {
-    sketchViewModel.cancel();
-  }
+//   // Cancel any active drawing
+//   const { stateManager } = getState();
+//   const sketchViewModel = stateManager.getSketchViewModel();
+//   if (sketchViewModel) {
+//     sketchViewModel.cancel();
+//   }
 
-  // Remove drawing indicator if exists
-  const indicator = document.getElementById("intersectDrawingIndicator");
-  if (indicator) {
-    indicator.remove();
-  }
+//   // Remove drawing indicator if exists
+//   const indicator = document.getElementById("intersectDrawingIndicator");
+//   if (indicator) {
+//     indicator.remove();
+//   }
 
-  // Clean up handlers
-  if (window.intersectDrawHandler) {
-    window.intersectDrawHandler.remove();
-  }
+//   // Clean up handlers
+//   if (window.intersectDrawHandler) {
+//     window.intersectDrawHandler.remove();
+//   }
 
-  stopAnalysisDrawing();
+//   stopAnalysisDrawing();
 
-  // Clear drawn features if user wants
-  if (getState().stateManager.getDrawnFeatures().intersect1) {
-    getState().stateManager.getDrawLayer().remove(getState().stateManager.getDrawnFeatures().intersect1);
-    getState().stateManager.setIntersectFeature1(null);
-  }
-  if (getState().stateManager.getDrawnFeatures().intersect2) {
-    getState().stateManager.getDrawLayer().remove(getState().stateManager.getDrawnFeatures().intersect2);
-    getState().stateManager.setIntersectFeature2(null);
-  }
-}
+//   // Clear drawn features if user wants
+//   if (getState().stateManager.getDrawnFeatures().intersect1) {
+//     getState().stateManager.getDrawLayer().remove(getState().stateManager.getDrawnFeatures().intersect1);
+//     getState().stateManager.setIntersectFeature1(null);
+//   }
+//   if (getState().stateManager.getDrawnFeatures().intersect2) {
+//     getState().stateManager.getDrawLayer().remove(getState().stateManager.getDrawnFeatures().intersect2);
+//     getState().stateManager.setIntersectFeature2(null);
+//   }
+// }
 
 // Fix setIntersectSource with proper event handling
-function setIntersectSource (featureNum, source) {
-  // Find the correct section in the modal
-  const modal = document.getElementById("intersectModal");
-  const sections = modal.querySelectorAll(".feature-section");
-  const targetSection = sections[featureNum - 1];
+// function setIntersectSource (featureNum, source) {
+//   // Find the correct section in the modal
+//   const modal = document.getElementById("intersectModal");
+//   const sections = modal.querySelectorAll(".feature-section");
+//   const targetSection = sections[featureNum - 1];
 
-  if (!targetSection) {
-    console.error("Could not find feature section for feature", featureNum);
-    return;
-  }
+//   if (!targetSection) {
+//     console.error("Could not find feature section for feature", featureNum);
+//     return;
+//   }
 
-  // Update button states within this section
-  const buttons = targetSection.querySelectorAll(".button-group-item");
-  buttons.forEach((btn) => {
-    btn.classList.remove("active");
-  });
+//   // Update button states within this section
+//   const buttons = targetSection.querySelectorAll(".button-group-item");
+//   buttons.forEach((btn) => {
+//     btn.classList.remove("active");
+//   });
 
-  // Find and activate the correct button
-  const activeButton = Array.from(buttons).find((btn) => {
-    const buttonText = btn.textContent.toLowerCase();
-    return (
-      (source === "layer" && buttonText.includes("layer")) ||
-      (source === "draw" && buttonText.includes("draw"))
-    );
-  });
+//   // Find and activate the correct button
+//   const activeButton = Array.from(buttons).find((btn) => {
+//     const buttonText = btn.textContent.toLowerCase();
+//     return (
+//       (source === "layer" && buttonText.includes("layer")) ||
+//       (source === "draw" && buttonText.includes("draw"))
+//     );
+//   });
 
-  if (activeButton) {
-    activeButton.classList.add("active");
-  }
+//   if (activeButton) {
+//     activeButton.classList.add("active");
+//   }
 
-  // Show/hide sections
-  const layerSection = document.getElementById(
-    `intersectLayer${featureNum}Section`
-  );
-  const drawSection = document.getElementById(
-    `intersectDraw${featureNum}Section`
-  );
+//   // Show/hide sections
+//   const layerSection = document.getElementById(
+//     `intersectLayer${featureNum}Section`
+//   );
+//   const drawSection = document.getElementById(
+//     `intersectDraw${featureNum}Section`
+//   );
 
-  if (layerSection && drawSection) {
-    if (source === "layer") {
-      layerSection.style.display = "block";
-      drawSection.style.display = "none";
-    } else {
-      layerSection.style.display = "none";
-      drawSection.style.display = "block";
-    }
-  }
-};
+//   if (layerSection && drawSection) {
+//     if (source === "layer") {
+//       layerSection.style.display = "block";
+//       drawSection.style.display = "none";
+//     } else {
+//       layerSection.style.display = "none";
+//       drawSection.style.display = "block";
+//     }
+//   }
+// };
 
 // Intersection drawing using existing sketch
-async function startIntersectDrawing(featureNum) {
-  // Add drawing mode to modal
-  const modal = document.getElementById("intersectModal");
-  modal.classList.add("drawing-active");
+// async function startIntersectDrawing(featureNum) {
+//   // Add drawing mode to modal
+//   const modal = document.getElementById("intersectModal");
+//   modal.classList.add("drawing-active");
 
-  const { stateManager, drawingManager } = getState();
-  let sketchViewModel = stateManager.getSketchViewModel();
+//   const { stateManager, drawingManager } = getState();
+//   let sketchViewModel = stateManager.getSketchViewModel();
 
-  if (!sketchViewModel) {
-    sketchViewModel = await drawingManager.initializeSketchViewModel();
-  }
+//   if (!sketchViewModel) {
+//     sketchViewModel = await drawingManager.initializeSketchViewModel();
+//   }
 
-  // Clear previous drawing for this feature
-  if (featureNum === 1 && stateManager.getDrawnFeatures().intersect1) {
-    stateManager.getDrawLayer().remove(stateManager.getDrawnFeatures().intersect1);
-    stateManager.setIntersectFeature1(null);
-  } else if (featureNum === 2 && stateManager.getDrawnFeatures().intersect2) {
-    stateManager.getDrawLayer().remove(stateManager.getDrawnFeatures().intersect2);
-    stateManager.setIntersectFeature2(null);
-  }
+//   // Clear previous drawing for this feature
+//   if (featureNum === 1 && stateManager.getDrawnFeatures().intersect1) {
+//     stateManager.getDrawLayer().remove(stateManager.getDrawnFeatures().intersect1);
+//     stateManager.setIntersectFeature1(null);
+//   } else if (featureNum === 2 && stateManager.getDrawnFeatures().intersect2) {
+//     stateManager.getDrawLayer().remove(stateManager.getDrawnFeatures().intersect2);
+//     stateManager.setIntersectFeature2(null);
+//   }
 
-  // Set custom symbology for intersection polygons
-  const color = featureNum === 1 ? [255, 0, 0] : [0, 0, 255];
-  sketchViewModel.polygonSymbol = {
-    type: "simple-fill",
-    color: [...color, 0.3],
-    outline: {
-      color: [...color, 1],
-      width: 2,
-    },
-  };
+//   // Set custom symbology for intersection polygons
+//   const color = featureNum === 1 ? [255, 0, 0] : [0, 0, 255];
+//   sketchViewModel.polygonSymbol = {
+//     type: "simple-fill",
+//     color: [...color, 0.3],
+//     outline: {
+//       color: [...color, 1],
+//       width: 2,
+//     },
+//   };
 
-  // Create drawing indicator
-  if (!document.getElementById("intersectDrawingIndicator")) {
-    const indicator = document.createElement("div");
-    indicator.id = "intersectDrawingIndicator";
-    indicator.style.cssText = `
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--primary-color);
-      color: white;
-      padding: 12px 24px;
-      border-radius: 8px;
-      box-shadow: var(--shadow-lg);
-      z-index: 2000;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    `;
-    document.body.appendChild(indicator);
-  }
+//   // Create drawing indicator
+//   if (!document.getElementById("intersectDrawingIndicator")) {
+//     const indicator = document.createElement("div");
+//     indicator.id = "intersectDrawingIndicator";
+//     indicator.style.cssText = `
+//       position: fixed;
+//       top: 20px;
+//       left: 50%;
+//       transform: translateX(-50%);
+//       background: var(--primary-color);
+//       color: white;
+//       padding: 12px 24px;
+//       border-radius: 8px;
+//       box-shadow: var(--shadow-lg);
+//       z-index: 2000;
+//       display: flex;
+//       align-items: center;
+//       gap: 8px;
+//     `;
+//     document.body.appendChild(indicator);
+//   }
 
-  const indicator = document.getElementById("intersectDrawingIndicator");
-  indicator.innerHTML = `
-    <i class="fas fa-draw-polygon"></i>
-    <span>Drawing polygon ${featureNum}. Click to add vertices, double-click to complete.</span>
-    <button onclick="cancelIntersectDrawing()" style="
-      background: white;
-      color: var(--primary-color);
-      border: none;
-      padding: 4px 8px;
-      border-radius: 4px;
-      margin-left: 12px;
-      cursor: pointer;
-    ">Cancel</button>
-  `;
+//   const indicator = document.getElementById("intersectDrawingIndicator");
+//   indicator.innerHTML = `
+//     <i class="fas fa-draw-polygon"></i>
+//     <span>Drawing polygon ${featureNum}. Click to add vertices, double-click to complete.</span>
+//     <button onclick="cancelIntersectDrawing()" style="
+//       background: white;
+//       color: var(--primary-color);
+//       border: none;
+//       padding: 4px 8px;
+//       border-radius: 4px;
+//       margin-left: 12px;
+//       cursor: pointer;
+//     ">Cancel</button>
+//   `;
 
-  // Clear previous handler
-  if (window.intersectDrawHandler) {
-    window.intersectDrawHandler.remove();
-  }
+//   // Clear previous handler
+//   if (window.intersectDrawHandler) {
+//     window.intersectDrawHandler.remove();
+//   }
 
-  // Set up one-time event listener
-  window.intersectDrawHandler = sketchViewModel.on("create", (event) => {
-    if (event.state === "complete") {
-      // Remove drawing mode
-      modal.classList.remove("drawing-active");
+//   // Set up one-time event listener
+//   window.intersectDrawHandler = sketchViewModel.on("create", (event) => {
+//     if (event.state === "complete") {
+//       // Remove drawing mode
+//       modal.classList.remove("drawing-active");
 
-      if (featureNum === 1) {
-        getState().stateManager.setIntersectFeature1(event.graphic);
-        document.querySelector("#intersectDraw1Section button").innerHTML =
-          '<i class="fas fa-edit"></i> Redraw First Polygon';
-      } else {
-        getState().stateManager.setIntersectFeature2(event.graphic);
-        document.querySelector("#intersectDraw2Section button").innerHTML =
-          '<i class="fas fa-edit"></i> Redraw Second Polygon';
-      }
+//       if (featureNum === 1) {
+//         getState().stateManager.setIntersectFeature1(event.graphic);
+//         document.querySelector("#intersectDraw1Section button").innerHTML =
+//           '<i class="fas fa-edit"></i> Redraw First Polygon';
+//       } else {
+//         getState().stateManager.setIntersectFeature2(event.graphic);
+//         document.querySelector("#intersectDraw2Section button").innerHTML =
+//           '<i class="fas fa-edit"></i> Redraw Second Polygon';
+//       }
 
-      // Remove indicator
-      const indicatorEl = document.getElementById("intersectDrawingIndicator");
-      if (indicatorEl) {
-        indicatorEl.remove();
-      }
+//       // Remove indicator
+//       const indicatorEl = document.getElementById("intersectDrawingIndicator");
+//       if (indicatorEl) {
+//         indicatorEl.remove();
+//       }
 
-      showNotification(`Polygon ${featureNum} drawn successfully`, "success");
+//       showNotification(`Polygon ${featureNum} drawn successfully`, "success");
 
-      // Remove handler
-      window.intersectDrawHandler.remove();
-    }
-  });
+//       // Remove handler
+//       window.intersectDrawHandler.remove();
+//     }
+//   });
 
-  // Start drawing polygon
-  sketchViewModel.create("polygon");
-}
+//   // Start drawing polygon
+//   sketchViewModel.create("polygon");
+// }
 
 // Update cancel function
-function cancelIntersectDrawing () {
-  const modal = document.getElementById("intersectModal");
-  modal.classList.remove("drawing-active");
+// function cancelIntersectDrawing () {
+//   const modal = document.getElementById("intersectModal");
+//   modal.classList.remove("drawing-active");
 
-  const { stateManager } = getState();
-  const sketchViewModel = stateManager.getSketchViewModel();
-  if (sketchViewModel) {
-    sketchViewModel.cancel();
-  }
+//   const { stateManager } = getState();
+//   const sketchViewModel = stateManager.getSketchViewModel();
+//   if (sketchViewModel) {
+//     sketchViewModel.cancel();
+//   }
 
-  const indicator = document.getElementById("intersectDrawingIndicator");
-  if (indicator) {
-    indicator.remove();
-  }
+//   const indicator = document.getElementById("intersectDrawingIndicator");
+//   if (indicator) {
+//     indicator.remove();
+//   }
 
-  if (window.intersectDrawHandler) {
-    window.intersectDrawHandler.remove();
-  }
-};
-
+//   if (window.intersectDrawHandler) {
+//     window.intersectDrawHandler.remove();
+//   }
+// };
 
 // Update executeIntersection to show non-intersecting parts
-async function executeIntersection() {
-  try {
-    showNotification("Performing intersection analysis...", "info");
+// async function executeIntersection() {
+//   try {
+//     showNotification("Performing intersection analysis...", "info");
 
-    const [geometryEngine, Graphic] = await Promise.all([
-      loadModule("esri/geometry/geometryEngine"),
-      loadModule("esri/Graphic"),
-    ]);
+//     const [geometryEngine, Graphic] = await Promise.all([
+//       loadModule("esri/geometry/geometryEngine"),
+//       loadModule("esri/Graphic"),
+//     ]);
 
-    let features1 = [];
-    let features2 = [];
+//     let features1 = [];
+//     let features2 = [];
 
-    // Get modal and find active buttons correctly
-    const modal = document.getElementById("intersectModal");
-    const featureSections = modal.querySelectorAll(".feature-section");
+//     // Get modal and find active buttons correctly
+//     const modal = document.getElementById("intersectModal");
+//     const featureSections = modal.querySelectorAll(".feature-section");
 
-    // Check first feature source
-    const firstSectionButtons =
-      featureSections[0].querySelectorAll(".button-group-item");
-    const source1ActiveBtn = Array.from(firstSectionButtons).find((btn) =>
-      btn.classList.contains("active")
-    );
-    const source1IsLayer =
-      source1ActiveBtn && source1ActiveBtn.textContent.includes("From Layer");
+//     // Check first feature source
+//     const firstSectionButtons =
+//       featureSections[0].querySelectorAll(".button-group-item");
+//     const source1ActiveBtn = Array.from(firstSectionButtons).find((btn) =>
+//       btn.classList.contains("active")
+//     );
+//     const source1IsLayer =
+//       source1ActiveBtn && source1ActiveBtn.textContent.includes("From Layer");
 
-    console.log(
-      "Source 1 - Active button:",
-      source1ActiveBtn?.textContent,
-      "Is layer:",
-      source1IsLayer
-    );
+//     console.log(
+//       "Source 1 - Active button:",
+//       source1ActiveBtn?.textContent,
+//       "Is layer:",
+//       source1IsLayer
+//     );
 
-    if (source1IsLayer) {
-      const layerIndex = document.getElementById("intersectLayer1Select").value;
-      if (layerIndex === "") {
-        showNotification("Please select first layer", "error");
-        return;
-      }
+//     if (source1IsLayer) {
+//       const layerIndex = document.getElementById("intersectLayer1Select").value;
+//       if (layerIndex === "") {
+//         showNotification("Please select first layer", "error");
+//         return;
+//       }
 
-      const polygonLayers = getState().stateManager.getUploadedLayers().filter(
-        (layer) => layer.geometryType === "polygon"
-      );
-      const layer = polygonLayers[parseInt(layerIndex)];
+//       const polygonLayers = getState().stateManager.getUploadedLayers().filter(
+//         (layer) => layer.geometryType === "polygon"
+//       );
+//       const layer = polygonLayers[parseInt(layerIndex)];
 
-      const query = layer.createQuery();
-      query.where = "1=1";
-      query.returnGeometry = true;
+//       const query = layer.createQuery();
+//       query.where = "1=1";
+//       query.returnGeometry = true;
 
-      const result = await layer.queryFeatures(query);
-      features1 = result.features;
-    } else {
-      if (!getState().stateManager.getDrawnFeatures().intersect1) {
-        showNotification("Please draw the first polygon", "error");
-        return;
-      }
-      features1 = [getState().stateManager.getDrawnFeatures().intersect1];
-    }
+//       const result = await layer.queryFeatures(query);
+//       features1 = result.features;
+//     } else {
+//       if (!getState().stateManager.getDrawnFeatures().intersect1) {
+//         showNotification("Please draw the first polygon", "error");
+//         return;
+//       }
+//       features1 = [getState().stateManager.getDrawnFeatures().intersect1];
+//     }
 
-    // Check second feature source
-    const secondSectionButtons =
-      featureSections[1].querySelectorAll(".button-group-item");
-    const source2ActiveBtn = Array.from(secondSectionButtons).find((btn) =>
-      btn.classList.contains("active")
-    );
-    const source2IsLayer =
-      source2ActiveBtn && source2ActiveBtn.textContent.includes("From Layer");
+//     // Check second feature source
+//     const secondSectionButtons =
+//       featureSections[1].querySelectorAll(".button-group-item");
+//     const source2ActiveBtn = Array.from(secondSectionButtons).find((btn) =>
+//       btn.classList.contains("active")
+//     );
+//     const source2IsLayer =
+//       source2ActiveBtn && source2ActiveBtn.textContent.includes("From Layer");
 
-    console.log(
-      "Source 2 - Active button:",
-      source2ActiveBtn?.textContent,
-      "Is layer:",
-      source2IsLayer
-    );
+//     console.log(
+//       "Source 2 - Active button:",
+//       source2ActiveBtn?.textContent,
+//       "Is layer:",
+//       source2IsLayer
+//     );
 
-    if (source2IsLayer) {
-      const layerIndex = document.getElementById("intersectLayer2Select").value;
-      if (layerIndex === "") {
-        showNotification("Please select second layer", "error");
-        return;
-      }
+//     if (source2IsLayer) {
+//       const layerIndex = document.getElementById("intersectLayer2Select").value;
+//       if (layerIndex === "") {
+//         showNotification("Please select second layer", "error");
+//         return;
+//       }
 
-      const polygonLayers = getState().stateManager.getUploadedLayers().filter(
-        (layer) => layer.geometryType === "polygon"
-      );
-      const layer = polygonLayers[parseInt(layerIndex)];
+//       const polygonLayers = getState().stateManager.getUploadedLayers().filter(
+//         (layer) => layer.geometryType === "polygon"
+//       );
+//       const layer = polygonLayers[parseInt(layerIndex)];
 
-      const query = layer.createQuery();
-      query.where = "1=1";
-      query.returnGeometry = true;
+//       const query = layer.createQuery();
+//       query.where = "1=1";
+//       query.returnGeometry = true;
 
-      const result = await layer.queryFeatures(query);
-      features2 = result.features;
-    } else {
-      if (!getState().stateManager.getDrawnFeatures().intersect2) {
-        showNotification("Please draw the second polygon", "error");
-        return;
-      }
-      features2 = [getState().stateManager.getDrawnFeatures().intersect2];
-    }
+//       const result = await layer.queryFeatures(query);
+//       features2 = result.features;
+//     } else {
+//       if (!getState().stateManager.getDrawnFeatures().intersect2) {
+//         showNotification("Please draw the second polygon", "error");
+//         return;
+//       }
+//       features2 = [getState().stateManager.getDrawnFeatures().intersect2];
+//     }
 
-    // Clear previous results
-    analysisLayer.removeAll();
+//     // Clear previous results
+//     analysisLayer.removeAll();
 
-    // Check if user wants to keep non-intersecting parts
-    const keepNonIntersecting = document.getElementById(
-      "keepNonIntersecting"
-    ).checked;
+//     // Check if user wants to keep non-intersecting parts
+//     const keepNonIntersecting = document.getElementById(
+//       "keepNonIntersecting"
+//     ).checked;
 
-    // Perform intersection and difference analysis
-    let intersectionCount = 0;
-    let allIntersections = [];
-    let allFeatures1 = [];
-    let allFeatures2 = [];
+//     // Perform intersection and difference analysis
+//     let intersectionCount = 0;
+//     let allIntersections = [];
+//     let allFeatures1 = [];
+//     let allFeatures2 = [];
 
-    // Collect all geometries for union later
-    features1.forEach((feature) => allFeatures1.push(feature.geometry));
-    features2.forEach((feature) => allFeatures2.push(feature.geometry));
+//     // Collect all geometries for union later
+//     features1.forEach((feature) => allFeatures1.push(feature.geometry));
+//     features2.forEach((feature) => allFeatures2.push(feature.geometry));
 
-    // Perform intersections
-    features1.forEach((feature1) => {
-      features2.forEach((feature2) => {
-        const intersection = geometryEngine.intersect(
-          feature1.geometry,
-          feature2.geometry
-        );
+//     // Perform intersections
+//     features1.forEach((feature1) => {
+//       features2.forEach((feature2) => {
+//         const intersection = geometryEngine.intersect(
+//           feature1.geometry,
+//           feature2.geometry
+//         );
 
-        if (intersection) {
-          allIntersections.push(intersection);
+//         if (intersection) {
+//           allIntersections.push(intersection);
 
-          // Add intersection graphic
-          const graphic = new Graphic({
-            geometry: intersection,
-            symbol: {
-              type: "simple-fill",
-              color: [0, 255, 0, 0.5],
-              outline: {
-                color: [0, 150, 0, 1],
-                width: 3,
-              },
-            },
-            attributes: {
-              type: "Intersection",
-              analysisType: "Intersecting Area",
-              source1: source1IsLayer ? "Layer" : "Drawn",
-              source2: source2IsLayer ? "Layer" : "Drawn",
-            },
-          });
-          analysisLayer.add(graphic);
-          intersectionCount++;
-        }
-      });
-    });
+//           // Add intersection graphic
+//           const graphic = new Graphic({
+//             geometry: intersection,
+//             symbol: {
+//               type: "simple-fill",
+//               color: [0, 255, 0, 0.5],
+//               outline: {
+//                 color: [0, 150, 0, 1],
+//                 width: 3,
+//               },
+//             },
+//             attributes: {
+//               type: "Intersection",
+//               analysisType: "Intersecting Area",
+//               source1: source1IsLayer ? "Layer" : "Drawn",
+//               source2: source2IsLayer ? "Layer" : "Drawn",
+//             },
+//           });
+//           analysisLayer.add(graphic);
+//           intersectionCount++;
+//         }
+//       });
+//     });
 
-    // If user wants non-intersecting parts
-    if (keepNonIntersecting && allIntersections.length > 0) {
-      // Union all intersections
-      let unionedIntersections =
-        allIntersections.length > 1
-          ? geometryEngine.union(allIntersections)
-          : allIntersections[0];
+//     // If user wants non-intersecting parts
+//     if (keepNonIntersecting && allIntersections.length > 0) {
+//       // Union all intersections
+//       let unionedIntersections =
+//         allIntersections.length > 1
+//           ? geometryEngine.union(allIntersections)
+//           : allIntersections[0];
 
-      // Calculate non-intersecting parts for features1
-      features1.forEach((feature1, index) => {
-        try {
-          const difference = geometryEngine.difference(
-            feature1.geometry,
-            unionedIntersections
-          );
-          if (difference) {
-            const graphic = new Graphic({
-              geometry: difference,
-              symbol: {
-                type: "simple-fill",
-                color: [255, 0, 0, 0.3],
-                outline: {
-                  color: [200, 0, 0, 0.8],
-                  width: 2,
-                  style: "dash",
-                },
-              },
-              attributes: {
-                type: "Non-Intersection",
-                analysisType: "Non-Intersecting Area (Set 1)",
-                featureIndex: index,
-                source: source1IsLayer ? "Layer 1" : "Drawn 1",
-              },
-            });
-            analysisLayer.add(graphic);
-          }
-        } catch (e) {
-          console.warn("Error calculating difference for feature1:", e);
-        }
-      });
+//       // Calculate non-intersecting parts for features1
+//       features1.forEach((feature1, index) => {
+//         try {
+//           const difference = geometryEngine.difference(
+//             feature1.geometry,
+//             unionedIntersections
+//           );
+//           if (difference) {
+//             const graphic = new Graphic({
+//               geometry: difference,
+//               symbol: {
+//                 type: "simple-fill",
+//                 color: [255, 0, 0, 0.3],
+//                 outline: {
+//                   color: [200, 0, 0, 0.8],
+//                   width: 2,
+//                   style: "dash",
+//                 },
+//               },
+//               attributes: {
+//                 type: "Non-Intersection",
+//                 analysisType: "Non-Intersecting Area (Set 1)",
+//                 featureIndex: index,
+//                 source: source1IsLayer ? "Layer 1" : "Drawn 1",
+//               },
+//             });
+//             analysisLayer.add(graphic);
+//           }
+//         } catch (e) {
+//           console.warn("Error calculating difference for feature1:", e);
+//         }
+//       });
 
-      // Calculate non-intersecting parts for features2
-      features2.forEach((feature2, index) => {
-        try {
-          const difference = geometryEngine.difference(
-            feature2.geometry,
-            unionedIntersections
-          );
-          if (difference) {
-            const graphic = new Graphic({
-              geometry: difference,
-              symbol: {
-                type: "simple-fill",
-                color: [0, 0, 255, 0.3],
-                outline: {
-                  color: [0, 0, 200, 0.8],
-                  width: 2,
-                  style: "dash",
-                },
-              },
-              attributes: {
-                type: "Non-Intersection",
-                analysisType: "Non-Intersecting Area (Set 2)",
-                featureIndex: index,
-                source: source2IsLayer ? "Layer 2" : "Drawn 2",
-              },
-            });
-            analysisLayer.add(graphic);
-          }
-        } catch (e) {
-          console.warn("Error calculating difference for feature2:", e);
-        }
-      });
-    }
+//       // Calculate non-intersecting parts for features2
+//       features2.forEach((feature2, index) => {
+//         try {
+//           const difference = geometryEngine.difference(
+//             feature2.geometry,
+//             unionedIntersections
+//           );
+//           if (difference) {
+//             const graphic = new Graphic({
+//               geometry: difference,
+//               symbol: {
+//                 type: "simple-fill",
+//                 color: [0, 0, 255, 0.3],
+//                 outline: {
+//                   color: [0, 0, 200, 0.8],
+//                   width: 2,
+//                   style: "dash",
+//                 },
+//               },
+//               attributes: {
+//                 type: "Non-Intersection",
+//                 analysisType: "Non-Intersecting Area (Set 2)",
+//                 featureIndex: index,
+//                 source: source2IsLayer ? "Layer 2" : "Drawn 2",
+//               },
+//             });
+//             analysisLayer.add(graphic);
+//           }
+//         } catch (e) {
+//           console.warn("Error calculating difference for feature2:", e);
+//         }
+//       });
+//     }
 
-    // Clear drawn features from draw layer
-    if (!source1IsLayer && getState().stateManager.getDrawnFeatures().intersect1) {
-      getState().stateManager.getDrawLayer().remove(getState().stateManager.getDrawnFeatures().intersect1);
-    }
-    if (!source2IsLayer && getState().stateManager.getDrawnFeatures().intersect2) {
-      getState().stateManager.getDrawLayer().remove(getState().stateManager.getDrawnFeatures().intersect2);
-    }
+//     // Clear drawn features from draw layer
+//     if (!source1IsLayer && getState().stateManager.getDrawnFeatures().intersect1) {
+//       getState().stateManager.getDrawLayer().remove(getState().stateManager.getDrawnFeatures().intersect1);
+//     }
+//     if (!source2IsLayer && getState().stateManager.getDrawnFeatures().intersect2) {
+//       getState().stateManager.getDrawLayer().remove(getState().stateManager.getDrawnFeatures().intersect2);
+//     }
 
-    // Report results
-    if (intersectionCount > 0) {
-      await view.goTo(analysisLayer.graphics);
+//     // Report results
+//     if (intersectionCount > 0) {
+//       await view.goTo(analysisLayer.graphics);
 
-      let message = `Found ${intersectionCount} intersection(s)`;
-      if (keepNonIntersecting) {
-        const totalGraphics = analysisLayer.graphics.length;
-        const nonIntersectingCount = totalGraphics - intersectionCount;
-        message += ` and ${nonIntersectingCount} non-intersecting area(s)`;
-      }
-      showNotification(message, "success");
+//       let message = `Found ${intersectionCount} intersection(s)`;
+//       if (keepNonIntersecting) {
+//         const totalGraphics = analysisLayer.graphics.length;
+//         const nonIntersectingCount = totalGraphics - intersectionCount;
+//         message += ` and ${nonIntersectingCount} non-intersecting area(s)`;
+//       }
+//       showNotification(message, "success");
 
-      // Update layer list to show breakdown
-      updateLayerList();
-    } else {
-      showNotification("No intersections found", "info");
+//       // Update layer list to show breakdown
+//       updateLayerList();
+//     } else {
+//       showNotification("No intersections found", "info");
 
-      // If no intersections but user wants to see non-intersecting parts, show original polygons
-      if (keepNonIntersecting) {
-        features1.forEach((feature, index) => {
-          const graphic = new Graphic({
-            geometry: feature.geometry,
-            symbol: {
-              type: "simple-fill",
-              color: [255, 0, 0, 0.3],
-              outline: {
-                color: [200, 0, 0, 0.8],
-                width: 2,
-                style: "dash",
-              },
-            },
-            attributes: {
-              type: "Non-Intersection",
-              analysisType: "Original Polygon (Set 1)",
-              featureIndex: index,
-            },
-          });
-          analysisLayer.add(graphic);
-        });
+//       // If no intersections but user wants to see non-intersecting parts, show original polygons
+//       if (keepNonIntersecting) {
+//         features1.forEach((feature, index) => {
+//           const graphic = new Graphic({
+//             geometry: feature.geometry,
+//             symbol: {
+//               type: "simple-fill",
+//               color: [255, 0, 0, 0.3],
+//               outline: {
+//                 color: [200, 0, 0, 0.8],
+//                 width: 2,
+//                 style: "dash",
+//               },
+//             },
+//             attributes: {
+//               type: "Non-Intersection",
+//               analysisType: "Original Polygon (Set 1)",
+//               featureIndex: index,
+//             },
+//           });
+//           analysisLayer.add(graphic);
+//         });
 
-        features2.forEach((feature, index) => {
-          const graphic = new Graphic({
-            geometry: feature.geometry,
-            symbol: {
-              type: "simple-fill",
-              color: [0, 0, 255, 0.3],
-              outline: {
-                color: [0, 0, 200, 0.8],
-                width: 2,
-                style: "dash",
-              },
-            },
-            attributes: {
-              type: "Non-Intersection",
-              analysisType: "Original Polygon (Set 2)",
-              featureIndex: index,
-            },
-          });
-          analysisLayer.add(graphic);
-        });
+//         features2.forEach((feature, index) => {
+//           const graphic = new Graphic({
+//             geometry: feature.geometry,
+//             symbol: {
+//               type: "simple-fill",
+//               color: [0, 0, 255, 0.3],
+//               outline: {
+//                 color: [0, 0, 200, 0.8],
+//                 width: 2,
+//                 style: "dash",
+//               },
+//             },
+//             attributes: {
+//               type: "Non-Intersection",
+//               analysisType: "Original Polygon (Set 2)",
+//               featureIndex: index,
+//             },
+//           });
+//           analysisLayer.add(graphic);
+//         });
 
-        await view.goTo(analysisLayer.graphics);
-      }
-    }
+//         await view.goTo(analysisLayer.graphics);
+//       }
+//     }
 
-    closeIntersectModal();
-  } catch (error) {
-    console.error("Intersection error:", error);
-    showNotification("Error performing intersection", "error");
-  }
-}
+//     closeIntersectModal();
+//   } catch (error) {
+//     console.error("Intersection error:", error);
+//     showNotification("Error performing intersection", "error");
+//   }
+// }
 
 // async function performIntersection(layer1, layer2) {
 //   try {
@@ -6659,369 +6729,368 @@ async function executeIntersection() {
 
 // Update distance analysis to support drawing
 
-async function startDistanceAnalysis() {
-  await initializeAnalysisLayer();
+// async function startDistanceAnalysis() {
+//   await initializeAnalysisLayer();
 
-  const panel = document.getElementById("distancePanel");
-  if (!panel) return;
+//   const panel = document.getElementById("distancePanel");
+//   if (!panel) return;
 
-  panel.classList.remove("hidden");
+//   panel.classList.remove("hidden");
 
-  // Reset the panel content with both options
-  const panelContent = panel.querySelector(".widget-content");
-  panelContent.innerHTML = `
-    <div class="button-group" style="margin-bottom: 12px;">
-      <button class="button-group-item active" onclick="window.setDistanceSource('select')">
-        <i class="fas fa-mouse-pointer"></i> Select Features
-      </button>
-      <button class="button-group-item" onclick="window.setDistanceSource('draw')">
-        <i class="fas fa-map-marker-alt"></i> Draw Points
-      </button>
-    </div>
-    <p class="help-text" id="distanceHelp">Click on two features to measure distance</p>
-    <div id="distanceResult" class="analysis-result"></div>
-    <button class="action-btn secondary" onclick="clearDistanceMeasurement()">
-      Clear Measurement
-    </button>
-  `;
+//   // Reset the panel content with both options
+//   const panelContent = panel.querySelector(".widget-content");
+//   panelContent.innerHTML = `
+//     <div class="button-group" style="margin-bottom: 12px;">
+//       <button class="button-group-item active" onclick="window.setDistanceSource('select')">
+//         <i class="fas fa-mouse-pointer"></i> Select Features
+//       </button>
+//       <button class="button-group-item" onclick="window.setDistanceSource('draw')">
+//         <i class="fas fa-map-marker-alt"></i> Draw Points
+//       </button>
+//     </div>
+//     <p class="help-text" id="distanceHelp">Click on two features to measure distance</p>
+//     <div id="distanceResult" class="analysis-result"></div>
+//     <button class="action-btn secondary" onclick="clearDistanceMeasurement()">
+//       Clear Measurement
+//     </button>
+//   `;
 
-  distanceMeasurementActive = true;
-  distanceFeatures = [];
+//   distanceMeasurementActive = true;
+//   distanceFeatures = [];
 
-  // Set up click handler for feature selection
-  if (window.distanceClickHandler) {
-    window.distanceClickHandler.remove();
-  }
+//   // Set up click handler for feature selection
+//   if (window.distanceClickHandler) {
+//     window.distanceClickHandler.remove();
+//   }
 
-  window.distanceClickHandler = view.on("click", handleDistanceClick);
-  view.container.style.cursor = "crosshair";
-}
+//   window.distanceClickHandler = view.on("click", handleDistanceClick);
+//   view.container.style.cursor = "crosshair";
+// }
 
 // Fix setDistanceSource function
-async function setDistanceSource (source) {
-  const buttons = document.querySelectorAll(
-    "#distancePanel .button-group-item"
-  );
-  buttons.forEach((btn) => btn.classList.remove("active"));
+// async function setDistanceSource (source) {
+//   const buttons = document.querySelectorAll(
+//     "#distancePanel .button-group-item"
+//   );
+//   buttons.forEach((btn) => btn.classList.remove("active"));
 
-  // Find and activate the clicked button
-  const activeButton = Array.from(buttons).find((btn) =>
-    btn.getAttribute("onclick").includes(source)
-  );
-  if (activeButton) {
-    activeButton.classList.add("active");
-  }
+//   // Find and activate the clicked button
+//   const activeButton = Array.from(buttons).find((btn) =>
+//     btn.getAttribute("onclick").includes(source)
+//   );
+//   if (activeButton) {
+//     activeButton.classList.add("active");
+//   }
 
-  const helpText = document.getElementById("distanceHelp");
-  distanceFeatures = [];
+//   const helpText = document.getElementById("distanceHelp");
+//   distanceFeatures = [];
 
-  // Clear any existing graphics
-  const distanceGraphics = analysisLayer.graphics.filter(
-    (g) => g.attributes && g.attributes.type === "Distance Measurement"
-  );
-  analysisLayer.removeMany(distanceGraphics.toArray());
+//   // Clear any existing graphics
+//   const distanceGraphics = analysisLayer.graphics.filter(
+//     (g) => g.attributes && g.attributes.type === "Distance Measurement"
+//   );
+//   analysisLayer.removeMany(distanceGraphics.toArray());
 
-  if (source === "draw") {
-    helpText.textContent =
-      "Click on map to place two points for distance measurement";
+//   if (source === "draw") {
+//     helpText.textContent =
+//       "Click on map to place two points for distance measurement";
 
-    // Remove click handler for feature selection
-    if (window.distanceClickHandler) {
-      window.distanceClickHandler.remove();
-    }
+//     // Remove click handler for feature selection
+//     if (window.distanceClickHandler) {
+//       window.distanceClickHandler.remove();
+//     }
 
-    // Initialize sketch for point drawing
-    const { stateManager } = getState();
-    let sketchViewModel = stateManager.getSketchViewModel();
-    if (!sketchViewModel) {
-      sketchViewModel = await initializeSketchViewModel();
-    }
+//     // Initialize sketch for point drawing
+//     const { stateManager } = getState();
+//     let sketchViewModel = stateManager.getSketchViewModel();
+//     if (!sketchViewModel) {
+//       sketchViewModel = await initializeSketchViewModel();
+//     }
 
-    // Clear any previous distance drawing handler
-    if (window.distanceDrawHandler) {
-      window.distanceDrawHandler.remove();
-    }
+//     // Clear any previous distance drawing handler
+//     if (window.distanceDrawHandler) {
+//       window.distanceDrawHandler.remove();
+//     }
 
-    let pointCount = 0;
-    const tempPoints = [];
+//     let pointCount = 0;
+//     const tempPoints = [];
 
-    // Set point symbol for distance measurement
-    sketchViewModel.pointSymbol = {
-      type: "simple-marker",
-      style: "circle",
-      color: [255, 0, 255, 0.8],
-      size: 12,
-      outline: {
-        color: [255, 255, 255, 1],
-        width: 2,
-      },
-    };
+//     // Set point symbol for distance measurement
+//     sketchViewModel.pointSymbol = {
+//       type: "simple-marker",
+//       style: "circle",
+//       color: [255, 0, 255, 0.8],
+//       size: 12,
+//       outline: {
+//         color: [255, 255, 255, 1],
+//         width: 2,
+//       },
+//     };
 
-    window.distanceDrawHandler = sketchViewModel.on("create", async (event) => {
-      if (event.state === "complete" && event.tool === "point") {
-        tempPoints.push(event.graphic);
-        pointCount++;
+//     window.distanceDrawHandler = sketchViewModel.on("create", async (event) => {
+//       if (event.state === "complete" && event.tool === "point") {
+//         tempPoints.push(event.graphic);
+//         pointCount++;
 
-        if (pointCount === 1) {
-          helpText.textContent = "Click to place the second point";
-          // Start drawing another point
-          sketchViewModel.create("point");
-        } else if (pointCount === 2) {
-          // Calculate distance using the two points
-          distanceFeatures = tempPoints;
-          await calculateDistance();
+//         if (pointCount === 1) {
+//           helpText.textContent = "Click to place the second point";
+//           // Start drawing another point
+//           sketchViewModel.create("point");
+//         } else if (pointCount === 2) {
+//           // Calculate distance using the two points
+//           distanceFeatures = tempPoints;
+//           await calculateDistance();
 
-          // Clean up
-          window.distanceDrawHandler.remove();
-          view.container.style.cursor = "default";
-          helpText.textContent = "Distance calculated";
-        }
-      }
-    });
+//           // Clean up
+//           window.distanceDrawHandler.remove();
+//           view.container.style.cursor = "default";
+//           helpText.textContent = "Distance calculated";
+//         }
+//       }
+//     });
 
-    // Start drawing first point
-    sketchViewModel.create("point");
-  } else {
-    helpText.textContent = "Click on two features to measure distance";
+//     // Start drawing first point
+//     sketchViewModel.create("point");
+//   } else {
+//     helpText.textContent = "Click on two features to measure distance";
 
-    // Remove drawing handler
-    if (window.distanceDrawHandler) {
-      window.distanceDrawHandler.remove();
-    }
+//     // Remove drawing handler
+//     if (window.distanceDrawHandler) {
+//       window.distanceDrawHandler.remove();
+//     }
 
-    // Re-enable click handler for feature selection
-    if (window.distanceClickHandler) {
-      window.distanceClickHandler.remove();
-    }
-    window.distanceClickHandler = view.on("click", handleDistanceClick);
-  }
-};
-
+//     // Re-enable click handler for feature selection
+//     if (window.distanceClickHandler) {
+//       window.distanceClickHandler.remove();
+//     }
+//     window.distanceClickHandler = view.on("click", handleDistanceClick);
+//   }
+// };
 
 // Update handleDistanceClick to ensure it continues working:
-async function handleDistanceClick(event) {
-  if (!distanceMeasurementActive) return;
+// async function handleDistanceClick(event) {
+//   if (!distanceMeasurementActive) return;
 
-  const response = await view.hitTest(event);
-  const results = response.results.filter(
-    (r) => r.graphic && r.graphic.layer && r.graphic.geometry
-  );
+//   const response = await view.hitTest(event);
+//   const results = response.results.filter(
+//     (r) => r.graphic && r.graphic.layer && r.graphic.geometry
+//   );
 
-  if (results.length > 0) {
-    // Add visual indicator for selected feature
-    const [Graphic] = await Promise.all([loadModule("esri/Graphic")]);
+//   if (results.length > 0) {
+//     // Add visual indicator for selected feature
+//     const [Graphic] = await Promise.all([loadModule("esri/Graphic")]);
 
-    const selectedGraphic = new Graphic({
-      geometry: results[0].graphic.geometry,
-      symbol: {
-        type:
-          results[0].graphic.geometry.type === "point"
-            ? "simple-marker"
-            : "simple-fill",
-        color: [255, 0, 255, 0.3],
-        outline: {
-          color: [255, 0, 255, 1],
-          width: 2,
-        },
-      },
-      attributes: {
-        type: "Distance Selection",
-      },
-    });
+//     const selectedGraphic = new Graphic({
+//       geometry: results[0].graphic.geometry,
+//       symbol: {
+//         type:
+//           results[0].graphic.geometry.type === "point"
+//             ? "simple-marker"
+//             : "simple-fill",
+//         color: [255, 0, 255, 0.3],
+//         outline: {
+//           color: [255, 0, 255, 1],
+//           width: 2,
+//         },
+//       },
+//       attributes: {
+//         type: "Distance Selection",
+//       },
+//     });
 
-    view.graphics.add(selectedGraphic);
-    distanceFeatures.push(results[0].graphic);
+//     view.graphics.add(selectedGraphic);
+//     distanceFeatures.push(results[0].graphic);
 
-    if (distanceFeatures.length === 1) {
-      showNotification(
-        "First feature selected. Click another feature.",
-        "info"
-      );
-    } else if (distanceFeatures.length === 2) {
-      // Clear selection graphics
-      const selectionGraphics = view.graphics.items.filter(
-        (g) => g.attributes && g.attributes.type === "Distance Selection"
-      );
-      view.graphics.removeMany(selectionGraphics);
+//     if (distanceFeatures.length === 1) {
+//       showNotification(
+//         "First feature selected. Click another feature.",
+//         "info"
+//       );
+//     } else if (distanceFeatures.length === 2) {
+//       // Clear selection graphics
+//       const selectionGraphics = view.graphics.items.filter(
+//         (g) => g.attributes && g.attributes.type === "Distance Selection"
+//       );
+//       view.graphics.removeMany(selectionGraphics);
 
-      calculateDistance();
-    }
-  }
-}
+//       calculateDistance();
+//     }
+//   }
+// }
 
-async function calculateDistance() {
-  try {
-    const [geometryEngine, Graphic, Polyline] = await Promise.all([
-      loadModule("esri/geometry/geometryEngine"),
-      loadModule("esri/Graphic"),
-      loadModule("esri/geometry/Polyline"),
-    ]);
+// async function calculateDistance() {
+//   try {
+//     const [geometryEngine, Graphic, Polyline] = await Promise.all([
+//       loadModule("esri/geometry/geometryEngine"),
+//       loadModule("esri/Graphic"),
+//       loadModule("esri/geometry/Polyline"),
+//     ]);
 
-    const geom1 = distanceFeatures[0].geometry;
-    const geom2 = distanceFeatures[1].geometry;
+//     const geom1 = distanceFeatures[0].geometry;
+//     const geom2 = distanceFeatures[1].geometry;
 
-    // Get centroids for non-point geometries
-    const point1 =
-      geom1.type === "point" ? geom1 : geom1.centroid || geom1.extent.center;
-    const point2 =
-      geom2.type === "point" ? geom2 : geom2.centroid || geom2.extent.center;
+//     // Get centroids for non-point geometries
+//     const point1 =
+//       geom1.type === "point" ? geom1 : geom1.centroid || geom1.extent.center;
+//     const point2 =
+//       geom2.type === "point" ? geom2 : geom2.centroid || geom2.extent.center;
 
-    // Calculate distance
-    const distance = geometryEngine.geodesicLength(
-      new Polyline({
-        paths: [
-          [
-            [point1.x, point1.y],
-            [point2.x, point2.y],
-          ],
-        ],
-        spatialReference: view.spatialReference,
-      }),
-      "meters"
-    );
+//     // Calculate distance
+//     const distance = geometryEngine.geodesicLength(
+//       new Polyline({
+//         paths: [
+//           [
+//             [point1.x, point1.y],
+//             [point2.x, point2.y],
+//           ],
+//         ],
+//         spatialReference: view.spatialReference,
+//       }),
+//       "meters"
+//     );
 
-    // Display result
-    let distanceText;
-    if (distance > 1000) {
-      distanceText = `${(distance / 1000).toFixed(2)} km`;
-    } else {
-      distanceText = `${distance.toFixed(2)} m`;
-    }
+//     // Display result
+//     let distanceText;
+//     if (distance > 1000) {
+//       distanceText = `${(distance / 1000).toFixed(2)} km`;
+//     } else {
+//       distanceText = `${distance.toFixed(2)} m`;
+//     }
 
-    document.getElementById("distanceResult").innerHTML = `
-      <strong>Distance:</strong> ${distanceText}
-    `;
+//     document.getElementById("distanceResult").innerHTML = `
+//       <strong>Distance:</strong> ${distanceText}
+//     `;
 
-    // Clear previous distance lines
-    const previousLines = analysisLayer.graphics.filter(
-      (g) => g.attributes && g.attributes.type === "Distance Measurement"
-    );
-    analysisLayer.removeMany(previousLines.toArray());
+//     // Clear previous distance lines
+//     const previousLines = analysisLayer.graphics.filter(
+//       (g) => g.attributes && g.attributes.type === "Distance Measurement"
+//     );
+//     analysisLayer.removeMany(previousLines.toArray());
 
-    // Draw line between features
-    const line = new Polyline({
-      paths: [
-        [
-          [point1.x, point1.y],
-          [point2.x, point2.y],
-        ],
-      ],
-      spatialReference: view.spatialReference,
-    });
+//     // Draw line between features
+//     const line = new Polyline({
+//       paths: [
+//         [
+//           [point1.x, point1.y],
+//           [point2.x, point2.y],
+//         ],
+//       ],
+//       spatialReference: view.spatialReference,
+//     });
 
-    const lineGraphic = new Graphic({
-      geometry: line,
-      symbol: {
-        type: "simple-line",
-        color: [255, 0, 255, 1],
-        width: 3,
-        style: "dash",
-      },
-      attributes: {
-        type: "Distance Measurement",
-        distance: distanceText,
-      },
-    });
+//     const lineGraphic = new Graphic({
+//       geometry: line,
+//       symbol: {
+//         type: "simple-line",
+//         color: [255, 0, 255, 1],
+//         width: 3,
+//         style: "dash",
+//       },
+//       attributes: {
+//         type: "Distance Measurement",
+//         distance: distanceText,
+//       },
+//     });
 
-    analysisLayer.add(lineGraphic);
+//     analysisLayer.add(lineGraphic);
 
-    // Reset for next measurement
-    distanceFeatures = [];
-    distanceMeasurementActive = true; // Keep active for continuous measurement
+//     // Reset for next measurement
+//     distanceFeatures = [];
+//     distanceMeasurementActive = true; // Keep active for continuous measurement
 
-    // Update help text
-    const helpText = document.getElementById("distanceHelp");
-    if (helpText) {
-      helpText.textContent =
-        "Distance calculated. Click two more features to measure again.";
-    }
-  } catch (error) {
-    console.error("Distance calculation error:", error);
-    showNotification("Error calculating distance", "error");
-  }
-}
+//     // Update help text
+//     const helpText = document.getElementById("distanceHelp");
+//     if (helpText) {
+//       helpText.textContent =
+//         "Distance calculated. Click two more features to measure again.";
+//     }
+//   } catch (error) {
+//     console.error("Distance calculation error:", error);
+//     showNotification("Error calculating distance", "error");
+//   }
+// }
 
-function closeDistancePanel() {
-  document.getElementById("distancePanel").classList.add("hidden");
-  clearDistanceMeasurement();
-}
+// function closeDistancePanel() {
+//   document.getElementById("distancePanel").classList.add("hidden");
+//   clearDistanceMeasurement();
+// }
 
-function clearDistanceMeasurement() {
-  distanceMeasurementActive = false;
-  distanceFeatures = [];
-  view.container.style.cursor = "default";
-  document.getElementById("distanceResult").innerHTML = "";
+// function clearDistanceMeasurement() {
+//   distanceMeasurementActive = false;
+//   distanceFeatures = [];
+//   view.container.style.cursor = "default";
+//   document.getElementById("distanceResult").innerHTML = "";
 
-  // Remove distance lines from analysis layer
-  const distanceGraphics = analysisLayer.graphics.filter(
-    (g) => g.attributes && g.attributes.type === "Distance Measurement"
-  );
-  analysisLayer.removeMany(distanceGraphics.toArray());
-}
+//   // Remove distance lines from analysis layer
+//   const distanceGraphics = analysisLayer.graphics.filter(
+//     (g) => g.attributes && g.attributes.type === "Distance Measurement"
+//   );
+//   analysisLayer.removeMany(distanceGraphics.toArray());
+// }
 
 // Area Analysis
-async function startAreaAnalysis() {
-  await initializeAnalysisLayer();
+// async function startAreaAnalysis() {
+//   await initializeAnalysisLayer();
 
-  const polygonLayers = getState().stateManager.getUploadedLayers().filter(
-    (layer) =>
-      layer.geometryType === "polygon" ||
-      (layer.graphics &&
-        layer.graphics.length > 0 &&
-        layer.graphics.getItemAt(0).geometry.type === "polygon")
-  );
+//   const polygonLayers = getState().stateManager.getUploadedLayers().filter(
+//     (layer) =>
+//       layer.geometryType === "polygon" ||
+//       (layer.graphics &&
+//         layer.graphics.length > 0 &&
+//         layer.graphics.getItemAt(0).geometry.type === "polygon")
+//   );
 
-  if (polygonLayers.length === 0) {
-    showNotification("No polygon layers found", "error");
-    return;
-  }
+//   if (polygonLayers.length === 0) {
+//     showNotification("No polygon layers found", "error");
+//     return;
+//   }
 
-  try {
-    const [geometryEngine] = await Promise.all([
-      loadModule("esri/geometry/geometryEngine"),
-    ]);
+//   try {
+//     const [geometryEngine] = await Promise.all([
+//       loadModule("esri/geometry/geometryEngine"),
+//     ]);
 
-    let totalArea = 0;
-    let featureCount = 0;
+//     let totalArea = 0;
+//     let featureCount = 0;
 
-    for (const layer of polygonLayers) {
-      const query = layer.createQuery();
-      query.where = "1=1";
-      query.returnGeometry = true;
+//     for (const layer of polygonLayers) {
+//       const query = layer.createQuery();
+//       query.where = "1=1";
+//       query.returnGeometry = true;
 
-      const result = await layer.queryFeatures(query);
+//       const result = await layer.queryFeatures(query);
 
-      result.features.forEach((feature) => {
-        if (feature.geometry && feature.geometry.type === "polygon") {
-          const area = geometryEngine.geodesicArea(
-            feature.geometry,
-            "square-meters"
-          );
-          totalArea += Math.abs(area);
-          featureCount++;
-        }
-      });
-    }
+//       result.features.forEach((feature) => {
+//         if (feature.geometry && feature.geometry.type === "polygon") {
+//           const area = geometryEngine.geodesicArea(
+//             feature.geometry,
+//             "square-meters"
+//           );
+//           totalArea += Math.abs(area);
+//           featureCount++;
+//         }
+//       });
+//     }
 
-    // Display results
-    let areaText;
-    if (totalArea > 1000000) {
-      areaText = `${(totalArea / 1000000).toFixed(2)} km²`;
-    } else if (totalArea > 10000) {
-      areaText = `${(totalArea / 10000).toFixed(2)} hectares`;
-    } else {
-      areaText = `${totalArea.toFixed(2)} m²`;
-    }
+//     // Display results
+//     let areaText;
+//     if (totalArea > 1000000) {
+//       areaText = `${(totalArea / 1000000).toFixed(2)} km²`;
+//     } else if (totalArea > 10000) {
+//       areaText = `${(totalArea / 10000).toFixed(2)} hectares`;
+//     } else {
+//       areaText = `${totalArea.toFixed(2)} m²`;
+//     }
 
-    showNotification(
-      `Total area of ${featureCount} polygons: ${areaText}`,
-      "success"
-    );
-  } catch (error) {
-    console.error("Area calculation error:", error);
-    showNotification("Error calculating area", "error");
-  }
-}
+//     showNotification(
+//       `Total area of ${featureCount} polygons: ${areaText}`,
+//       "success"
+//     );
+//   } catch (error) {
+//     console.error("Area calculation error:", error);
+//     showNotification("Error calculating area", "error");
+//   }
+// }
 
 // Time-Aware Features System
 let timeSlider = null;
@@ -7049,12 +7118,14 @@ function initializeTimeLayerSelect() {
 
   // Continue script.js - Complete time-aware features implementation
 
-  getState().stateManager.getUploadedLayers().forEach((layer, index) => {
-    const option = document.createElement("option");
-    option.value = index;
-    option.textContent = layer.title;
-    select.appendChild(option);
-  });
+  getState()
+    .stateManager.getUploadedLayers()
+    .forEach((layer, index) => {
+      const option = document.createElement("option");
+      option.value = index;
+      option.textContent = layer.title;
+      select.appendChild(option);
+    });
 
   select.addEventListener("change", async (e) => {
     if (e.target.value !== "") {
@@ -7242,7 +7313,7 @@ function playTimeAnimation() {
           start: fullExtent.start,
           end: new Date(
             fullExtent.start.getTime() +
-            (currentEnd - timeSlider.timeExtent.start)
+              (currentEnd - timeSlider.timeExtent.start)
           ),
         };
       }
@@ -7292,8 +7363,8 @@ function stopTimeAnimation() {
 //     const analysisItem = document.createElement("div");
 //     analysisItem.className = "layer-item";
 //     analysisItem.innerHTML = `
-//       <input type="checkbox" class="layer-checkbox" 
-//              ${analysisLayer.visible ? "checked" : ""} 
+//       <input type="checkbox" class="layer-checkbox"
+//              ${analysisLayer.visible ? "checked" : ""}
 //              onchange="analysisLayer.visible = this.checked">
 //       <label class="layer-name">Analysis Results (${analysisLayer.graphics.length
 //       })</label>
@@ -7309,77 +7380,77 @@ function stopTimeAnimation() {
 // ============================================================================
 
 // Clear analysis results
-function clearAnalysisResults() {
-  if (analysisLayer) {
-    analysisLayer.removeAll();
-    updateLayerList();
-    showNotification("Analysis results cleared", "success");
-  }
-}
+// function clearAnalysisResults() {
+//   if (analysisLayer) {
+//     analysisLayer.removeAll();
+//     updateLayerList();
+//     showNotification("Analysis results cleared", "success");
+//   }
+// }
 
-window.clearAnalysisResults = clearAnalysisResults;
+// window.clearAnalysisResults = clearAnalysisResults;
 
 // Buffer Analysis with Drawing
-async function startBufferAnalysis() {
-  await initializeAnalysisLayer();
+// async function startBufferAnalysis() {
+//   await initializeAnalysisLayer();
 
-  const modal = document.getElementById("bufferModal");
-  const select = document.getElementById("bufferLayerSelect");
+//   const modal = document.getElementById("bufferModal");
+//   const select = document.getElementById("bufferLayerSelect");
 
-  // Make sure modal exists
-  if (!modal) {
-    console.error("Buffer modal not found");
-    return;
-  }
+//   // Make sure modal exists
+//   if (!modal) {
+//     console.error("Buffer modal not found");
+//     return;
+//   }
 
-  // Reset drawn features
-  getState().stateManager.clearDrawnFeatures();
+//   // Reset drawn features
+//   getState().stateManager.clearDrawnFeatures();
 
-  // Populate layer select
-  select.innerHTML = '<option value="">Select a layer...</option>';
-  getState().stateManager.getUploadedLayers().forEach((layer, index) => {
-    const option = document.createElement("option");
-    option.value = index;
-    option.textContent = layer.title;
-    select.appendChild(option);
-  });
+//   // Populate layer select
+//   select.innerHTML = '<option value="">Select a layer...</option>';
+//   getState().stateManager.getUploadedLayers().forEach((layer, index) => {
+//     const option = document.createElement("option");
+//     option.value = index;
+//     option.textContent = layer.title;
+//     select.appendChild(option);
+//   });
 
-  // Remove hidden class to show modal
-  modal.classList.remove("hidden");
-  console.log("Buffer modal opened");
-}
+//   // Remove hidden class to show modal
+//   modal.classList.remove("hidden");
+//   console.log("Buffer modal opened");
+// }
 
 // Update setBufferSource to properly manage button states
-function setBufferSource(source) {
-  const modal = document.getElementById("bufferModal");
-  const buttons = modal.querySelectorAll(".button-group-item");
+// function setBufferSource(source) {
+//   const modal = document.getElementById("bufferModal");
+//   const buttons = modal.querySelectorAll(".button-group-item");
 
-  buttons.forEach((btn) => {
-    btn.classList.remove("active");
-  });
+//   buttons.forEach((btn) => {
+//     btn.classList.remove("active");
+//   });
 
-  // Find and activate the correct button
-  const targetButton = Array.from(buttons).find((btn) => {
-    const onclick = btn.getAttribute("onclick");
-    return onclick && onclick.includes(`'${source}'`);
-  });
+//   // Find and activate the correct button
+//   const targetButton = Array.from(buttons).find((btn) => {
+//     const onclick = btn.getAttribute("onclick");
+//     return onclick && onclick.includes(`'${source}'`);
+//   });
 
-  if (targetButton) {
-    targetButton.classList.add("active");
-  }
+//   if (targetButton) {
+//     targetButton.classList.add("active");
+//   }
 
-  const layerSection = document.getElementById("bufferLayerSection");
-  const drawSection = document.getElementById("bufferDrawSection");
+//   const layerSection = document.getElementById("bufferLayerSection");
+//   const drawSection = document.getElementById("bufferDrawSection");
 
-  if (source === "layer") {
-    layerSection.style.display = "block";
-    drawSection.style.display = "none";
-    stopAnalysisDrawing();
-  } else {
-    layerSection.style.display = "none";
-    drawSection.style.display = "block";
-  }
-}
+//   if (source === "layer") {
+//     layerSection.style.display = "block";
+//     drawSection.style.display = "none";
+//     stopAnalysisDrawing();
+//   } else {
+//     layerSection.style.display = "none";
+//     drawSection.style.display = "block";
+//   }
+// }
 
 // Make sure to export it
 // window.setBufferSource = setBufferSource;
@@ -7400,7 +7471,8 @@ window.toggleModalMinimize = function (modalId) {
     const indicator = document.createElement("div");
     indicator.className = "modal-minimized-indicator";
     indicator.innerHTML = `
-      <span>${modalId === "bufferModal" ? "Buffer" : "Intersection"
+      <span>${
+        modalId === "bufferModal" ? "Buffer" : "Intersection"
       } Analysis</span>
       <button onclick="toggleModalMinimize('${modalId}')">
         <i class="fas fa-window-maximize"></i>
@@ -7412,174 +7484,174 @@ window.toggleModalMinimize = function (modalId) {
 
 // Buffer Analysis with existing drawing
 // Update your startBufferDrawing function:
-async function startBufferDrawing(type) {
-  console.log("Starting buffer drawing for type:", type);
+// async function startBufferDrawing(type) {
+//   console.log("Starting buffer drawing for type:", type);
 
-  // Add drawing mode to modal to hide backdrop
-  const modal = document.getElementById("bufferModal");
-  modal.classList.add("drawing-active");
+//   // Add drawing mode to modal to hide backdrop
+//   const modal = document.getElementById("bufferModal");
+//   modal.classList.add("drawing-active");
 
-  // Show drawing indicator
-  if (!document.getElementById("drawingIndicator")) {
-    const indicator = document.createElement("div");
-    indicator.id = "drawingIndicator";
-    indicator.style.cssText = `
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--primary-color);
-      color: white;
-      padding: 12px 24px;
-      border-radius: 8px;
-      box-shadow: var(--shadow-lg);
-      z-index: 2000;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    `;
-    indicator.innerHTML = `
-      <i class="fas fa-pencil-alt"></i>
-      <span>Drawing ${type}. ${type === "point"
-        ? "Click to place point"
-        : "Click to add vertices, double-click to complete"
-      }.</span>
-      <button onclick="cancelBufferDrawing()" style="
-        background: white;
-        color: var(--primary-color);
-        border: none;
-        padding: 4px 8px;
-        border-radius: 4px;
-        margin-left: 12px;
-        cursor: pointer;
-      ">Cancel</button>
-    `;
-    document.body.appendChild(indicator);
-  }
+//   // Show drawing indicator
+//   if (!document.getElementById("drawingIndicator")) {
+//     const indicator = document.createElement("div");
+//     indicator.id = "drawingIndicator";
+//     indicator.style.cssText = `
+//       position: fixed;
+//       top: 20px;
+//       left: 50%;
+//       transform: translateX(-50%);
+//       background: var(--primary-color);
+//       color: white;
+//       padding: 12px 24px;
+//       border-radius: 8px;
+//       box-shadow: var(--shadow-lg);
+//       z-index: 2000;
+//       display: flex;
+//       align-items: center;
+//       gap: 8px;
+//     `;
+//     indicator.innerHTML = `
+//       <i class="fas fa-pencil-alt"></i>
+//       <span>Drawing ${type}. ${type === "point"
+//         ? "Click to place point"
+//         : "Click to add vertices, double-click to complete"
+//       }.</span>
+//       <button onclick="cancelBufferDrawing()" style="
+//         background: white;
+//         color: var(--primary-color);
+//         border: none;
+//         padding: 4px 8px;
+//         border-radius: 4px;
+//         margin-left: 12px;
+//         cursor: pointer;
+//       ">Cancel</button>
+//     `;
+//     document.body.appendChild(indicator);
+//   }
 
-  // Initialize SketchViewModel if needed
-  const { stateManager } = getState();
-  let sketchViewModel = stateManager.getSketchViewModel();
-  if (!sketchViewModel) {
-    sketchViewModel = await initializeSketchViewModel();
-  }
+//   // Initialize SketchViewModel if needed
+//   const { stateManager } = getState();
+//   let sketchViewModel = stateManager.getSketchViewModel();
+//   if (!sketchViewModel) {
+//     sketchViewModel = await initializeSketchViewModel();
+//   }
 
-  // Cancel any existing drawing
-  if (sketchViewModel) {
-    sketchViewModel.cancel();
-  }
+//   // Cancel any existing drawing
+//   if (sketchViewModel) {
+//     sketchViewModel.cancel();
+//   }
 
-  const view = stateManager.getView();
+//   const view = stateManager.getView();
 
-  getState().stateManager.setAnalysisDrawing(true);
-  getState().stateManager.setAnalysisDrawType(type);
+//   getState().stateManager.setAnalysisDrawing(true);
+//   getState().stateManager.setAnalysisDrawType(type);
 
-  // Update button states
-  document.querySelectorAll(".draw-option-btn").forEach((btn) => {
-    btn.classList.remove("active");
-    if (btn.getAttribute("onclick")?.includes(type)) {
-      btn.classList.add("active");
-    }
-  });
+//   // Update button states
+//   document.querySelectorAll(".draw-option-btn").forEach((btn) => {
+//     btn.classList.remove("active");
+//     if (btn.getAttribute("onclick")?.includes(type)) {
+//       btn.classList.add("active");
+//     }
+//   });
 
-  const helpText = document.getElementById("bufferDrawHelp");
-  if (helpText) {
-    helpText.style.display = "block";
-  }
+//   const helpText = document.getElementById("bufferDrawHelp");
+//   if (helpText) {
+//     helpText.style.display = "block";
+//   }
 
-  // Clear previous handlers
-  if (window.currentBufferHandler) {
-    window.currentBufferHandler.remove();
-  }
+//   // Clear previous handlers
+//   if (window.currentBufferHandler) {
+//     window.currentBufferHandler.remove();
+//   }
 
-  // Set cursor
-  view.container.style.cursor = "crosshair";
+//   // Set cursor
+//   view.container.style.cursor = "crosshair";
 
-  // Set symbology for buffer analysis
-  const bufferColor = [0, 122, 255]; // Blue color for buffer features
-  const bufferOpacity = 0.7;
+//   // Set symbology for buffer analysis
+//   const bufferColor = [0, 122, 255]; // Blue color for buffer features
+//   const bufferOpacity = 0.7;
 
-  switch (type) {
-    case "point":
-      sketchViewModel.pointSymbol = {
-        type: "simple-marker",
-        style: "circle",
-        color: [...bufferColor, bufferOpacity],
-        size: 12,
-        outline: {
-          color: [255, 255, 255, 1],
-          width: 2,
-        },
-      };
-      break;
-    case "polyline":
-      sketchViewModel.polylineSymbol = {
-        type: "simple-line",
-        color: [...bufferColor, 1],
-        width: 3,
-        cap: "round",
-        join: "round",
-      };
-      break;
-    case "polygon":
-      sketchViewModel.polygonSymbol = {
-        type: "simple-fill",
-        color: [...bufferColor, bufferOpacity * 0.5],
-        outline: {
-          color: [...bufferColor, 1],
-          width: 2,
-        },
-      };
-      break;
-  }
+//   switch (type) {
+//     case "point":
+//       sketchViewModel.pointSymbol = {
+//         type: "simple-marker",
+//         style: "circle",
+//         color: [...bufferColor, bufferOpacity],
+//         size: 12,
+//         outline: {
+//           color: [255, 255, 255, 1],
+//           width: 2,
+//         },
+//       };
+//       break;
+//     case "polyline":
+//       sketchViewModel.polylineSymbol = {
+//         type: "simple-line",
+//         color: [...bufferColor, 1],
+//         width: 3,
+//         cap: "round",
+//         join: "round",
+//       };
+//       break;
+//     case "polygon":
+//       sketchViewModel.polygonSymbol = {
+//         type: "simple-fill",
+//         color: [...bufferColor, bufferOpacity * 0.5],
+//         outline: {
+//           color: [...bufferColor, 1],
+//           width: 2,
+//         },
+//       };
+//       break;
+//   }
 
-  // Set up event handler
-  window.currentBufferHandler = sketchViewModel.on("create", (event) => {
-    if (event.state === "complete") {
-      console.log("Drawing complete:", event);
+//   // Set up event handler
+//   window.currentBufferHandler = sketchViewModel.on("create", (event) => {
+//     if (event.state === "complete") {
+//       console.log("Drawing complete:", event);
 
-      // Restore modal
-      disableDrawingMode("bufferModal");
+//       // Restore modal
+//       disableDrawingMode("bufferModal");
 
-      // Remove drawing indicator
-      const indicator = document.getElementById("drawingIndicator");
-      if (indicator) {
-        indicator.remove();
-      }
+//       // Remove drawing indicator
+//       const indicator = document.getElementById("drawingIndicator");
+//       if (indicator) {
+//         indicator.remove();
+//       }
 
-      // Reset cursor
-      view.container.style.cursor = "default";
+//       // Reset cursor
+//       view.container.style.cursor = "default";
 
-      // Add to drawn features
-      getState().stateManager.addBufferFeature(event.graphic);
+//       // Add to drawn features
+//       getState().stateManager.addBufferFeature(event.graphic);
 
-      // Show success message
-      showNotification(`${type} added to buffer analysis`, "success");
+//       // Show success message
+//       showNotification(`${type} added to buffer analysis`, "success");
 
-      // Update help text to show count
-      if (helpText) {
-        helpText.innerHTML = `
-          <i class="fas fa-check-circle"></i> ${getState().stateManager.getDrawnFeatures().buffer.length} feature(s) drawn. 
-          Click a tool to draw more or execute analysis.
-        `;
-      }
+//       // Update help text to show count
+//       if (helpText) {
+//         helpText.innerHTML = `
+//           <i class="fas fa-check-circle"></i> ${getState().stateManager.getDrawnFeatures().buffer.length} feature(s) drawn.
+//           Click a tool to draw more or execute analysis.
+//         `;
+//       }
 
-      // Clean up
-      getState().stateManager.setAnalysisDrawing(false);
-      window.currentBufferHandler.remove();
-    }
-  });
+//       // Clean up
+//       getState().stateManager.setAnalysisDrawing(false);
+//       window.currentBufferHandler.remove();
+//     }
+//   });
 
-  // Start drawing
-  try {
-    console.log("Creating sketch for:", type);
-    sketchViewModel.create(type);
-  } catch (error) {
-    console.error("Error starting sketch:", error);
-    showNotification("Error starting drawing", "error");
-    cancelBufferDrawing();
-  }
-}
+//   // Start drawing
+//   try {
+//     console.log("Creating sketch for:", type);
+//     sketchViewModel.create(type);
+//   } catch (error) {
+//     console.error("Error starting sketch:", error);
+//     showNotification("Error starting drawing", "error");
+//     cancelBufferDrawing();
+//   }
+// }
 
 function getAnalysisDrawSymbol(type) {
   switch (type) {
@@ -7998,8 +8070,8 @@ export {
   // Measurement functions (will be moved to measurement-manager.js)
   toggleMeasurement,
   closeMeasurementResults,
-  closeDistancePanel,
-  clearDistanceMeasurement,
+  // closeDistancePanel,
+  // clearDistanceMeasurement,
 
   // Tour functions (will be moved to tour-manager.js)
   toggleFeatureTour,
@@ -8031,21 +8103,21 @@ export {
   zoomOut,
 
   // Analysis functions (will be moved to analysis-manager.js)
-  startBufferAnalysis,
-  startIntersectAnalysis,
-  startDistanceAnalysis,
-  startAreaAnalysis,
-  executeBuffer,
-  executeIntersection,
-  setDistanceSource,
-  setBufferSource,
-  setIntersectSource,
-  startBufferDrawing,
-  startIntersectDrawing,
-  cancelIntersectDrawing,
-  cancelBufferDrawing,
-  closeBufferModal,
-  closeIntersectModal,
+  // startBufferAnalysis,
+  // startIntersectAnalysis,
+  // startDistanceAnalysis,
+  // startAreaAnalysis,
+  // executeBuffer,
+  // executeIntersection,
+  // setDistanceSource,
+  // setBufferSource,
+  // setIntersectSource,
+  // startBufferDrawing,
+  // startIntersectDrawing,
+  // cancelIntersectDrawing,
+  // cancelBufferDrawing,
+  // closeBufferModal,
+  // closeIntersectModal,
 
   // Visualization functions (will be moved to visualization-manager.js)
   toggleHeatmap,
