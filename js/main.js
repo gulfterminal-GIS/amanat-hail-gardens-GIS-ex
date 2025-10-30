@@ -13,6 +13,7 @@ import { LayerManager } from "./layers/layer-manager.js";
 import { UploadHandler } from "./layers/upload-handler.js";
 import { BasemapManager } from "./layers/basemap-manager.js";
 import { DrawingManager } from "./tools/drawing-manager.js";
+import { AnalysisManager } from "./tools/analysis-manager.js";
 import { bindWindowFunctions } from "./window-bindings.js";
 import { initializeMap } from "../script.js";
 
@@ -49,6 +50,9 @@ const searchManager = new SearchManager(stateManager, notificationManager);
 // Create LayerManager instance
 const layerManager = new LayerManager(stateManager, notificationManager);
 
+// Create AnalysisManager instance
+const analysisManager = new AnalysisManager(stateManager, notificationManager, layerManager);
+
 // Create UploadHandler instance
 const uploadHandler = new UploadHandler(stateManager, layerManager, notificationManager);
 
@@ -68,6 +72,7 @@ async function initializeApplication() {
     console.log("UploadHandler created and ready");
     console.log("BasemapManager created and ready");
     console.log("DrawingManager created and ready");
+    console.log("AnalysisManager created and ready");
 
     // Initialize the map with injected dependencies
     await initializeMap(
@@ -79,7 +84,8 @@ async function initializeApplication() {
       layerManager,
       uploadHandler,
       basemapManager,
-      drawingManager
+      drawingManager,
+      analysisManager
     );
 
     // Initialize tab system
@@ -101,6 +107,7 @@ async function initializeApplication() {
       uploadHandler,
       basemapManager,
       drawingManager,
+      analysisManager,
       // Future managers will be added here as they're created
     });
 

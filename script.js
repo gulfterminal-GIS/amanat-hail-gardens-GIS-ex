@@ -29,9 +29,7 @@ function getState() {
   return moduleState;
 }
 
-// Notification state
-// COMMENTED OUT - Moved to js/ui/notification-manager.js
-// let activeNotifications = [];
+// Notification state - MIGRATED to js/ui/notification-manager.js (see script-migrated.js)
 
 // These states are managed by StateManager, keeping references for transition
 // Classification state
@@ -85,7 +83,8 @@ async function initializeMap(
   layerManager = null,
   uploadHandler = null,
   basemapManager = null,
-  drawingManager = null
+  drawingManager = null,
+  analysisManager = null
 ) {
   try {
     // Store instances at module level for use by other functions
@@ -141,334 +140,6 @@ async function initializeMap(
 //   }
 // }
 
-// ============================================================================
-// ORIGINAL CODE (COMMENTED OUT)
-// ============================================================================
-// async function initializeMap() {
-//   try {
-//     const [esriConfig, Map, MapView, GraphicsLayer, reactiveUtils] =
-//       await Promise.all([
-//         loadModule("esri/config"),
-//         loadModule("esri/Map"),
-//         loadModule("esri/views/MapView"),
-//         loadModule("esri/layers/GraphicsLayer"),
-//         loadModule("esri/core/reactiveUtils"), // Add this
-//       ]);
-
-//     esriConfig.apiKey =
-//       "AAPK67a9b2041fcc449d90ab91d6bae4a156HTaBtzlYSKLe8L-zBuIgrSGvxOopzVQEtdwVrlp6RKN9Rrq_y2qkTax7Do1cHqm9";
-//
-//     displayMap = new Map({
-//       basemap: "hybrid",
-//     });
-//
-//     view = new MapView({
-//       center: [-95.7129, 37.0902],
-//       container: "displayMap",
-//       map: displayMap,
-//       zoom: 4,
-//       highlightOptions: {
-//         color: "#39ff14",
-//         haloOpacity: 0.9,
-//         fillOpacity: 0.2,
-//       },
-//     });
-//
-//     drawLayer = new GraphicsLayer({
-//       title: "Drawings",
-//       listMode: "show",
-//     });
-//     displayMap.add(drawLayer);
-//
-//     await view.when();
-//
-//     view.ui.remove(["compass", "zoom"]);
-//
-//     // Store home extent
-//     homeExtent = view.extent.clone();
-//
-//     // Load default GeoJSON layer
-//     await loadDefaultGeoJSON();
-//
-//     // Initialize countries layer for click feature
-//     await initializeCountriesLayer();
-//
-//     // Store home extent
-//     homeExtent = view.extent.clone();
-//
-//     // Initialize zoom watcher for heatmap using reactiveUtils
-//     reactiveUtils.watch(
-//       () => view.zoom,
-//       (zoom) => {
-//         if (window.heatmapEnabled && window.heatmapLayer) {
-//           // Adjust radius based on zoom level for better visualization
-//           const baseRadius = window.currentHeatmapSettings.radius;
-//           const zoomFactor = Math.max(1, Math.min(3, zoom / 10));
-//
-//           if (
-//             window.heatmapLayer.renderer &&
-//             window.heatmapLayer.renderer.type === "heatmap"
-//           ) {
-//             window.heatmapLayer.renderer.radius = baseRadius * zoomFactor;
-//           }
-//         }
-//       }
-//     );
-//
-//     initializeUI();
-//     initializeEventHandlers();
-//
-//     // Loading screen logic
-//     const loadingScreen = document.getElementById("loadingScreen");
-//     let loadingContent = document.querySelector(".loading-content");
-//
-//     function wait(ms) {
-//       return new Promise((resolve) => setTimeout(resolve, ms));
-//     }
-//
-//     console.log("Starting loading sequence...");
-//     wait(0)
-//       .then(() => {
-//         loadingContent.innerHTML = `
-//           <img class="loaded-gif" src="images/map-loading.gif" alt="">
-//           <div class="loading-text">جاري مسح الخريطة...</div>
-//         `;
-//         return wait(3000);
-//       })
-//       .finally(() => {
-//         loadingScreen.classList.add("fade-out");
-//       });
-//
-//     // Add this new code:
-//     // Check if it's the first visit
-//     const hasSeenTour = localStorage.getItem("gisStudioTourCompleted");
-//     if (!hasSeenTour) {
-//       // Start tour after a short delay
-//       setTimeout(() => {
-//         startAppTour();
-//         // Mark tour as seen
-//         localStorage.setItem("gisStudioTourCompleted", "true");
-//       }, 1500);
-//     }
-//
-//     console.log("Map initialized successfully", displayMap, view);
-//     return [view, displayMap];
-//   } catch (error) {
-//     console.error("Error initializing map:", error);
-//     throw error;
-//   }
-// }
-
-// ============================================================================
-// COMMENTED OUT - Moved to js/ui/tab-system.js
-// ============================================================================
-// Tab System configuration managed by StateManager
-// const tabConfig = {
-//   messages: {
-//     gardens: "التوجه الى منصة الحدائق الذكية",
-//     projects: "يلزم الربط بمنصة قرار لعرض المشروعات",
-//     assets: "يلزم الربط بالتشغيل و الصيانة لعرض الأصول",
-//     smartEye: "يلزم الربط بمنصة العين الذكية"
-//   },
-//   buttons: {
-//     gardens: {
-//       text: "ربط بمنصة الحدائق الذكية",
-//       url: "https://intelli.it.com/"
-//     },
-//     projects: {
-//       text: "ربط بمنصة قرار",
-//       url: "https://qarar2025.azurewebsites.net/"
-//     },
-//     assets: {
-//       text: "ربط بالتشغيل و الصيانة",
-//       url: "https://gt-ams.azurewebsites.net/"
-//     },
-//     smartEye: {
-//       text: "ربط بمنصة العين الذكية",
-//       url: "http://hayel.dtsit.net/dashboard"
-//     }
-//   }
-// };
-
-// Initialize tabs
-// function initializeMapTabs() {
-//   const { stateManager } = getState();
-
-//   const tabButtons = document.querySelectorAll(".tab-button");
-//   const backdrop = document.getElementById("tabBackdrop");
-//   const contentCard = backdrop.querySelector(".tab-content-card");
-
-//   tabButtons.forEach((button) => {
-//     button.addEventListener("click", function () {
-//       const tabType = this.getAttribute("data-tab");
-
-//       // // If it's gardens tab, just activate it and hide backdrop
-//       // if (tabType === "gardens") {
-//       //   // Remove active from all tabs
-//       //   tabButtons.forEach((btn) => btn.classList.remove("active"));
-//       //   // Set this tab as active
-//       //   this.classList.add("active");
-//       //   // Hide backdrop
-//       //   backdrop.classList.add("hidden");
-//       //   return;
-//       // }
-
-//       // For other tabs, show the message
-//       const message = tabConfig.messages[tabType];
-//       const buttonInfo = tabConfig.buttons[tabType];
-
-//       if (message && buttonInfo) {
-//         // Update content
-//         contentCard.innerHTML = `
-//           <div class="tab-icon-container">
-//             <img src="images/plug.gif" alt="Loading" class="tab-gif-icon" />
-//           </div>
-          
-//           <p class="tab-message-text">${message}</p>
-          
-//           <button class="tab-action-button" onclick="redirectToTabPlatform('${tabType}')">
-//             <span>${buttonInfo.text}</span>
-//             <i class="fas fa-external-link-alt"></i>
-//           </button>
-//         `;
-
-//         // Show backdrop
-//         backdrop.classList.remove("hidden");
-//       }
-//     });
-//   });
-
-//   // Close backdrop when clicking outside
-//   backdrop.addEventListener("click", function (e) {
-//     if (e.target === this) {
-//       this.classList.add("hidden");
-//       // Return to gardens tab
-//       tabButtons.forEach((btn) => btn.classList.remove("active"));
-//       document.querySelector('[data-tab="gardens"]').classList.add("active");
-//     }
-//   });
-// }
-
-// Add this function to handle platform redirect
-// function redirectToTabPlatform(tabType) {
-//   const { notificationManager } = getState();
-//   const buttonInfo = tabConfig.buttons[tabType];
-//   if (buttonInfo && buttonInfo.url) {
-//     notificationManager.showSuccess(`جاري التوجيه إلى ${buttonInfo.text}...`);
-
-//     // Simulate loading state
-//     const button = event.target.closest(".tab-action-button");
-//     button.disabled = true;
-//     button.innerHTML = `
-//       <span>جاري التحميل...</span>
-//       <i class="fas fa-spinner fa-spin"></i>
-//     `;
-
-//     setTimeout(() => {
-//       window.open(buttonInfo.url, "_blank");
-//       console.log(`Redirecting to: ${buttonInfo.url}`);
-
-//       // Close the backdrop
-//       document.getElementById("tabBackdrop").classList.add("hidden");
-
-//       // Reset to gardens tab
-//       document
-//         .querySelectorAll(".tab-button")
-//         .forEach((btn) => btn.classList.remove("active"));
-//       document.querySelector('[data-tab="gardens"]').classList.add("active");
-//     }, 1500);
-//   }
-// }
-
-// Export the function through ES modules
-// export { redirectToTabPlatform };
-// ============================================================================
-
-// ============================================================================
-// COMMENTED OUT - Moved to js/core/map-initializer.js
-// ============================================================================
-// Original loadDefaultGeoJSON function has been extracted to MapInitializer
-// ============================================================================
-// async function loadDefaultGeoJSON() {
-//   try {
-//     const [GeoJSONLayer] = await Promise.all([
-//       loadModule("esri/layers/GeoJSONLayer"),
-//     ]);
-//
-//     // Create the GeoJSON layer
-//     const geojsonLayer = new GeoJSONLayer({
-//       url: "Gardens.geojson", // Update this path to match your file location
-//       title: "حدائق حائل", // Or whatever title you prefer
-//       outFields: ["*"],
-//       renderer: {
-//         type: "simple",
-//         symbol: {
-//           type: "simple-fill",
-//           color: [34, 139, 34, 0.4], // Forest green with transparency
-//           outline: {
-//             color: [0, 100, 0, 1], // Dark green outline
-//             width: 2,
-//           },
-//         },
-//       },
-//     });
-//
-//     // Add to map
-//     displayMap.add(geojsonLayer);
-//
-//     // Add to uploaded layers array so it appears in layer list
-//     uploadedLayers.push(geojsonLayer);
-//
-//     // Store for tour
-//     tourLayer = geojsonLayer;
-//
-//     // Wait for layer to load
-//     await geojsonLayer.load();
-//
-//     // Zoom to the layer extent
-//     if (geojsonLayer.fullExtent) {
-//       await view.goTo(geojsonLayer.fullExtent.expand(1.1));
-//     }
-//
-//     // Update layer list UI
-//     updateLayerList();
-//
-//     // Setup feature tour after layer loads
-//     await setupFeatureTour(geojsonLayer);
-//     chevronBtn = document.querySelector(".feature-tour-controls .chevron");
-//     chevronIcon = document.querySelector(".feature-tour-controls .chevron i");
-//     autoControl = document.querySelector(".feature-tour-controls .auto-control");
-//     featureDetails = document.querySelector(".feature-tour-controls .feature-details");
-//
-//     // Toggle featureDetails when chevron is clicked
-//     if (chevronBtn) {
-//       chevronBtn.addEventListener("click", () => {
-//         if (!chevronIcon) {
-//           chevronIcon = chevronBtn.querySelector("i");
-//         }
-//
-//         const currentlyVisible = window.getComputedStyle(featureDetails).display !== "none";
-//         const newVisible = !currentlyVisible;
-//
-//         featureDetails.style.display = newVisible ? "flex" : "none";
-//
-//         if (chevronIcon) {
-//           chevronIcon.classList.toggle("bi-chevron-up", newVisible);
-//           chevronIcon.classList.toggle("bi-chevron-down", !newVisible);
-//         }
-//       });
-//     }
-//
-//     console.log("Default GeoJSON layer loaded successfully");
-//
-//     // 🔹 Apply classification automatically on GARDENSTATUS
-//     currentClassificationLayer = geojsonLayer;
-//     await autoApplyDefaultClassification(geojsonLayer, "GARDENSTATUS");
-//   } catch (error) {
-//     console.error("Error loading default GeoJSON:", error);
-//     // Don't show error to user since this is a default layer
-//   }
-// }
 
 async function autoApplyDefaultClassification(layer, fieldName) {
   try {
@@ -898,7 +569,6 @@ function showCustomPopupTour(graphic) {
 }
 
 // Show popup for tour feature
-// Show popup for tour feature
 function showTourPopup(feature) {
   showCustomPopupTour(feature);
 }
@@ -911,9 +581,6 @@ function closeTourPopup() {
   }
 }
 
-// window.closeTourPopup = closeTourPopup;
-
-// Update tour info panel
 // Update tour info panel
 function updateTourInfo(feature) {
   const { stateManager } = getState();
@@ -989,19 +656,6 @@ function closeTourControls() {
   closeTourPopup(); // Add this line
 }
 
-// Export functions as ES modules
-// export {
-//   initializeMap,
-//   toggleFeatureTour,
-//   nextFeature,
-//   previousFeature,
-//   closeTourControls,
-//   manuallyStartTour,
-//   initializeUI,
-//   initializeMapTabs,
-//   redirectToTabPlatform
-// };
-
 function manuallyStartTour() {
   const { stateManager, notificationManager } = getState();
   const tourFeatures = stateManager.getTourFeatures();
@@ -1018,39 +672,6 @@ function manuallyStartTour() {
   }
 }
 
-// All exports are now handled through ES modules
-
-// ============================================================================
-// COMMENTED OUT - Moved to js/core/map-initializer.js
-// ============================================================================
-// Original initializeCountriesLayer function has been extracted to MapInitializer
-// ============================================================================
-// Initialize countries layer for click info display
-// async function initializeCountriesLayer() {
-//   try {
-//     const [FeatureLayer, GraphicsLayer] = await Promise.all([
-//       loadModule("esri/layers/FeatureLayer"),
-//       loadModule("esri/layers/GraphicsLayer"),
-//     ]);
-//
-//     // Create graphics layer for flash animation
-//     flashGraphicsLayer = new GraphicsLayer({
-//       title: "Flash Animation",
-//       listMode: "hide",
-//     });
-//     displayMap.add(flashGraphicsLayer);
-//
-//     // Create countries layer but don't display it (only for queries)
-//     countriesLayer = new FeatureLayer({
-//       url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/World_Countries_(Generalized)/FeatureServer/0",
-//       visible: false, // Hidden layer, only for queries
-//     });
-//
-//     displayMap.add(countriesLayer);
-//   } catch (error) {
-//     console.error("Error loading countries layer:", error);
-//   }
-// }
 
 // Initialize UI components
 function initializeUI(injectedStateManager) {
@@ -4035,48 +3656,6 @@ function debounce(func, wait) {
   };
 }
 
-// ============================================================================
-// COMMENTED OUT - Moved to js/ui/notification-manager.js
-// ============================================================================
-// Original showNotification function has been extracted to NotificationManager
-// Use window.notificationManager.showNotification() instead
-// ============================================================================
-// function showNotification(message, type = "info") {
-//   // Create notification element
-//   const notification = document.createElement("div");
-//   notification.className = `notification ${type}`;
-//   notification.innerHTML = `
-//     <i class="fas ${
-//       type === "success" ? "fa-check-circle" : "fa-exclamation-circle"
-//     }"></i>
-//     <span>${message}</span>
-//   `;
-//
-//   // Add styles
-//   notification.style.cssText = `
-//     position: fixed;
-//     top: 20px;
-//     left: 50%;
-//     transform: translateX(-50%);
-//     background: ${type === "success" ? "#4CAF50" : "#f44336"};
-//     color: white;
-//     padding: 12px 24px;
-//     border-radius: 8px;
-//     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-//     z-index: 1000;
-//     animation: slideIn 0.3s ease-out;
-//   `;
-//
-//   document.body.appendChild(notification);
-//
-//   // Remove after 3 seconds
-//   setTimeout(() => {
-//     notification.style.animation = "slideOut 0.3s ease-out";
-//     setTimeout(() => {
-//       document.body.removeChild(notification);
-//     }, 300);
-//   }, 3000);
-// }
 
 // Wrapper function for backward compatibility
 function showNotification(message, type = "info") {
@@ -4086,64 +3665,6 @@ function showNotification(message, type = "info") {
     console.warn("NotificationManager not initialized yet:", message);
   }
 }
-
-// // Replace your showNotification function with this improved version:
-// function showNotification(message, type = 'info') {
-//   // Create notification element
-//   const notification = document.createElement('div');
-//   notification.className = `notification ${type}`;
-
-//   // Set icon based on type
-//   let icon = 'fa-info-circle';
-//   if (type === 'success') icon = 'fa-check-circle';
-//   else if (type === 'error') icon = 'fa-exclamation-circle';
-//   else if (type === 'warning') icon = 'fa-exclamation-triangle';
-
-//   notification.innerHTML = `
-//     <i class="fas ${icon}"></i>
-//     <span>${message}</span>
-//   `;
-
-//   // Calculate position based on active notifications
-//   const topPosition = 80 + (activeNotifications.length * 60);
-
-//   // Add styles
-//   notification.style.cssText = `
-//     position: fixed;
-//     top: ${topPosition}px;
-//     left: 50%;
-//     transform: translateX(-50%);
-//     background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : type === 'warning' ? '#ff9800' : '#2196F3'};
-//     color: white;
-//     padding: 12px 24px;
-//     border-radius: 8px;
-//     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-//     z-index: 1000;
-//     animation: slideIn 0.3s ease-out;
-//     max-width: 90%;
-//   `;
-
-//   document.body.appendChild(notification);
-//   activeNotifications.push(notification);
-
-//   // Remove after duration
-//   const duration = type === 'warning' ? 5000 : 3000;
-//   setTimeout(() => {
-//     notification.style.animation = 'slideOut 0.3s ease-out';
-//     setTimeout(() => {
-//       document.body.removeChild(notification);
-//       // Remove from active notifications and update positions
-//       const index = activeNotifications.indexOf(notification);
-//       if (index > -1) {
-//         activeNotifications.splice(index, 1);
-//         // Update positions of remaining notifications
-//         activeNotifications.forEach((notif, i) => {
-//           notif.style.top = (80 + (i * 60)) + 'px';
-//         });
-//       }
-//     }, 300);
-//   }, duration);
-// }
 
 // Add animation styles
 const style = document.createElement("style");

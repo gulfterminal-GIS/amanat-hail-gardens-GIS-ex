@@ -39,10 +39,10 @@ export function bindWindowFunctions(managers) {
     searchManager,
     layerManager,
     drawingManager,
+    analysisManager,
     // Future managers will be added here as they're created:
     // uploadHandler,
     // basemapManager,
-    // analysisManager,
     // measurementManager,
     // visualizationManager,
     // popupManager,
@@ -148,71 +148,79 @@ export function bindWindowFunctions(managers) {
 
   // ============================================================================
   // ANALYSIS TOOLS
-  // Future module: js/tools/analysis-manager.js
+  // Module: js/tools/analysis-manager.js
   // ============================================================================
   
   window.startBufferAnalysis = () => {
-    return scriptFunctions.startBufferAnalysis();
+    return analysisManager.startBufferAnalysis();
   };
 
   window.startIntersectAnalysis = () => {
-    return scriptFunctions.startIntersectAnalysis();
+    return analysisManager.startIntersectAnalysis();
   };
 
   window.startDistanceAnalysis = () => {
-    return scriptFunctions.startDistanceAnalysis();
+    return analysisManager.startDistanceAnalysis();
   };
 
   window.startAreaAnalysis = () => {
-    return scriptFunctions.startAreaAnalysis();
+    return analysisManager.startAreaAnalysis();
   };
 
   window.executeBuffer = () => {
-    return scriptFunctions.executeBuffer();
+    return analysisManager.executeBuffer();
   };
 
   window.executeIntersection = () => {
-    return scriptFunctions.executeIntersection();
+    return analysisManager.executeIntersection();
   };
 
   window.setBufferSource = (source) => {
-    return scriptFunctions.setBufferSource(source);
-  };
-
-  window.setBufferSource = (source) => {
-    return scriptFunctions.setBufferSource(source);
+    return analysisManager.setBufferSource(source);
   };
 
   window.startBufferDrawing = (tool) => {
-    return scriptFunctions.startBufferDrawing(tool);
+    return analysisManager.startBufferDrawing(tool);
   };
 
   window.closeBufferModal = () => {
-    return scriptFunctions.closeBufferModal();
+    return analysisManager.closeBufferModal();
   };
 
   window.closeIntersectModal = () => {
-    return scriptFunctions.closeIntersectModal();
+    return analysisManager.closeIntersectModal();
   };
 
   window.setDistanceSource = (source) => {
-    return scriptFunctions.setDistanceSource(source);
+    return analysisManager.setDistanceSource(source);
   };
 
   window.setIntersectSource = (featureNum, source) => {
-    return scriptFunctions.setIntersectSource(featureNum, source);
+    return analysisManager.setIntersectSource(featureNum, source);
   };
 
   window.startIntersectDrawing = (featureNum) => {
-    return scriptFunctions.startIntersectDrawing(featureNum);
+    return analysisManager.startIntersectDrawing(featureNum);
   };
 
   window.cancelIntersectDrawing = () => {
-    return scriptFunctions.cancelIntersectDrawing();
+    return analysisManager.cancelIntersectDrawing();
   };
 
   window.cancelBufferDrawing = () => {
-    return scriptFunctions.cancelBufferDrawing();
+    return analysisManager.cancelBufferDrawing();
+  };
+
+  window.clearAnalysisResults = () => {
+    return analysisManager.clearAnalysisResults();
+  };
+
+  window.closeDistancePanel = () => {
+    return analysisManager.closeDistancePanel();
+  };
+
+  window.clearDistanceMeasurement = () => {
+    return analysisManager.clearDistanceMeasurement();
   };
 
   // ============================================================================
