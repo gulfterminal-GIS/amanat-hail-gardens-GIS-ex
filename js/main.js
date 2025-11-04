@@ -16,6 +16,7 @@ import { DrawingManager } from "./tools/drawing-manager.js";
 import { AnalysisManager } from "./tools/analysis-manager.js";
 import { MeasurementManager } from "./tools/measurement-manager.js";
 import { VisualizationManager } from "./tools/visualization-manager.js";
+import { PopupManager } from "./features/popup-manager.js";
 import { bindWindowFunctions } from "./window-bindings.js";
 import { initializeMap } from "../script.js";
 
@@ -61,6 +62,9 @@ const measurementManager = new MeasurementManager(stateManager, notificationMana
 // Create VisualizationManager instance
 const visualizationManager = new VisualizationManager(stateManager, notificationManager, layerManager);
 
+// Create PopupManager instance
+const popupManager = new PopupManager(stateManager, notificationManager);
+
 // Create UploadHandler instance
 const uploadHandler = new UploadHandler(stateManager, layerManager, notificationManager);
 
@@ -83,6 +87,7 @@ async function initializeApplication() {
     console.log("AnalysisManager created and ready");
     console.log("MeasurementManager created and ready");
     console.log("VisualizationManager created and ready");
+    console.log("PopupManager created and ready");
 
     // Initialize the map with injected dependencies
     await initializeMap(
@@ -97,7 +102,8 @@ async function initializeApplication() {
       drawingManager,
       analysisManager,
       measurementManager,
-      visualizationManager
+      visualizationManager,
+      popupManager
     );
 
     // Initialize tab system
@@ -122,6 +128,7 @@ async function initializeApplication() {
       analysisManager,
       measurementManager,
       visualizationManager,
+      popupManager,
       // Future managers will be added here as they're created
     });
 

@@ -270,7 +270,7 @@
     - Update main.js to import and initialize BasemapManager
     - _Requirements: 1.2, 1.5, 3.2_
 
-- [ ] 7. Extract drawing and analysis tool modules
+- [x] 7. Extract drawing and analysis tool modules
 
   - [x] 7.1 Create js/tools/drawing-manager.js for sketch functionality
 
@@ -301,7 +301,8 @@
     - Update main.js to import and initialize MeasurementManager
     - _Requirements: 1.2, 1.5, 3.2_
   
-  - [ ] 7.4 Create js/tools/visualization-manager.js for heatmap and time animation
+  - [x] 7.4 Create js/tools/visualization-manager.js for heatmap and time animation
+
     - Extract toggleHeatmap, updateHeatmapLayerSelect, showHeatmapSettings
     - Extract initializeHeatmapSliders, updateHeatmapFieldSelect functions
     - Extract toggleTimeControls, playTimeAnimation, stopTimeAnimation
@@ -311,7 +312,8 @@
     - _Requirements: 1.2, 1.5, 3.2_
 
 - [ ] 8. Extract feature management modules
-  - [ ] 8.1 Create js/features/popup-manager.js for popup functionality
+  - [x] 8.1 Create js/features/popup-manager.js for popup functionality
+
     - Extract showCustomPopup, showCustomPopupTour, closeCustomPopup from script.js
     - Extract updateGeometryDetails, zoomToFeature, copyFeatureInfo functions
     - Create PopupManager class with popup display and content methods

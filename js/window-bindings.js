@@ -44,8 +44,8 @@ export function bindWindowFunctions(managers) {
     analysisManager,
     measurementManager,
     visualizationManager,
+    popupManager,
     // Future managers will be added here as they're created:
-    // popupManager,
     // attributeTable,
     // tourManager,
     // classificationManager,
@@ -292,15 +292,15 @@ export function bindWindowFunctions(managers) {
   // ============================================================================
   
   window.closeCustomPopup = () => {
-    return scriptFunctions.closeCustomPopup();
+    return popupManager.closeCustomPopup();
   };
 
   window.zoomToFeature = () => {
-    return scriptFunctions.zoomToFeature();
+    return popupManager.zoomToFeature();
   };
 
   window.copyFeatureInfo = () => {
-    return scriptFunctions.copyFeatureInfo();
+    return popupManager.copyFeatureInfo();
   };
 
   // ============================================================================

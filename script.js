@@ -86,7 +86,8 @@ async function initializeMap(
   drawingManager = null,
   analysisManager = null,
   measurementManager = null,
-  visualizationManager = null
+  visualizationManager = null,
+  popupManager = null
 ) {
   try {
     // Store instances at module level for use by other functions
@@ -103,6 +104,7 @@ async function initializeMap(
       analysisManager,
       measurementManager,
       visualizationManager,
+      popupManager,
     };
 
     // Initialize state
@@ -420,7 +422,7 @@ function toggleFeatureTour() {
 // Navigate to specific feature
 async function goToFeature(index) {
   try {
-    const { stateManager } = getState();
+    const { stateManager, popupManager } = getState();
     const view = stateManager.getView();
 
     if (!view) {
@@ -491,104 +493,104 @@ async function goToFeature(index) {
     }`;
 
     // Show popup in left-center position
-    showTourPopup(feature);
+    popupManager.showCustomPopupTour(feature);
   } catch (error) {
     console.error("Error navigating to feature:", error);
   }
 }
 
-function showCustomPopupTour(graphic) {
-  const { stateManager } = getState();
+// function showCustomPopupTour(graphic) {
+//   const { stateManager } = getState();
 
-  const featureDetails = document.querySelector(
-    ".feature-tour-controls .feature-details"
-  );
-  if (!featureDetails) {
-    console.warn("Feature details element not found for tour popup");
-    return;
-  }
+//   const featureDetails = document.querySelector(
+//     ".feature-tour-controls .feature-details"
+//   );
+//   if (!featureDetails) {
+//     console.warn("Feature details element not found for tour popup");
+//     return;
+//   }
 
-  stateManager.setCurrentPopupFeature(graphic);
+//   stateManager.setCurrentPopupFeature(graphic);
 
-  // Attributes
-  const attributes = graphic.attributes;
-  let html = '<div class="attributes-list">';
+//   // Attributes
+//   const attributes = graphic.attributes;
+//   let html = '<div class="attributes-list">';
 
-  if (attributes && Object.keys(attributes).length > 0) {
-    const sortedKeys = Object.keys(attributes).sort((a, b) => {
-      const endFields = ["shape_area", "shape_length", "fid"];
+//   if (attributes && Object.keys(attributes).length > 0) {
+//     const sortedKeys = Object.keys(attributes).sort((a, b) => {
+//       const endFields = ["shape_area", "shape_length", "fid"];
 
-      // 1) Put end fields last
-      const aIsEnd = endFields.includes(a.toLowerCase());
-      const bIsEnd = endFields.includes(b.toLowerCase());
-      if (aIsEnd && !bIsEnd) return 1;
-      if (!aIsEnd && bIsEnd) return -1;
+//       // 1) Put end fields last
+//       const aIsEnd = endFields.includes(a.toLowerCase());
+//       const bIsEnd = endFields.includes(b.toLowerCase());
+//       if (aIsEnd && !bIsEnd) return 1;
+//       if (!aIsEnd && bIsEnd) return -1;
 
-      // 2) Arabic fields detection
-      const arabicRegex = /[\u0600-\u06FF]/;
-      const aIsArabic = arabicRegex.test(a);
-      const bIsArabic = arabicRegex.test(b);
+//       // 2) Arabic fields detection
+//       const arabicRegex = /[\u0600-\u06FF]/;
+//       const aIsArabic = arabicRegex.test(a);
+//       const bIsArabic = arabicRegex.test(b);
 
-      if (aIsArabic && !bIsArabic) return -1; // Arabic first
-      if (!aIsArabic && bIsArabic) return 1;
+//       if (aIsArabic && !bIsArabic) return -1; // Arabic first
+//       if (!aIsArabic && bIsArabic) return 1;
 
-      // 3) Otherwise, alphabetical
-      return a.localeCompare(b);
-    });
+//       // 3) Otherwise, alphabetical
+//       return a.localeCompare(b);
+//     });
 
-    sortedKeys.forEach((key) => {
-      const value = attributes[key];
-      if (key.startsWith("_") || key === "ObjectID" || key === "FID") return;
+//     sortedKeys.forEach((key) => {
+//       const value = attributes[key];
+//       if (key.startsWith("_") || key === "ObjectID" || key === "FID") return;
 
-      let displayValue = formatAttributeValue(value, key);
-      if (displayValue) {
-        html += `
-            <div class="item">
-              <p class="label">${formatFieldName(key)}:</p>
-              <span class="value">${displayValue}</span>
-            </div>
-          `;
-      }
-    });
-  } else {
-    html += '<div class="item">No attributes available</div>';
-  }
+//       let displayValue = formatAttributeValue(value, key);
+//       if (displayValue) {
+//         html += `
+//             <div class="item">
+//               <p class="label">${formatFieldName(key)}:</p>
+//               <span class="value">${displayValue}</span>
+//             </div>
+//           `;
+//       }
+//     });
+//   } else {
+//     html += '<div class="item">No attributes available</div>';
+//   }
 
-  html += "</div>";
+//   html += "</div>";
 
-  // Geometry info (async update)
-  if (graphic.geometry) {
-    html += `
-      <div class="geometry-info">
-        <h4>Geometry Information</h4>
-        <div id="geometryDetails">Loading...</div>
-      </div>
-    `;
-  }
+//   // Geometry info (async update)
+//   if (graphic.geometry) {
+//     html += `
+//       <div class="geometry-info">
+//         <h4>Geometry Information</h4>
+//         <div id="geometryDetails">Loading...</div>
+//       </div>
+//     `;
+//   }
 
-  // Action buttons
-  html += `
-    <div class="popup-actions">
-      <button class="popup-action-btn" onclick="zoomToFeature()">
-        <i class="fas fa-search-plus"></i> Zoom to Feature
-      </button>
-      <button class="popup-action-btn" onclick="copyFeatureInfo()">
-        <i class="fas fa-copy"></i> Copy Info
-      </button>
-    </div>
-  `;
+//   // Action buttons
+//   html += `
+//     <div class="popup-actions">
+//       <button class="popup-action-btn" onclick="zoomToFeature()">
+//         <i class="fas fa-search-plus"></i> Zoom to Feature
+//       </button>
+//       <button class="popup-action-btn" onclick="copyFeatureInfo()">
+//         <i class="fas fa-copy"></i> Copy Info
+//       </button>
+//     </div>
+//   `;
 
-  featureDetails.innerHTML = html;
+//   featureDetails.innerHTML = html;
 
-  if (graphic.geometry) {
-    updateGeometryDetails(graphic.geometry);
-  }
-}
+//   if (graphic.geometry) {
+//     updateGeometryDetails(graphic.geometry);
+//   }
+// }
 
 // Show popup for tour feature
-function showTourPopup(feature) {
-  showCustomPopupTour(feature);
-}
+// function showTourPopup(feature) {
+//   showCustomPopupTour(feature);
+// }
 
 // Close tour popup
 function closeTourPopup() {
@@ -1880,22 +1882,22 @@ function registerLayerManagerCallbacks(layerManager) {
 // }
 
 // Function to restore modal
-function disableDrawingMode(modalId) {
-  const modal = document.getElementById(modalId);
-  const tempContainer = document.getElementById("tempModalContainer");
-  const modalContent = tempContainer?.querySelector(".modal-content");
+// function disableDrawingMode(modalId) {
+//   const modal = document.getElementById(modalId);
+//   const tempContainer = document.getElementById("tempModalContainer");
+//   const modalContent = tempContainer?.querySelector(".modal-content");
 
-  if (modalContent && modal.getAttribute("data-drawing") === "true") {
-    modal.style.display = "";
-    modal.appendChild(modalContent);
-    modal.removeAttribute("data-drawing");
+//   if (modalContent && modal.getAttribute("data-drawing") === "true") {
+//     modal.style.display = "";
+//     modal.appendChild(modalContent);
+//     modal.removeAttribute("data-drawing");
 
-    // Clean up temp container
-    if (tempContainer && tempContainer.children.length === 0) {
-      tempContainer.remove();
-    }
-  }
-}
+//     // Clean up temp container
+//     if (tempContainer && tempContainer.children.length === 0) {
+//       tempContainer.remove();
+//     }
+//   }
+// }
 
 // Setup SketchViewModel events
 // function setupSketchViewModelEvents() {
@@ -2585,6 +2587,8 @@ function initializeCoordinateDisplay(view) {
 
 // Initialize event handlers
 function initializeEventHandlers(stateManager) {
+    const { popupManager } = getState();
+
   // Get state from StateManager for proper scope access
   const view = stateManager ? stateManager.getView() : window.view;
   const uploadedLayers = stateManager
@@ -2700,22 +2704,22 @@ function initializeEventHandlers(stateManager) {
             const featureSet = await graphic.layer.queryFeatures(query);
             if (featureSet.features.length > 0) {
               // Use the queried feature which should have all attributes
-              showCustomPopup(featureSet.features[0], event.mapPoint);
+              popupManager.showCustomPopup(featureSet.features[0], event.mapPoint);
             } else {
-              showCustomPopup(graphic, event.mapPoint);
+              popupManager.showCustomPopup(graphic, event.mapPoint);
             }
           } catch (queryError) {
             console.warn(
               "Could not query feature, using hitTest result:",
               queryError
             );
-            showCustomPopup(graphic, event.mapPoint);
+            popupManager.showCustomPopup(graphic, event.mapPoint);
           }
         } else {
-          showCustomPopup(graphic, event.mapPoint);
+          popupManager.showCustomPopup(graphic, event.mapPoint);
         }
       } else {
-        closeCustomPopup();
+        popupManager.closeCustomPopup();
       }
     } catch (error) {
       console.error("Error in click handler:", error);
@@ -3194,444 +3198,447 @@ async function createCountryFlashAnimation(geometry) {
 //   }
 // }
 
+// ============================================================================
+// COMMENTED OUT - Moved to js/features/popup-manager.js
+// ============================================================================
 // Replace showCustomPopup with this enhanced version
-function showCustomPopup(graphic, mapPoint) {
-  const { stateManager } = getState();
-  stateManager.setCurrentPopupFeature(graphic);
-  const popup = document.getElementById("customPopup");
-  const content = document.getElementById("popupContent");
-  const title = document.getElementById("popupTitle");
+// function showCustomPopup(graphic, mapPoint) {
+//   const { stateManager } = getState();
+//   stateManager.setCurrentPopupFeature(graphic);
+//   const popup = document.getElementById("customPopup");
+//   const content = document.getElementById("popupContent");
+//   const title = document.getElementById("popupTitle");
 
-  // Set title - use layer title or feature name if available
-  const layerTitle = graphic.layer?.title || "Feature Information";
-  const featureName =
-    graphic.attributes?.name ||
-    graphic.attributes?.Name ||
-    graphic.attributes?.title ||
-    graphic.attributes?.Title ||
-    "";
+//   // Set title - use layer title or feature name if available
+//   const layerTitle = graphic.layer?.title || "Feature Information";
+//   const featureName =
+//     graphic.attributes?.name ||
+//     graphic.attributes?.Name ||
+//     graphic.attributes?.title ||
+//     graphic.attributes?.Title ||
+//     "";
 
-  title.textContent = featureName || layerTitle;
+//   title.textContent = featureName || layerTitle;
 
-  // Build comprehensive attribute table
-  const attributes = graphic.attributes;
-  let html = '<div class="attribute-list">';
+//   // Build comprehensive attribute table
+//   const attributes = graphic.attributes;
+//   let html = '<div class="attribute-list">';
 
-  if (attributes && Object.keys(attributes).length > 0) {
-    // Get all attributes and sort them
-    // const sortedKeys = Object.keys(attributes).sort((a, b) => {
-    //   // Put important fields first
-    //   const priorityFields = ['name', 'title', 'id', 'type', 'category'];
-    //   const aPriority = priorityFields.findIndex(f => a.toLowerCase().includes(f));
-    //   const bPriority = priorityFields.findIndex(f => b.toLowerCase().includes(f));
+//   if (attributes && Object.keys(attributes).length > 0) {
+//     // Get all attributes and sort them
+//     // const sortedKeys = Object.keys(attributes).sort((a, b) => {
+//     //   // Put important fields first
+//     //   const priorityFields = ['name', 'title', 'id', 'type', 'category'];
+//     //   const aPriority = priorityFields.findIndex(f => a.toLowerCase().includes(f));
+//     //   const bPriority = priorityFields.findIndex(f => b.toLowerCase().includes(f));
 
-    //   if (aPriority !== -1 && bPriority !== -1) return aPriority - bPriority;
-    //   if (aPriority !== -1) return -1;
-    //   if (bPriority !== -1) return 1;
+//     //   if (aPriority !== -1 && bPriority !== -1) return aPriority - bPriority;
+//     //   if (aPriority !== -1) return -1;
+//     //   if (bPriority !== -1) return 1;
 
-    //   return a.localeCompare(b);
-    // });
+//     //   return a.localeCompare(b);
+//     // });
 
-    const sortedKeys = Object.keys(attributes).sort((a, b) => {
-      // Fields to show at the end
-      const endFields = [
-        "shape_area",
-        "shape__area",
-        "shape_length",
-        "shape__length",
-        "shape_leng",
-        "fid",
-      ];
-      const aIsEnd = endFields.some((f) => a.toLowerCase() === f.toLowerCase());
-      const bIsEnd = endFields.some((f) => b.toLowerCase() === f.toLowerCase());
+//     const sortedKeys = Object.keys(attributes).sort((a, b) => {
+//       // Fields to show at the end
+//       const endFields = [
+//         "shape_area",
+//         "shape__area",
+//         "shape_length",
+//         "shape__length",
+//         "shape_leng",
+//         "fid",
+//       ];
+//       const aIsEnd = endFields.some((f) => a.toLowerCase() === f.toLowerCase());
+//       const bIsEnd = endFields.some((f) => b.toLowerCase() === f.toLowerCase());
 
-      if (aIsEnd && !bIsEnd) return 1;
-      if (!aIsEnd && bIsEnd) return -1;
+//       if (aIsEnd && !bIsEnd) return 1;
+//       if (!aIsEnd && bIsEnd) return -1;
 
-      // Put important fields first
-      const priorityFields = [
-        "name",
-        "title",
-        "id",
-        "type",
-        "category",
-        "objectid",
-      ];
-      const aPriority = priorityFields.findIndex((f) =>
-        a.toLowerCase().includes(f)
-      );
-      const bPriority = priorityFields.findIndex((f) =>
-        b.toLowerCase().includes(f)
-      );
+//       // Put important fields first
+//       const priorityFields = [
+//         "name",
+//         "title",
+//         "id",
+//         "type",
+//         "category",
+//         "objectid",
+//       ];
+//       const aPriority = priorityFields.findIndex((f) =>
+//         a.toLowerCase().includes(f)
+//       );
+//       const bPriority = priorityFields.findIndex((f) =>
+//         b.toLowerCase().includes(f)
+//       );
 
-      if (aPriority !== -1 && bPriority !== -1) return aPriority - bPriority;
-      if (aPriority !== -1) return -1;
-      if (bPriority !== -1) return 1;
+//       if (aPriority !== -1 && bPriority !== -1) return aPriority - bPriority;
+//       if (aPriority !== -1) return -1;
+//       if (bPriority !== -1) return 1;
 
-      return a.localeCompare(b);
-    });
+//       return a.localeCompare(b);
+//     });
 
-    // Display each attribute
-    sortedKeys.forEach((key) => {
-      const value = attributes[key];
+//     // Display each attribute
+//     sortedKeys.forEach((key) => {
+//       const value = attributes[key];
 
-      // Skip internal fields
-      if (key.startsWith("_") || key === "ObjectID" || key === "FID") {
-        return;
-      }
+//       // Skip internal fields
+//       if (key.startsWith("_") || key === "ObjectID" || key === "FID") {
+//         return;
+//       }
 
-      // Format the value based on type
-      let displayValue = formatAttributeValue(value, key);
+//       // Format the value based on type
+//       let displayValue = formatAttributeValue(value, key);
 
-      if (displayValue !== null && displayValue !== "") {
-        html += `
-          <div class="attribute-row">
-            <span class="attribute-label">${formatFieldName(key)}:</span>
-            <span class="attribute-value">${displayValue}</span>
-          </div>
-        `;
-      }
-    });
-  } else {
-    html += '<div class="no-attributes">No attributes available</div>';
-  }
+//       if (displayValue !== null && displayValue !== "") {
+//         html += `
+//           <div class="attribute-row">
+//             <span class="attribute-label">${formatFieldName(key)}:</span>
+//             <span class="attribute-value">${displayValue}</span>
+//           </div>
+//         `;
+//       }
+//     });
+//   } else {
+//     html += '<div class="no-attributes">No attributes available</div>';
+//   }
 
-  html += "</div>";
+//   html += "</div>";
 
-  // Add geometry information
-  if (graphic.geometry) {
-    html += '<div class="geometry-info">';
-    html += "<h4>Geometry Information</h4>";
+//   // Add geometry information
+//   if (graphic.geometry) {
+//     html += '<div class="geometry-info">';
+//     html += "<h4>Geometry Information</h4>";
 
-    // Create a container for async geometry calculations
-    html += '<div id="geometryDetails">Loading...</div>';
-    html += "</div>";
-  }
+//     // Create a container for async geometry calculations
+//     html += '<div id="geometryDetails">Loading...</div>';
+//     html += "</div>";
+//   }
 
-  // Add action buttons
-  html += `
-    <div class="popup-actions">
-      <button class="popup-action-btn" onclick="zoomToFeature()">
-        <i class="fas fa-search-plus"></i> Zoom to Feature
-      </button>
-      <button class="popup-action-btn" onclick="copyFeatureInfo()">
-        <i class="fas fa-copy"></i> Copy Info
-      </button>
-    </div>
-  `;
+//   // Add action buttons
+//   html += `
+//     <div class="popup-actions">
+//       <button class="popup-action-btn" onclick="zoomToFeature()">
+//         <i class="fas fa-search-plus"></i> Zoom to Feature
+//       </button>
+//       <button class="popup-action-btn" onclick="copyFeatureInfo()">
+//         <i class="fas fa-copy"></i> Copy Info
+//       </button>
+//     </div>
+//   `;
 
-  content.innerHTML = html;
+//   content.innerHTML = html;
 
-  // Position popup
-  positionPopup(popup, mapPoint);
+//   // Position popup
+//   positionPopup(popup, mapPoint);
 
-  // Show popup
-  popup.classList.remove("hidden");
+//   // Show popup
+//   popup.classList.remove("hidden");
 
-  // Now calculate geometry details asynchronously
-  if (graphic.geometry) {
-    updateGeometryDetails(graphic.geometry);
-  }
-}
+//   // Now calculate geometry details asynchronously
+//   if (graphic.geometry) {
+//     updateGeometryDetails(graphic.geometry);
+//   }
+// }
 
-// Add new function to update geometry details asynchronously
-async function updateGeometryDetails(geometry) {
-  const detailsDiv = document.getElementById("geometryDetails");
-  if (!detailsDiv) return;
+// // Add new function to update geometry details asynchronously
+// async function updateGeometryDetails(geometry) {
+//   const detailsDiv = document.getElementById("geometryDetails");
+//   if (!detailsDiv) return;
 
-  let html = "";
+//   let html = "";
 
-  try {
-    switch (geometry.type) {
-      case "point":
-        html = `
-          <div class="attribute-row">
-            <span class="attribute-label">Type:</span>
-            <span class="attribute-value">Point</span>
-          </div>
-          <div class="attribute-row">
-            <span class="attribute-label">Longitude:</span>
-            <span class="attribute-value">${geometry.longitude.toFixed(
-              6
-            )}</span>
-          </div>
-          <div class="attribute-row">
-            <span class="attribute-label">Latitude:</span>
-            <span class="attribute-value">${geometry.latitude.toFixed(6)}</span>
-          </div>
-        `;
-        break;
+//   try {
+//     switch (geometry.type) {
+//       case "point":
+//         html = `
+//           <div class="attribute-row">
+//             <span class="attribute-label">Type:</span>
+//             <span class="attribute-value">Point</span>
+//           </div>
+//           <div class="attribute-row">
+//             <span class="attribute-label">Longitude:</span>
+//             <span class="attribute-value">${geometry.longitude.toFixed(
+//               6
+//             )}</span>
+//           </div>
+//           <div class="attribute-row">
+//             <span class="attribute-label">Latitude:</span>
+//             <span class="attribute-value">${geometry.latitude.toFixed(6)}</span>
+//           </div>
+//         `;
+//         break;
 
-      case "polyline":
-        const length = await calculateLength(geometry);
-        html = `
-          <div class="attribute-row">
-            <span class="attribute-label">Type:</span>
-            <span class="attribute-value">Line</span>
-          </div>
-          <div class="attribute-row">
-            <span class="attribute-label">Length:</span>
-            <span class="attribute-value">${length}</span>
-          </div>
-          <div class="attribute-row">
-            <span class="attribute-label">Vertices:</span>
-            <span class="attribute-value">${countVertices(geometry)}</span>
-          </div>
-        `;
-        break;
+//       case "polyline":
+//         const length = await calculateLength(geometry);
+//         html = `
+//           <div class="attribute-row">
+//             <span class="attribute-label">Type:</span>
+//             <span class="attribute-value">Line</span>
+//           </div>
+//           <div class="attribute-row">
+//             <span class="attribute-label">Length:</span>
+//             <span class="attribute-value">${length}</span>
+//           </div>
+//           <div class="attribute-row">
+//             <span class="attribute-label">Vertices:</span>
+//             <span class="attribute-value">${countVertices(geometry)}</span>
+//           </div>
+//         `;
+//         break;
 
-      case "polygon":
-        const area = await calculateArea(geometry);
-        const perimeter = await calculatePerimeter(geometry);
-        // Continue the polygon case and complete the updateGeometryDetails function
-        html = `
-          <div class="attribute-row">
-            <span class="attribute-label">Type:</span>
-            <span class="attribute-value">Polygon</span>
-          </div>
-          <div class="attribute-row">
-            <span class="attribute-label">Area:</span>
-            <span class="attribute-value">${area}</span>
-          </div>
-          <div class="attribute-row">
-            <span class="attribute-label">Perimeter:</span>
-            <span class="attribute-value">${perimeter}</span>
-          </div>
-          <div class="attribute-row">
-            <span class="attribute-label">Vertices:</span>
-            <span class="attribute-value">${countVertices(geometry)}</span>
-          </div>
-        `;
-        break;
-    }
+//       case "polygon":
+//         const area = await calculateArea(geometry);
+//         const perimeter = await calculatePerimeter(geometry);
+//         // Continue the polygon case and complete the updateGeometryDetails function
+//         html = `
+//           <div class="attribute-row">
+//             <span class="attribute-label">Type:</span>
+//             <span class="attribute-value">Polygon</span>
+//           </div>
+//           <div class="attribute-row">
+//             <span class="attribute-label">Area:</span>
+//             <span class="attribute-value">${area}</span>
+//           </div>
+//           <div class="attribute-row">
+//             <span class="attribute-label">Perimeter:</span>
+//             <span class="attribute-value">${perimeter}</span>
+//           </div>
+//           <div class="attribute-row">
+//             <span class="attribute-label">Vertices:</span>
+//             <span class="attribute-value">${countVertices(geometry)}</span>
+//           </div>
+//         `;
+//         break;
+//     }
 
-    detailsDiv.innerHTML = html;
-  } catch (error) {
-    console.error("Error calculating geometry details:", error);
-    detailsDiv.innerHTML =
-      '<div class="error-message">Unable to calculate geometry details</div>';
-  }
-}
+//     detailsDiv.innerHTML = html;
+//   } catch (error) {
+//     console.error("Error calculating geometry details:", error);
+//     detailsDiv.innerHTML =
+//       '<div class="error-message">Unable to calculate geometry details</div>';
+//   }
+// }
 
 // // Add helper functions for formatting and calculations
-function formatAttributeValue(value, key) {
-  if (value === null || value === undefined) {
-    return "N/A";
-  }
+// function formatAttributeValue(value, key) {
+//   if (value === null || value === undefined) {
+//     return "N/A";
+//   }
 
-  // Check if it's a date field by name or value
-  const dateKeywords = ["date", "time", "تاريخ", "وقت"];
-  const keyLower = key.toLowerCase();
-  const isDateField = dateKeywords.some((keyword) =>
-    keyLower.includes(keyword)
-  );
+//   // Check if it's a date field by name or value
+//   const dateKeywords = ["date", "time", "تاريخ", "وقت"];
+//   const keyLower = key.toLowerCase();
+//   const isDateField = dateKeywords.some((keyword) =>
+//     keyLower.includes(keyword)
+//   );
 
-  // Check if value looks like a timestamp (large number)
-  const isTimestamp =
-    typeof value === "number" && value > 1000000000 && value < 10000000000000;
+//   // Check if value looks like a timestamp (large number)
+//   const isTimestamp =
+//     typeof value === "number" && value > 1000000000 && value < 10000000000000;
 
-  if (isDateField || isTimestamp) {
-    try {
-      const date = new Date(value);
-      if (!isNaN(date.getTime())) {
-        // Format date in Gregorian (Miladi) format
-        const day = date.getDate().toString().padStart(2, "0");
-        const month = (date.getMonth() + 1).toString().padStart(2, "0");
-        const year = date.getFullYear();
+//   if (isDateField || isTimestamp) {
+//     try {
+//       const date = new Date(value);
+//       if (!isNaN(date.getTime())) {
+//         // Format date in Gregorian (Miladi) format
+//         const day = date.getDate().toString().padStart(2, "0");
+//         const month = (date.getMonth() + 1).toString().padStart(2, "0");
+//         const year = date.getFullYear();
 
-        // If the time is 00:00, show only the date
-        if (date.getHours() === 0 && date.getMinutes() === 0) {
-          return `${day}/${month}/${year}`;
-        }
+//         // If the time is 00:00, show only the date
+//         if (date.getHours() === 0 && date.getMinutes() === 0) {
+//           return `${day}/${month}/${year}`;
+//         }
 
-        // Include time if it's not 00:00
-        const hours = date.getHours().toString().padStart(2, "0");
-        const minutes = date.getMinutes().toString().padStart(2, "0");
-        return `${day}/${month}/${year} ${hours}:${minutes}`;
-      }
-    } catch (e) {
-      // If date parsing fails, continue to default handling
-    }
-  }
+//         // Include time if it's not 00:00
+//         const hours = date.getHours().toString().padStart(2, "0");
+//         const minutes = date.getMinutes().toString().padStart(2, "0");
+//         return `${day}/${month}/${year} ${hours}:${minutes}`;
+//       }
+//     } catch (e) {
+//       // If date parsing fails, continue to default handling
+//     }
+//   }
 
-  // Check if it's a number
-  if (typeof value === "number") {
-    // Format large numbers with commas, but not timestamps
-    if (!isTimestamp && Math.abs(value) >= 1000) {
-      return value.toLocaleString();
-    }
-    // Round decimals to 4 places
-    if (value % 1 !== 0) {
-      return value.toFixed(4).replace(/\.?0+$/, "");
-    }
-    return value.toString();
-  }
+//   // Check if it's a number
+//   if (typeof value === "number") {
+//     // Format large numbers with commas, but not timestamps
+//     if (!isTimestamp && Math.abs(value) >= 1000) {
+//       return value.toLocaleString();
+//     }
+//     // Round decimals to 4 places
+//     if (value % 1 !== 0) {
+//       return value.toFixed(4).replace(/\.?0+$/, "");
+//     }
+//     return value.toString();
+//   }
 
-  // Check if it's a boolean
-  if (typeof value === "boolean") {
-    return value
-      ? '<span class="bool-true">Yes</span>'
-      : '<span class="bool-false">No</span>';
-  }
+//   // Check if it's a boolean
+//   if (typeof value === "boolean") {
+//     return value
+//       ? '<span class="bool-true">Yes</span>'
+//       : '<span class="bool-false">No</span>';
+//   }
 
-  // Check if it's a URL
-  if (
-    typeof value === "string" &&
-    (value.startsWith("http://") || value.startsWith("https://"))
-  ) {
-    return `<a href="${value}" target="_blank" class="attribute-link">${value}</a>`;
-  }
+//   // Check if it's a URL
+//   if (
+//     typeof value === "string" &&
+//     (value.startsWith("http://") || value.startsWith("https://"))
+//   ) {
+//     return `<a href="${value}" target="_blank" class="attribute-link">${value}</a>`;
+//   }
 
-  // Check if it's an email
-  if (typeof value === "string" && value.includes("@")) {
-    return `<a href="mailto:${value}" class="attribute-link">${value}</a>`;
-  }
+//   // Check if it's an email
+//   if (typeof value === "string" && value.includes("@")) {
+//     return `<a href="mailto:${value}" class="attribute-link">${value}</a>`;
+//   }
 
-  // Default string value
-  return value.toString();
-}
+//   // Default string value
+//   return value.toString();
+// }
 
 // Calculate geometry measurements
-async function calculateLength(geometry) {
-  try {
-    const [geometryEngine] = await Promise.all([
-      loadModule("esri/geometry/geometryEngine"),
-    ]);
+// async function calculateLength(geometry) {
+//   try {
+//     const [geometryEngine] = await Promise.all([
+//       loadModule("esri/geometry/geometryEngine"),
+//     ]);
 
-    const length = geometryEngine.geodesicLength(geometry, "meters");
-    if (length > 1000) {
-      return (length / 1000).toFixed(2) + " km";
-    }
-    return length.toFixed(2) + " m";
-  } catch (error) {
-    return "N/A";
-  }
-}
+//     const length = geometryEngine.geodesicLength(geometry, "meters");
+//     if (length > 1000) {
+//       return (length / 1000).toFixed(2) + " km";
+//     }
+//     return length.toFixed(2) + " m";
+//   } catch (error) {
+//     return "N/A";
+//   }
+// }
 
-async function calculateArea(geometry) {
-  try {
-    const [geometryEngine] = await Promise.all([
-      loadModule("esri/geometry/geometryEngine"),
-    ]);
+// async function calculateArea(geometry) {
+//   try {
+//     const [geometryEngine] = await Promise.all([
+//       loadModule("esri/geometry/geometryEngine"),
+//     ]);
 
-    const area = geometryEngine.geodesicArea(geometry, "square-meters");
-    if (area > 1000000) {
-      return (area / 1000000).toFixed(2) + " km²";
-    } else if (area > 10000) {
-      return (area / 10000).toFixed(2) + " ha";
-    }
-    return area.toFixed(2) + " m²";
-  } catch (error) {
-    return "N/A";
-  }
-}
+//     const area = geometryEngine.geodesicArea(geometry, "square-meters");
+//     if (area > 1000000) {
+//       return (area / 1000000).toFixed(2) + " km²";
+//     } else if (area > 10000) {
+//       return (area / 10000).toFixed(2) + " ha";
+//     }
+//     return area.toFixed(2) + " m²";
+//   } catch (error) {
+//     return "N/A";
+//   }
+// }
 
-async function calculatePerimeter(geometry) {
-  try {
-    const [geometryEngine] = await Promise.all([
-      loadModule("esri/geometry/geometryEngine"),
-    ]);
+// async function calculatePerimeter(geometry) {
+//   try {
+//     const [geometryEngine] = await Promise.all([
+//       loadModule("esri/geometry/geometryEngine"),
+//     ]);
 
-    const perimeter = geometryEngine.geodesicLength(geometry, "meters");
-    if (perimeter > 1000) {
-      return (perimeter / 1000).toFixed(2) + " km";
-    }
-    return perimeter.toFixed(2) + " m";
-  } catch (error) {
-    return "N/A";
-  }
-}
+//     const perimeter = geometryEngine.geodesicLength(geometry, "meters");
+//     if (perimeter > 1000) {
+//       return (perimeter / 1000).toFixed(2) + " km";
+//     }
+//     return perimeter.toFixed(2) + " m";
+//   } catch (error) {
+//     return "N/A";
+//   }
+// }
 
-function countVertices(geometry) {
-  if (geometry.type === "polygon") {
-    return geometry.rings[0]?.length - 1 || 0; // -1 because first and last are same
-  } else if (geometry.type === "polyline") {
-    return geometry.paths[0]?.length || 0;
-  }
-  return 0;
-}
+// function countVertices(geometry) {
+//   if (geometry.type === "polygon") {
+//     return geometry.rings[0]?.length - 1 || 0; // -1 because first and last are same
+//   } else if (geometry.type === "polyline") {
+//     return geometry.paths[0]?.length || 0;
+//   }
+//   return 0;
+// }
 
-// Position popup intelligently
-function positionPopup(popup, mapPoint) {
-  const screenPoint = view.toScreen(mapPoint);
-  const popupWidth = 400; // Max width from CSS
-  const popupHeight = 500; // Estimated max height
-  const padding = 20;
+// // Position popup intelligently
+// function positionPopup(popup, mapPoint) {
+//   const screenPoint = view.toScreen(mapPoint);
+//   const popupWidth = 400; // Max width from CSS
+//   const popupHeight = 500; // Estimated max height
+//   const padding = 20;
 
-  let left = screenPoint.x + 10;
-  let top = screenPoint.y + 10;
+//   let left = screenPoint.x + 10;
+//   let top = screenPoint.y + 10;
 
-  // Check if popup would go off right edge
-  if (left + popupWidth > window.innerWidth - padding) {
-    left = screenPoint.x - popupWidth - 10;
-  }
+//   // Check if popup would go off right edge
+//   if (left + popupWidth > window.innerWidth - padding) {
+//     left = screenPoint.x - popupWidth - 10;
+//   }
 
-  // Check if popup would go off bottom edge
-  if (top + popupHeight > window.innerHeight - padding) {
-    top = screenPoint.y - popupHeight - 10;
-  }
+//   // Check if popup would go off bottom edge
+//   if (top + popupHeight > window.innerHeight - padding) {
+//     top = screenPoint.y - popupHeight - 10;
+//   }
 
-  // Ensure popup doesn't go off left or top edges
-  left = Math.max(padding, left);
-  top = Math.max(padding, top);
+//   // Ensure popup doesn't go off left or top edges
+//   left = Math.max(padding, left);
+//   top = Math.max(padding, top);
 
-  popup.style.left = left + "px";
-  popup.style.top = top + "px";
-}
+//   popup.style.left = left + "px";
+//   popup.style.top = top + "px";
+// }
 
 // Popup action functions
-function zoomToFeature() {
-  const { stateManager } = getState();
-  if (
-    stateManager.getCurrentPopupFeature() &&
-    stateManager.getCurrentPopupFeature().geometry
-  ) {
-    stateManager.getView().goTo({
-      target: stateManager.getCurrentPopupFeature().geometry,
-      zoom: stateManager.getView().zoom + 2,
-    });
-  }
-}
+// function zoomToFeature() {
+//   const { stateManager } = getState();
+//   if (
+//     stateManager.getCurrentPopupFeature() &&
+//     stateManager.getCurrentPopupFeature().geometry
+//   ) {
+//     stateManager.getView().goTo({
+//       target: stateManager.getCurrentPopupFeature().geometry,
+//       zoom: stateManager.getView().zoom + 2,
+//     });
+//   }
+// }
 
-function copyFeatureInfo() {
-  if (!getState().stateManager.getCurrentPopupFeature()) return;
+// function copyFeatureInfo() {
+//   if (!getState().stateManager.getCurrentPopupFeature()) return;
 
-  let text = "Feature Information\n";
-  text += "==================\n\n";
+//   let text = "Feature Information\n";
+//   text += "==================\n\n";
 
-  // Add attributes
-  if (getState().stateManager.getCurrentPopupFeature().attributes) {
-    text += "Attributes:\n";
-    Object.entries(
-      getState().stateManager.getCurrentPopupFeature().attributes
-    ).forEach(([key, value]) => {
-      if (!key.startsWith("_") && key !== "ObjectID" && key !== "FID") {
-        text += `${formatFieldName(key)}: ${value || "N/A"}\n`;
-      }
-    });
-  }
+//   // Add attributes
+//   if (getState().stateManager.getCurrentPopupFeature().attributes) {
+//     text += "Attributes:\n";
+//     Object.entries(
+//       getState().stateManager.getCurrentPopupFeature().attributes
+//     ).forEach(([key, value]) => {
+//       if (!key.startsWith("_") && key !== "ObjectID" && key !== "FID") {
+//         text += `${formatFieldName(key)}: ${value || "N/A"}\n`;
+//       }
+//     });
+//   }
 
-  // Copy to clipboard
-  navigator.clipboard
-    .writeText(text)
-    .then(() => {
-      showNotification("Feature information copied to clipboard", "success");
-    })
-    .catch(() => {
-      showNotification("Failed to copy to clipboard", "error");
-    });
-}
+//   // Copy to clipboard
+//   navigator.clipboard
+//     .writeText(text)
+//     .then(() => {
+//       showNotification("Feature information copied to clipboard", "success");
+//     })
+//     .catch(() => {
+//       showNotification("Failed to copy to clipboard", "error");
+//     });
+// }
 
 // Export functions for popup actions
 // window.zoomToFeature = zoomToFeature;
 // window.copyFeatureInfo = copyFeatureInfo;
 
 // Close custom popup
-function closeCustomPopup() {
-  const popup = document.getElementById("customPopup");
-  popup.classList.add("hidden");
-  getState().stateManager.setCurrentPopupFeature(null);
-}
+// function closeCustomPopup() {
+//   const popup = document.getElementById("customPopup");
+//   popup.classList.add("hidden");
+//   getState().stateManager.setCurrentPopupFeature(null);
+// }
 
 // // Utility functions
 // function formatFieldName(fieldName) {
@@ -3641,44 +3648,44 @@ function closeCustomPopup() {
 // }
 
 // Update formatFieldName to handle various field name formats
-function formatFieldName(fieldName) {
-  // Common field name mappings
-  const fieldMappings = {
-    OBJECTID: "Object ID",
-    ANAME: "Arabic Name",
-    ENAME: "English Name",
-    REDION_CAP: "Region Capital",
-    AREA_: "Area",
-    SAUDI_MAN_: "Saudi Men",
-    SAUDI_WOME: "Saudi Women",
-    NONSAUDI_M: "Non-Saudi Men",
-    NONSAUDI_W: "Non-Saudi Women",
-    SHAPE_Leng: "Shape Length",
-    Shape_Length: "Shape Length",
-    Shape_Area: "Shape Area",
-    FolderPath: "Folder Path",
-    SymbolID: "Symbol ID",
-    AltMode: "Altitude Mode",
-    Snippet: "Snippet",
-    PopupInfo: "Popup Info",
-    HasLabel: "Has Label",
-    LabelID: "Label ID",
-  };
+// function formatFieldName(fieldName) {
+//   // Common field name mappings
+//   const fieldMappings = {
+//     OBJECTID: "Object ID",
+//     ANAME: "Arabic Name",
+//     ENAME: "English Name",
+//     REDION_CAP: "Region Capital",
+//     AREA_: "Area",
+//     SAUDI_MAN_: "Saudi Men",
+//     SAUDI_WOME: "Saudi Women",
+//     NONSAUDI_M: "Non-Saudi Men",
+//     NONSAUDI_W: "Non-Saudi Women",
+//     SHAPE_Leng: "Shape Length",
+//     Shape_Length: "Shape Length",
+//     Shape_Area: "Shape Area",
+//     FolderPath: "Folder Path",
+//     SymbolID: "Symbol ID",
+//     AltMode: "Altitude Mode",
+//     Snippet: "Snippet",
+//     PopupInfo: "Popup Info",
+//     HasLabel: "Has Label",
+//     LabelID: "Label ID",
+//   };
 
-  // Check if we have a mapping
-  if (fieldMappings[fieldName]) {
-    return fieldMappings[fieldName];
-  }
+//   // Check if we have a mapping
+//   if (fieldMappings[fieldName]) {
+//     return fieldMappings[fieldName];
+//   }
 
-  // Otherwise, format the field name
-  return fieldName
-    .replace(/_/g, " ")
-    .replace(/([A-Z])/g, " $1")
-    .trim()
-    .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
-}
+//   // Otherwise, format the field name
+//   return fieldName
+//     .replace(/_/g, " ")
+//     .replace(/([A-Z])/g, " $1")
+//     .trim()
+//     .split(" ")
+//     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+//     .join(" ");
+// }
 
 function debounce(func, wait) {
   let timeout;
@@ -3732,10 +3739,12 @@ document.head.appendChild(style);
 // Find and update the window resize handler:
 let resizeTimeout;
 window.addEventListener("resize", () => {
+  const { popupManager } = getState();
+
   clearTimeout(resizeTimeout);
   resizeTimeout = setTimeout(() => {
     // Close popup on resize
-    closeCustomPopup();
+    popupManager.closeCustomPopup();
 
     // Get control panel reference properly
     const controlPanel = document.querySelector(".control-panel");
@@ -3755,7 +3764,7 @@ window.addEventListener("resize", () => {
 // window.toggleLayer = toggleLayer;
 // window.zoomToLayer = zoomToLayer;
 // window.removeLayer = removeLayer;
-window.closeCustomPopup = closeCustomPopup;
+// window.closeCustomPopup = closeCustomPopup;
 
 // Widget Management System
 const activeWidgets = new Map();
@@ -4616,6 +4625,8 @@ function renderTable() {
     return;
   }
 
+  const { popupManager } = getState();
+
   // Get columns (excluding internal fields)
   const columns = Object.keys(filteredData[0]).filter(
     (key) => !key.startsWith("_") && key !== "ObjectID" && key !== "FID"
@@ -4634,9 +4645,8 @@ function renderTable() {
   html += '<th style="width: 50px;">#</th>';
   columns.forEach((col) => {
     const sortClass = sortColumn === col ? `sort-${sortDirection}` : "";
-    html += `<th class="${sortClass}" onclick="sortTable('${col}')">${formatFieldName(
-      col
-    )}</th>`;
+    html += `<th class="${sortClass}" onclick="sortTable('${col}')">
+      ${popupManager.formatFieldName(col)}</th>`;
   });
   html += "</tr></thead>";
 
@@ -5420,6 +5430,7 @@ function initializeClassificationPanel() {
   const fieldSelect = document.getElementById("classifyFieldSelect");
   const fieldSection = document.getElementById("classifyFieldSection");
   const actionsSection = document.querySelector(".classification-actions");
+  const { popupManager } = getState();
 
   // Populate layers
   layerSelect.innerHTML = '<option value="">Choose a layer...</option>';
@@ -5460,7 +5471,7 @@ function initializeClassificationPanel() {
         ) {
           const option = document.createElement("option");
           option.value = field.name;
-          option.textContent = formatFieldName(field.name);
+          option.textContent = popupManager.formatFieldName(field.name);
           fieldSelect.appendChild(option);
         }
       });
@@ -5786,6 +5797,8 @@ function createDefaultClassificationSymbol(geometryType) {
 
 // Create classification legend
 function createClassificationLegend(stats, colors, fieldName) {
+    const { popupManager } = getState();
+
   // Remove existing legend
   const existingLegend = document.getElementById("classificationLegend");
   if (existingLegend) {
@@ -5803,7 +5816,7 @@ function createClassificationLegend(stats, colors, fieldName) {
         ${
           fieldName === "GARDENSTATUS"
             ? "حالة الحديقة"
-            : formatFieldName(fieldName)
+            : popupManager.formatFieldName(fieldName)
         }
       </h3>
       <button class="widget-close" onclick="removeClassificationLegend()">
@@ -8137,9 +8150,9 @@ export {
   // stopTimeAnimation,
 
   // Popup functions (will be moved to popup-manager.js)
-  closeCustomPopup,
-  zoomToFeature,
-  copyFeatureInfo,
+  // closeCustomPopup,
+  // zoomToFeature,
+  // copyFeatureInfo,
 
   // App tour function (will be moved to tour-manager.js)
   startAppTour,
