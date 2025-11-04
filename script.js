@@ -84,7 +84,9 @@ async function initializeMap(
   uploadHandler = null,
   basemapManager = null,
   drawingManager = null,
-  analysisManager = null
+  analysisManager = null,
+  measurementManager = null,
+  visualizationManager = null
 ) {
   try {
     // Store instances at module level for use by other functions
@@ -99,6 +101,8 @@ async function initializeMap(
       basemapManager,
       drawingManager,
       analysisManager,
+      measurementManager,
+      visualizationManager,
     };
 
     // Initialize state
@@ -4123,153 +4127,156 @@ async function zoomOut() {
 // window.zoomIn = zoomIn;
 // window.zoomOut = zoomOut;
 
-async function toggleMeasurement() {
-  // FUNCTION COMMENTED OUT - Remove this line to re-enable
-  // return;
+// ============================================================================
+// COMMENTED OUT - Moved to js/tools/measurement-manager.js
+// ============================================================================
+// async function toggleMeasurement() {
+//   // FUNCTION COMMENTED OUT - Remove this line to re-enable
+//   // return;
 
-  const btn = document.getElementById("measureBtn");
-  const resultsDiv = document.getElementById("measurementResults");
+//   const btn = document.getElementById("measureBtn");
+//   const resultsDiv = document.getElementById("measurementResults");
 
-  if (!measurementWidget) {
-    const [Measurement, reactiveUtils] = await Promise.all([
-      loadModule("esri/widgets/Measurement"),
-      loadModule("esri/core/reactiveUtils"),
-    ]);
+//   if (!measurementWidget) {
+//     const [Measurement, reactiveUtils] = await Promise.all([
+//       loadModule("esri/widgets/Measurement"),
+//       loadModule("esri/core/reactiveUtils"),
+//     ]);
 
-    measurementWidget = new Measurement({
-      view: view,
-      activeTool: "distance",
-    });
+//     measurementWidget = new Measurement({
+//       view: view,
+//       activeTool: "distance",
+//     });
 
-    view.ui.add(measurementWidget, "top-right");
+//     view.ui.add(measurementWidget, "top-right");
 
-    // Show custom results widget
-    if (resultsDiv) {
-      resultsDiv.classList.remove("hidden");
-    }
+//     // Show custom results widget
+//     if (resultsDiv) {
+//       resultsDiv.classList.remove("hidden");
+//     }
 
-    // Watch for measurement changes
-    const watchHandles = [];
+//     // Watch for measurement changes
+//     const watchHandles = [];
 
-    // Watch distance measurements
-    const distanceHandle = reactiveUtils.watch(
-      () => measurementWidget.viewModel.activeViewModel?.measurement,
-      (measurement) => {
-        if (measurement && measurementWidget.activeTool === "distance") {
-          updateMeasurementResults({
-            distance: measurement.length.value,
-            distanceUnit: measurement.length.unit,
-          });
-        }
-      }
-    );
-    watchHandles.push(distanceHandle);
+//     // Watch distance measurements
+//     const distanceHandle = reactiveUtils.watch(
+//       () => measurementWidget.viewModel.activeViewModel?.measurement,
+//       (measurement) => {
+//         if (measurement && measurementWidget.activeTool === "distance") {
+//           updateMeasurementResults({
+//             distance: measurement.length.value,
+//             distanceUnit: measurement.length.unit,
+//           });
+//         }
+//       }
+//     );
+//     watchHandles.push(distanceHandle);
 
-    // Watch area measurements
-    const areaHandle = reactiveUtils.watch(
-      () => measurementWidget.viewModel.activeViewModel?.measurement,
-      (measurement) => {
-        if (measurement && measurementWidget.activeTool === "area") {
-          updateMeasurementResults({
-            area: measurement.area.value,
-            areaUnit: measurement.area.unit,
-            perimeter: measurement.length.value,
-            perimeterUnit: measurement.length.unit,
-          });
-        }
-      }
-    );
-    watchHandles.push(areaHandle);
+//     // Watch area measurements
+//     const areaHandle = reactiveUtils.watch(
+//       () => measurementWidget.viewModel.activeViewModel?.measurement,
+//       (measurement) => {
+//         if (measurement && measurementWidget.activeTool === "area") {
+//           updateMeasurementResults({
+//             area: measurement.area.value,
+//             areaUnit: measurement.area.unit,
+//             perimeter: measurement.length.value,
+//             perimeterUnit: measurement.length.unit,
+//           });
+//         }
+//       }
+//     );
+//     watchHandles.push(areaHandle);
 
-    activeWidgets.set("measurementHandles", watchHandles);
+//     activeWidgets.set("measurementHandles", watchHandles);
 
-    // Add tool change listener
-    measurementWidget.watch("activeTool", (tool) => {
-      if (!tool) {
-        // Clear results when no tool is active
-        const content = document.getElementById("measurementContent");
-        if (content) {
-          content.innerHTML =
-            '<div style="color: var(--text-secondary);">Select a measurement tool</div>';
-        }
-      }
-    });
-  }
+//     // Add tool change listener
+//     measurementWidget.watch("activeTool", (tool) => {
+//       if (!tool) {
+//         // Clear results when no tool is active
+//         const content = document.getElementById("measurementContent");
+//         if (content) {
+//           content.innerHTML =
+//             '<div style="color: var(--text-secondary);">Select a measurement tool</div>';
+//         }
+//       }
+//     });
+//   }
 
-  if (btn.classList.contains("active")) {
-    // Deactivate measurement
-    measurementWidget.clear();
-    measurementWidget.activeTool = null;
-    view.ui.remove(measurementWidget);
-    btn.classList.remove("active");
+//   if (btn.classList.contains("active")) {
+//     // Deactivate measurement
+//     measurementWidget.clear();
+//     measurementWidget.activeTool = null;
+//     view.ui.remove(measurementWidget);
+//     btn.classList.remove("active");
 
-    if (resultsDiv) {
-      resultsDiv.classList.add("hidden");
-    }
+//     if (resultsDiv) {
+//       resultsDiv.classList.add("hidden");
+//     }
 
-    // Remove watch handles
-    const handles = activeWidgets.get("measurementHandles");
-    if (handles) {
-      handles.forEach((handle) => handle.remove());
-      activeWidgets.delete("measurementHandles");
-    }
+//     // Remove watch handles
+//     const handles = activeWidgets.get("measurementHandles");
+//     if (handles) {
+//       handles.forEach((handle) => handle.remove());
+//       activeWidgets.delete("measurementHandles");
+//     }
 
-    measurementWidget.destroy();
-    measurementWidget = null;
-  } else {
-    // Activate measurement
-    btn.classList.add("active");
-    closeSidePanel(); // Close any open panels
-    const { stateManager, drawingManager } = getState();
-    const sketchViewModel = stateManager.getSketchViewModel();
-    if (sketchViewModel) {
-      sketchViewModel.cancel();
-    }
-    drawingManager.resetDrawingTools();
-  }
-}
+//     measurementWidget.destroy();
+//     measurementWidget = null;
+//   } else {
+//     // Activate measurement
+//     btn.classList.add("active");
+//     closeSidePanel(); // Close any open panels
+//     const { stateManager, drawingManager } = getState();
+//     const sketchViewModel = stateManager.getSketchViewModel();
+//     if (sketchViewModel) {
+//       sketchViewModel.cancel();
+//     }
+//     drawingManager.resetDrawingTools();
+//   }
+// }
 
-// Update the measurement results display function
-function updateMeasurementResults(measurement) {
-  const content = document.getElementById("measurementContent");
-  if (!content) return;
+// // Update the measurement results display function
+// function updateMeasurementResults(measurement) {
+//   const content = document.getElementById("measurementContent");
+//   if (!content) return;
 
-  let html = '<div class="measurement-display">';
+//   let html = '<div class="measurement-display">';
 
-  if (measurement.distance !== undefined) {
-    // Distance measurement
-    html += `
-      <div class="measurement-item">
-        <i class="fas fa-ruler-horizontal"></i>
-        <span class="measurement-label">Distance:</span>
-        <span class="measurement-value">${measurement.distance.toFixed(2)} ${
-      measurement.distanceUnit
-    }</span>
-      </div>
-    `;
-  } else if (measurement.area !== undefined) {
-    // Area measurement
-    html += `
-      <div class="measurement-item">
-        <i class="fas fa-vector-square"></i>
-        <span class="measurement-label">Area:</span>
-        <span class="measurement-value">${measurement.area.toFixed(2)} ${
-      measurement.areaUnit
-    }</span>
-      </div>
-      <div class="measurement-item">
-        <i class="fas fa-draw-polygon"></i>
-        <span class="measurement-label">Perimeter:</span>
-        <span class="measurement-value">${measurement.perimeter.toFixed(2)} ${
-      measurement.perimeterUnit
-    }</span>
-      </div>
-    `;
-  }
+//   if (measurement.distance !== undefined) {
+//     // Distance measurement
+//     html += `
+//       <div class="measurement-item">
+//         <i class="fas fa-ruler-horizontal"></i>
+//         <span class="measurement-label">Distance:</span>
+//         <span class="measurement-value">${measurement.distance.toFixed(2)} ${
+//       measurement.distanceUnit
+//     }</span>
+//       </div>
+//     `;
+//   } else if (measurement.area !== undefined) {
+//     // Area measurement
+//     html += `
+//       <div class="measurement-item">
+//         <i class="fas fa-vector-square"></i>
+//         <span class="measurement-label">Area:</span>
+//         <span class="measurement-value">${measurement.area.toFixed(2)} ${
+//       measurement.areaUnit
+//     }</span>
+//       </div>
+//       <div class="measurement-item">
+//         <i class="fas fa-draw-polygon"></i>
+//         <span class="measurement-label">Perimeter:</span>
+//         <span class="measurement-value">${measurement.perimeter.toFixed(2)} ${
+//       measurement.perimeterUnit
+//     }</span>
+//       </div>
+//     `;
+//   }
 
-  html += "</div>";
-  content.innerHTML = html;
-}
+//   html += "</div>";
+//   content.innerHTML = html;
+// }
 
 // Replace the toggleSwipe function with this version
 async function toggleSwipe() {
@@ -4424,9 +4431,9 @@ async function togglePrint() {
 // }
 
 // Close measurement results
-function closeMeasurementResults() {
-  document.getElementById("measurementResults").classList.add("hidden");
-}
+// function closeMeasurementResults() {
+//   document.getElementById("measurementResults").classList.add("hidden");
+// }
 
 // Add this debug function to check what attributes are available
 // function debugLayerAttributes() {
@@ -5080,297 +5087,297 @@ window.currentHeatmapSettings = {
 };
 
 // Color schemes for heatmap
-const heatmapColorSchemes = {
-  default: [
-    { ratio: 0, color: [133, 193, 233, 0] },
-    { ratio: 0.15, color: [133, 193, 233, 0.4] },
-    { ratio: 0.3, color: [144, 217, 100, 0.7] },
-    { ratio: 0.5, color: [255, 215, 0, 0.8] },
-    { ratio: 0.8, color: [255, 115, 0, 0.9] },
-    { ratio: 1, color: [255, 0, 0, 1] },
-  ],
-  blue: [
-    { ratio: 0, color: [0, 0, 0, 0] },
-    { ratio: 0.2, color: [30, 144, 255, 0.5] },
-    { ratio: 0.5, color: [0, 191, 255, 0.7] },
-    { ratio: 0.8, color: [0, 0, 255, 0.9] },
-    { ratio: 1, color: [0, 0, 139, 1] },
-  ],
-  green: [
-    { ratio: 0, color: [0, 0, 0, 0] },
-    { ratio: 0.2, color: [144, 238, 144, 0.5] },
-    { ratio: 0.5, color: [34, 139, 34, 0.7] },
-    { ratio: 0.8, color: [0, 100, 0, 0.9] },
-    { ratio: 1, color: [0, 50, 0, 1] },
-  ],
-  // Continue the heatmap color schemes and functionality
-  purple: [
-    { ratio: 0, color: [0, 0, 0, 0] },
-    { ratio: 0.2, color: [221, 160, 221, 0.5] },
-    { ratio: 0.5, color: [186, 85, 211, 0.7] },
-    { ratio: 0.8, color: [138, 43, 226, 0.9] },
-    { ratio: 1, color: [75, 0, 130, 1] },
-  ],
-};
+// const heatmapColorSchemes = {
+//   default: [
+//     { ratio: 0, color: [133, 193, 233, 0] },
+//     { ratio: 0.15, color: [133, 193, 233, 0.4] },
+//     { ratio: 0.3, color: [144, 217, 100, 0.7] },
+//     { ratio: 0.5, color: [255, 215, 0, 0.8] },
+//     { ratio: 0.8, color: [255, 115, 0, 0.9] },
+//     { ratio: 1, color: [255, 0, 0, 1] },
+//   ],
+//   blue: [
+//     { ratio: 0, color: [0, 0, 0, 0] },
+//     { ratio: 0.2, color: [30, 144, 255, 0.5] },
+//     { ratio: 0.5, color: [0, 191, 255, 0.7] },
+//     { ratio: 0.8, color: [0, 0, 255, 0.9] },
+//     { ratio: 1, color: [0, 0, 139, 1] },
+//   ],
+//   green: [
+//     { ratio: 0, color: [0, 0, 0, 0] },
+//     { ratio: 0.2, color: [144, 238, 144, 0.5] },
+//     { ratio: 0.5, color: [34, 139, 34, 0.7] },
+//     { ratio: 0.8, color: [0, 100, 0, 0.9] },
+//     { ratio: 1, color: [0, 50, 0, 1] },
+//   ],
+//   // Continue the heatmap color schemes and functionality
+//   purple: [
+//     { ratio: 0, color: [0, 0, 0, 0] },
+//     { ratio: 0.2, color: [221, 160, 221, 0.5] },
+//     { ratio: 0.5, color: [186, 85, 211, 0.7] },
+//     { ratio: 0.8, color: [138, 43, 226, 0.9] },
+//     { ratio: 1, color: [75, 0, 130, 1] },
+//   ],
+// };
 
 // Make sure toggleHeatmap is defined as a global function
 // In your toggleHeatmap function, make sure to show controls:
-async function toggleHeatmap() {
-  const toggle = document.getElementById("heatmapToggle");
-  const layerSelect = document.getElementById("heatmapLayerSelect");
-  const settingsBtn = document.getElementById("heatmapSettingsBtn");
-  const controls = document.getElementById("heatmapControls");
+// async function toggleHeatmap() {
+//   const toggle = document.getElementById("heatmapToggle");
+//   const layerSelect = document.getElementById("heatmapLayerSelect");
+//   const settingsBtn = document.getElementById("heatmapSettingsBtn");
+//   const controls = document.getElementById("heatmapControls");
 
-  heatmapEnabled = toggle.checked;
+//   heatmapEnabled = toggle.checked;
 
-  if (heatmapEnabled) {
-    // Show controls container
-    if (controls) {
-      controls.style.display = "block";
-    }
+//   if (heatmapEnabled) {
+//     // Show controls container
+//     if (controls) {
+//       controls.style.display = "block";
+//     }
 
-    updateHeatmapLayerSelect();
+//     updateHeatmapLayerSelect();
 
-    if (layerSelect.value) {
-      await applyHeatmap(parseInt(layerSelect.value));
-    }
-  } else {
-    // Hide controls container
-    if (controls) {
-      controls.style.display = "none";
-    }
+//     if (layerSelect.value) {
+//       await applyHeatmap(parseInt(layerSelect.value));
+//     }
+//   } else {
+//     // Hide controls container
+//     if (controls) {
+//       controls.style.display = "none";
+//     }
 
-    restoreOriginalRenderers();
-  }
-}
+//     restoreOriginalRenderers();
+//   }
+// }
 
 // Update heatmap layer select
-function updateHeatmapLayerSelect() {
-  const select = document.getElementById("heatmapLayerSelect");
-  select.innerHTML = '<option value="">Select point layer...</option>';
+// function updateHeatmapLayerSelect() {
+//   const select = document.getElementById("heatmapLayerSelect");
+//   select.innerHTML = '<option value="">Select point layer...</option>';
 
-  // Only show point layers
-  getState()
-    .stateManager.getUploadedLayers()
-    .forEach((layer, index) => {
-      // Check if layer has point geometry
-      if (
-        layer.geometryType === "point" ||
-        (layer.source &&
-          layer.source.length > 0 &&
-          layer.source.items[0]?.geometry?.type === "point")
-      ) {
-        const option = document.createElement("option");
-        option.value = index;
-        option.textContent = layer.title;
-        select.appendChild(option);
-      }
-    });
+//   // Only show point layers
+//   getState()
+//     .stateManager.getUploadedLayers()
+//     .forEach((layer, index) => {
+//       // Check if layer has point geometry
+//       if (
+//         layer.geometryType === "point" ||
+//         (layer.source &&
+//           layer.source.length > 0 &&
+//           layer.source.items[0]?.geometry?.type === "point")
+//       ) {
+//         const option = document.createElement("option");
+//         option.value = index;
+//         option.textContent = layer.title;
+//         select.appendChild(option);
+//       }
+//     });
 
-  select.addEventListener("change", async (e) => {
-    if (e.target.value && heatmapEnabled) {
-      await applyHeatmap(parseInt(e.target.value));
-    }
-  });
-}
+//   select.addEventListener("change", async (e) => {
+//     if (e.target.value && heatmapEnabled) {
+//       await applyHeatmap(parseInt(e.target.value));
+//     }
+//   });
+// }
 
 // Update the applyHeatmap and applyHeatmapSettings functions
-async function applyHeatmap(layerIndex) {
-  try {
-    const layer = getState().stateManager.getUploadedLayers()[layerIndex];
-    if (!layer) return;
+// async function applyHeatmap(layerIndex) {
+//   try {
+//     const layer = getState().stateManager.getUploadedLayers()[layerIndex];
+//     if (!layer) return;
 
-    const [HeatmapRenderer] = await Promise.all([
-      loadModule("esri/renderers/HeatmapRenderer"),
-    ]);
+//     const [HeatmapRenderer] = await Promise.all([
+//       loadModule("esri/renderers/HeatmapRenderer"),
+//     ]);
 
-    if (!getState().stateManager.getOriginalRenderer(layer.id)) {
-      getState().stateManager.setOriginalRenderer(layer.id, layer.renderer);
-    }
+//     if (!getState().stateManager.getOriginalRenderer(layer.id)) {
+//       getState().stateManager.setOriginalRenderer(layer.id, layer.renderer);
+//     }
 
-    // Create heatmap renderer with density settings
-    const heatmapRenderer = new HeatmapRenderer({
-      field: currentHeatmapSettings.field,
-      colorStops: heatmapColorSchemes[currentHeatmapSettings.colorScheme],
-      radius: currentHeatmapSettings.radius,
-      maxPixelIntensity: currentHeatmapSettings.maxPixelIntensity,
-      minPixelIntensity: 0,
-      blurRadius: currentHeatmapSettings.blurRadius,
-      maxDensity: currentHeatmapSettings.maxDensity, // Add this
-      minDensity: currentHeatmapSettings.minDensity, // Add this
-    });
+//     // Create heatmap renderer with density settings
+//     const heatmapRenderer = new HeatmapRenderer({
+//       field: currentHeatmapSettings.field,
+//       colorStops: heatmapColorSchemes[currentHeatmapSettings.colorScheme],
+//       radius: currentHeatmapSettings.radius,
+//       maxPixelIntensity: currentHeatmapSettings.maxPixelIntensity,
+//       minPixelIntensity: 0,
+//       blurRadius: currentHeatmapSettings.blurRadius,
+//       maxDensity: currentHeatmapSettings.maxDensity, // Add this
+//       minDensity: currentHeatmapSettings.minDensity, // Add this
+//     });
 
-    layer.renderer = heatmapRenderer;
-    heatmapLayer = layer;
+//     layer.renderer = heatmapRenderer;
+//     heatmapLayer = layer;
 
-    updateHeatmapFieldSelect(layer);
-    showNotification("Heatmap applied", "success");
-  } catch (error) {
-    console.error("Error applying heatmap:", error);
-    showNotification("Error applying heatmap", "error");
-  }
-}
+//     updateHeatmapFieldSelect(layer);
+//     showNotification("Heatmap applied", "success");
+//   } catch (error) {
+//     console.error("Error applying heatmap:", error);
+//     showNotification("Error applying heatmap", "error");
+//   }
+// }
 
 // Restore original renderers
-function restoreOriginalRenderers() {
-  getState()
-    .stateManager.getUploadedLayers()
-    .forEach((layer) => {
-      const originalRenderer = getState().stateManager.getOriginalRenderer(
-        layer.id
-      );
-      if (originalRenderer) {
-        layer.renderer = originalRenderer;
-        getState().stateManager.setOriginalRenderer(layer.id, null);
-      }
-    });
-  heatmapLayer = null;
-}
+// function restoreOriginalRenderers() {
+//   getState()
+//     .stateManager.getUploadedLayers()
+//     .forEach((layer) => {
+//       const originalRenderer = getState().stateManager.getOriginalRenderer(
+//         layer.id
+//       );
+//       if (originalRenderer) {
+//         layer.renderer = originalRenderer;
+//         getState().stateManager.setOriginalRenderer(layer.id, null);
+//       }
+//     });
+//   heatmapLayer = null;
+// }
 
 // Show heatmap settings
-function showHeatmapSettings() {
-  if (!heatmapLayer) {
-    showNotification("Please select a layer first", "error");
-    return;
-  }
+// function showHeatmapSettings() {
+//   if (!heatmapLayer) {
+//     showNotification("Please select a layer first", "error");
+//     return;
+//   }
 
-  const modal = document.getElementById("heatmapModal");
-  modal.classList.remove("hidden");
+//   const modal = document.getElementById("heatmapModal");
+//   modal.classList.remove("hidden");
 
-  // Initialize sliders
-  initializeHeatmapSliders();
-}
+//   // Initialize sliders
+//   initializeHeatmapSliders();
+// }
 
 // Close heatmap settings
-function closeHeatmapSettings() {
-  document.getElementById("heatmapModal").classList.add("hidden");
-}
+// function closeHeatmapSettings() {
+//   document.getElementById("heatmapModal").classList.add("hidden");
+// }
 
 // Initialize heatmap sliders
-function initializeHeatmapSliders() {
-  // Radius slider
-  const radiusSlider = document.getElementById("heatmapRadius");
-  const radiusValue = document.getElementById("radiusValue");
-  radiusSlider.value = currentHeatmapSettings.radius;
-  radiusValue.textContent = currentHeatmapSettings.radius;
+// function initializeHeatmapSliders() {
+//   // Radius slider
+//   const radiusSlider = document.getElementById("heatmapRadius");
+//   const radiusValue = document.getElementById("radiusValue");
+//   radiusSlider.value = currentHeatmapSettings.radius;
+//   radiusValue.textContent = currentHeatmapSettings.radius;
 
-  radiusSlider.addEventListener("input", (e) => {
-    radiusValue.textContent = e.target.value;
-    currentHeatmapSettings.radius = parseInt(e.target.value);
-  });
+//   radiusSlider.addEventListener("input", (e) => {
+//     radiusValue.textContent = e.target.value;
+//     currentHeatmapSettings.radius = parseInt(e.target.value);
+//   });
 
-  // Intensity slider
-  const intensitySlider = document.getElementById("heatmapIntensity");
-  const intensityValue = document.getElementById("intensityValue");
-  intensitySlider.value = currentHeatmapSettings.maxIntensity;
-  intensityValue.textContent = currentHeatmapSettings.maxIntensity;
+//   // Intensity slider
+//   const intensitySlider = document.getElementById("heatmapIntensity");
+//   const intensityValue = document.getElementById("intensityValue");
+//   intensitySlider.value = currentHeatmapSettings.maxIntensity;
+//   intensityValue.textContent = currentHeatmapSettings.maxIntensity;
 
-  intensitySlider.addEventListener("input", (e) => {
-    intensityValue.textContent = e.target.value;
-    currentHeatmapSettings.maxIntensity = parseInt(e.target.value);
-  });
+//   intensitySlider.addEventListener("input", (e) => {
+//     intensityValue.textContent = e.target.value;
+//     currentHeatmapSettings.maxIntensity = parseInt(e.target.value);
+//   });
 
-  // Blur slider
-  const blurSlider = document.getElementById("heatmapBlur");
-  const blurValue = document.getElementById("blurValue");
-  blurSlider.value = currentHeatmapSettings.blurRadius;
-  blurValue.textContent = currentHeatmapSettings.blurRadius;
+//   // Blur slider
+//   const blurSlider = document.getElementById("heatmapBlur");
+//   const blurValue = document.getElementById("blurValue");
+//   blurSlider.value = currentHeatmapSettings.blurRadius;
+//   blurValue.textContent = currentHeatmapSettings.blurRadius;
 
-  blurSlider.addEventListener("input", (e) => {
-    blurValue.textContent = e.target.value;
-    currentHeatmapSettings.blurRadius = parseInt(e.target.value);
-  });
+//   blurSlider.addEventListener("input", (e) => {
+//     blurValue.textContent = e.target.value;
+//     currentHeatmapSettings.blurRadius = parseInt(e.target.value);
+//   });
 
-  // Min Density slider
-  const minDensitySlider = document.getElementById("heatmapMinDensity");
-  const minDensityValue = document.getElementById("minDensityValue");
-  minDensitySlider.value = currentHeatmapSettings.minDensity;
-  minDensityValue.textContent = currentHeatmapSettings.minDensity;
+//   // Min Density slider
+//   const minDensitySlider = document.getElementById("heatmapMinDensity");
+//   const minDensityValue = document.getElementById("minDensityValue");
+//   minDensitySlider.value = currentHeatmapSettings.minDensity;
+//   minDensityValue.textContent = currentHeatmapSettings.minDensity;
 
-  minDensitySlider.addEventListener("input", (e) => {
-    minDensityValue.textContent = e.target.value;
-    currentHeatmapSettings.minDensity = parseFloat(e.target.value);
-  });
+//   minDensitySlider.addEventListener("input", (e) => {
+//     minDensityValue.textContent = e.target.value;
+//     currentHeatmapSettings.minDensity = parseFloat(e.target.value);
+//   });
 
-  // Max Density slider
-  const maxDensitySlider = document.getElementById("heatmapMaxDensity");
-  const maxDensityValue = document.getElementById("maxDensityValue");
-  maxDensitySlider.value = currentHeatmapSettings.maxDensity;
-  maxDensityValue.textContent = currentHeatmapSettings.maxDensity;
+//   // Max Density slider
+//   const maxDensitySlider = document.getElementById("heatmapMaxDensity");
+//   const maxDensityValue = document.getElementById("maxDensityValue");
+//   maxDensitySlider.value = currentHeatmapSettings.maxDensity;
+//   maxDensityValue.textContent = currentHeatmapSettings.maxDensity;
 
-  maxDensitySlider.addEventListener("input", (e) => {
-    maxDensityValue.textContent = e.target.value;
-    currentHeatmapSettings.maxDensity = parseFloat(e.target.value);
-  });
-}
+//   maxDensitySlider.addEventListener("input", (e) => {
+//     maxDensityValue.textContent = e.target.value;
+//     currentHeatmapSettings.maxDensity = parseFloat(e.target.value);
+//   });
+// }
 
 // Update heatmap field select
-function updateHeatmapFieldSelect(layer) {
-  const select = document.getElementById("heatmapField");
-  select.innerHTML = '<option value="">None (Equal weight)</option>';
+// function updateHeatmapFieldSelect(layer) {
+//   const select = document.getElementById("heatmapField");
+//   select.innerHTML = '<option value="">None (Equal weight)</option>';
 
-  if (layer.fields) {
-    layer.fields.forEach((field) => {
-      if (
-        field.type === "double" ||
-        field.type === "integer" ||
-        field.type === "single" ||
-        field.type === "small-integer"
-      ) {
-        const option = document.createElement("option");
-        option.value = field.name;
-        option.textContent = formatFieldName(field.name);
-        select.appendChild(option);
-      }
-    });
-  }
+//   if (layer.fields) {
+//     layer.fields.forEach((field) => {
+//       if (
+//         field.type === "double" ||
+//         field.type === "integer" ||
+//         field.type === "single" ||
+//         field.type === "small-integer"
+//       ) {
+//         const option = document.createElement("option");
+//         option.value = field.name;
+//         option.textContent = formatFieldName(field.name);
+//         select.appendChild(option);
+//       }
+//     });
+//   }
 
-  select.value = currentHeatmapSettings.field || "";
-}
+//   select.value = currentHeatmapSettings.field || "";
+// }
 
 // Select color scheme
-function selectColorScheme(scheme) {
-  currentHeatmapSettings.colorScheme = scheme;
+// function selectColorScheme(scheme) {
+//   currentHeatmapSettings.colorScheme = scheme;
 
-  // Update UI
-  document.querySelectorAll(".color-scheme").forEach((btn) => {
-    btn.classList.remove("active");
-  });
-  document.querySelector(`[data-scheme="${scheme}"]`).classList.add("active");
-}
+//   // Update UI
+//   document.querySelectorAll(".color-scheme").forEach((btn) => {
+//     btn.classList.remove("active");
+//   });
+//   document.querySelector(`[data-scheme="${scheme}"]`).classList.add("active");
+// }
 
 // Update applyHeatmapSettings to include density
-async function applyHeatmapSettings() {
-  if (!heatmapLayer) return;
+// async function applyHeatmapSettings() {
+//   if (!heatmapLayer) return;
 
-  try {
-    const [HeatmapRenderer] = await Promise.all([
-      loadModule("esri/renderers/HeatmapRenderer"),
-    ]);
+//   try {
+//     const [HeatmapRenderer] = await Promise.all([
+//       loadModule("esri/renderers/HeatmapRenderer"),
+//     ]);
 
-    const fieldSelect = document.getElementById("heatmapField");
-    currentHeatmapSettings.field = fieldSelect.value || null;
+//     const fieldSelect = document.getElementById("heatmapField");
+//     currentHeatmapSettings.field = fieldSelect.value || null;
 
-    const heatmapRenderer = new HeatmapRenderer({
-      field: currentHeatmapSettings.field,
-      colorStops: heatmapColorSchemes[currentHeatmapSettings.colorScheme],
-      radius: currentHeatmapSettings.radius,
-      maxPixelIntensity: currentHeatmapSettings.maxPixelIntensity,
-      minPixelIntensity: 0,
-      blurRadius: currentHeatmapSettings.blurRadius,
-      maxDensity: currentHeatmapSettings.maxDensity, // Add this
-      minDensity: currentHeatmapSettings.minDensity, // Add this
-    });
+//     const heatmapRenderer = new HeatmapRenderer({
+//       field: currentHeatmapSettings.field,
+//       colorStops: heatmapColorSchemes[currentHeatmapSettings.colorScheme],
+//       radius: currentHeatmapSettings.radius,
+//       maxPixelIntensity: currentHeatmapSettings.maxPixelIntensity,
+//       minPixelIntensity: 0,
+//       blurRadius: currentHeatmapSettings.blurRadius,
+//       maxDensity: currentHeatmapSettings.maxDensity, // Add this
+//       minDensity: currentHeatmapSettings.minDensity, // Add this
+//     });
 
-    heatmapLayer.renderer = heatmapRenderer;
+//     heatmapLayer.renderer = heatmapRenderer;
 
-    closeHeatmapSettings();
-    showNotification("Heatmap settings applied", "success");
-  } catch (error) {
-    console.error("Error applying heatmap settings:", error);
-    showNotification("Error applying settings", "error");
-  }
-}
+//     closeHeatmapSettings();
+//     showNotification("Heatmap settings applied", "success");
+//   } catch (error) {
+//     console.error("Error applying heatmap settings:", error);
+//     showNotification("Error applying settings", "error");
+//   }
+// }
 
 // ============================================================================
 // COMMENTED OUT - updateLayerList moved to js/layers/layer-manager.js
@@ -7097,242 +7104,242 @@ let timeSlider = null;
 let timeAnimation = null;
 let timeEnabledLayer = null;
 
-async function toggleTimeControls() {
-  const toggle = document.getElementById("timeToggle");
-  const panel = document.getElementById("timeControlsPanel");
+// async function toggleTimeControls() {
+//   const toggle = document.getElementById("timeToggle");
+//   const panel = document.getElementById("timeControlsPanel");
 
-  if (toggle.checked) {
-    panel.style.display = "block";
-    initializeTimeLayerSelect();
-  } else {
-    panel.style.display = "none";
-    if (timeSlider) {
-      destroyTimeSlider();
-    }
-  }
-}
+//   if (toggle.checked) {
+//     panel.style.display = "block";
+//     initializeTimeLayerSelect();
+//   } else {
+//     panel.style.display = "none";
+//     if (timeSlider) {
+//       destroyTimeSlider();
+//     }
+//   }
+// }
 
-function initializeTimeLayerSelect() {
-  const select = document.getElementById("timeLayerSelect");
-  select.innerHTML = '<option value="">Select time-enabled layer...</option>';
+// function initializeTimeLayerSelect() {
+//   const select = document.getElementById("timeLayerSelect");
+//   select.innerHTML = '<option value="">Select time-enabled layer...</option>';
 
-  // Continue script.js - Complete time-aware features implementation
+//   // Continue script.js - Complete time-aware features implementation
 
-  getState()
-    .stateManager.getUploadedLayers()
-    .forEach((layer, index) => {
-      const option = document.createElement("option");
-      option.value = index;
-      option.textContent = layer.title;
-      select.appendChild(option);
-    });
+//   getState()
+//     .stateManager.getUploadedLayers()
+//     .forEach((layer, index) => {
+//       const option = document.createElement("option");
+//       option.value = index;
+//       option.textContent = layer.title;
+//       select.appendChild(option);
+//     });
 
-  select.addEventListener("change", async (e) => {
-    if (e.target.value !== "") {
-      await setupTimeFields(parseInt(e.target.value));
-    }
-  });
-}
+//   select.addEventListener("change", async (e) => {
+//     if (e.target.value !== "") {
+//       await setupTimeFields(parseInt(e.target.value));
+//     }
+//   });
+// }
 
-async function setupTimeFields(layerIndex) {
-  const layer = getState().stateManager.getUploadedLayers()[layerIndex];
-  timeEnabledLayer = layer;
+// async function setupTimeFields(layerIndex) {
+//   const layer = getState().stateManager.getUploadedLayers()[layerIndex];
+//   timeEnabledLayer = layer;
 
-  const fieldSelect = document.getElementById("timeFieldSelect");
-  const fieldContainer = document.querySelector(".time-field-select");
+//   const fieldSelect = document.getElementById("timeFieldSelect");
+//   const fieldContainer = document.querySelector(".time-field-select");
 
-  fieldSelect.innerHTML = '<option value="">Select date field...</option>';
+//   fieldSelect.innerHTML = '<option value="">Select date field...</option>';
 
-  // Get date fields
-  if (layer.fields) {
-    const dateFields = layer.fields.filter(
-      (field) =>
-        field.type === "date" ||
-        field.name.toLowerCase().includes("date") ||
-        field.name.toLowerCase().includes("time")
-    );
+//   // Get date fields
+//   if (layer.fields) {
+//     const dateFields = layer.fields.filter(
+//       (field) =>
+//         field.type === "date" ||
+//         field.name.toLowerCase().includes("date") ||
+//         field.name.toLowerCase().includes("time")
+//     );
 
-    if (dateFields.length === 0) {
-      // If no date fields, check all fields for date-like values
-      layer.fields.forEach((field) => {
-        const option = document.createElement("option");
-        option.value = field.name;
-        option.textContent = formatFieldName(field.name);
-        fieldSelect.appendChild(option);
-      });
-    } else {
-      dateFields.forEach((field) => {
-        const option = document.createElement("option");
-        option.value = field.name;
-        option.textContent = formatFieldName(field.name);
-        fieldSelect.appendChild(option);
-      });
-    }
-  }
+//     if (dateFields.length === 0) {
+//       // If no date fields, check all fields for date-like values
+//       layer.fields.forEach((field) => {
+//         const option = document.createElement("option");
+//         option.value = field.name;
+//         option.textContent = formatFieldName(field.name);
+//         fieldSelect.appendChild(option);
+//       });
+//     } else {
+//       dateFields.forEach((field) => {
+//         const option = document.createElement("option");
+//         option.value = field.name;
+//         option.textContent = formatFieldName(field.name);
+//         fieldSelect.appendChild(option);
+//       });
+//     }
+//   }
 
-  fieldContainer.style.display = "block";
+//   fieldContainer.style.display = "block";
 
-  fieldSelect.addEventListener("change", async (e) => {
-    if (e.target.value !== "") {
-      await createTimeSlider(layer, e.target.value);
-    }
-  });
-}
+//   fieldSelect.addEventListener("change", async (e) => {
+//     if (e.target.value !== "") {
+//       await createTimeSlider(layer, e.target.value);
+//     }
+//   });
+// }
 
-async function createTimeSlider(layer, dateField) {
-  try {
-    const [TimeSlider] = await Promise.all([
-      loadModule("esri/widgets/TimeSlider"),
-    ]);
+// async function createTimeSlider(layer, dateField) {
+//   try {
+//     const [TimeSlider] = await Promise.all([
+//       loadModule("esri/widgets/TimeSlider"),
+//     ]);
 
-    // Query to get date range
-    const query = layer.createQuery();
-    query.where = "1=1";
-    query.outFields = [dateField];
+//     // Query to get date range
+//     const query = layer.createQuery();
+//     query.where = "1=1";
+//     query.outFields = [dateField];
 
-    const result = await layer.queryFeatures(query);
+//     const result = await layer.queryFeatures(query);
 
-    // Get min and max dates
-    let minDate = null;
-    let maxDate = null;
+//     // Get min and max dates
+//     let minDate = null;
+//     let maxDate = null;
 
-    result.features.forEach((feature) => {
-      const dateValue = feature.attributes[dateField];
-      if (dateValue) {
-        const date = new Date(dateValue);
-        if (!isNaN(date.getTime())) {
-          if (!minDate || date < minDate) minDate = date;
-          if (!maxDate || date > maxDate) maxDate = date;
-        }
-      }
-    });
+//     result.features.forEach((feature) => {
+//       const dateValue = feature.attributes[dateField];
+//       if (dateValue) {
+//         const date = new Date(dateValue);
+//         if (!isNaN(date.getTime())) {
+//           if (!minDate || date < minDate) minDate = date;
+//           if (!maxDate || date > maxDate) maxDate = date;
+//         }
+//       }
+//     });
 
-    if (!minDate || !maxDate) {
-      showNotification("No valid dates found in selected field", "error");
-      return;
-    }
+//     if (!minDate || !maxDate) {
+//       showNotification("No valid dates found in selected field", "error");
+//       return;
+//     }
 
-    // Destroy existing time slider
-    if (timeSlider) {
-      destroyTimeSlider();
-    }
+//     // Destroy existing time slider
+//     if (timeSlider) {
+//       destroyTimeSlider();
+//     }
 
-    // Create time slider
-    timeSlider = new TimeSlider({
-      container: "timeSliderDiv",
-      mode: "time-window",
-      fullTimeExtent: {
-        start: minDate,
-        end: maxDate,
-      },
-      timeExtent: {
-        start: minDate,
-        end: maxDate,
-      },
-      stops: {
-        interval: {
-          value: 1,
-          unit: "days",
-        },
-      },
-    });
+//     // Create time slider
+//     timeSlider = new TimeSlider({
+//       container: "timeSliderDiv",
+//       mode: "time-window",
+//       fullTimeExtent: {
+//         start: minDate,
+//         end: maxDate,
+//       },
+//       timeExtent: {
+//         start: minDate,
+//         end: maxDate,
+//       },
+//       stops: {
+//         interval: {
+//           value: 1,
+//           unit: "days",
+//         },
+//       },
+//     });
 
-    // Apply time filter to layer
-    timeSlider.watch("timeExtent", (timeExtent) => {
-      if (timeEnabledLayer && timeExtent) {
-        const startTime = timeExtent.start.getTime();
-        const endTime = timeExtent.end.getTime();
+//     // Apply time filter to layer
+//     timeSlider.watch("timeExtent", (timeExtent) => {
+//       if (timeEnabledLayer && timeExtent) {
+//         const startTime = timeExtent.start.getTime();
+//         const endTime = timeExtent.end.getTime();
 
-        // Create definition expression
-        const definitionExpression = `${dateField} >= ${startTime} AND ${dateField} <= ${endTime}`;
-        timeEnabledLayer.definitionExpression = definitionExpression;
-      }
-    });
+//         // Create definition expression
+//         const definitionExpression = `${dateField} >= ${startTime} AND ${dateField} <= ${endTime}`;
+//         timeEnabledLayer.definitionExpression = definitionExpression;
+//       }
+//     });
 
-    document.querySelector(".time-slider-container").style.display = "block";
-    showNotification("Time slider created successfully", "success");
-  } catch (error) {
-    console.error("Time slider error:", error);
-    showNotification("Error creating time slider", "error");
-  }
-}
+//     document.querySelector(".time-slider-container").style.display = "block";
+//     showNotification("Time slider created successfully", "success");
+//   } catch (error) {
+//     console.error("Time slider error:", error);
+//     showNotification("Error creating time slider", "error");
+//   }
+// }
 
-function destroyTimeSlider() {
-  if (timeSlider) {
-    timeSlider.destroy();
-    timeSlider = null;
-  }
+// function destroyTimeSlider() {
+//   if (timeSlider) {
+//     timeSlider.destroy();
+//     timeSlider = null;
+//   }
 
-  if (timeEnabledLayer) {
-    timeEnabledLayer.definitionExpression = null;
-    timeEnabledLayer = null;
-  }
+//   if (timeEnabledLayer) {
+//     timeEnabledLayer.definitionExpression = null;
+//     timeEnabledLayer = null;
+//   }
 
-  if (timeAnimation) {
-    clearInterval(timeAnimation);
-    timeAnimation = null;
-  }
+//   if (timeAnimation) {
+//     clearInterval(timeAnimation);
+//     timeAnimation = null;
+//   }
 
-  document.querySelector(".time-slider-container").style.display = "none";
-}
+//   document.querySelector(".time-slider-container").style.display = "none";
+// }
 
 // Time Animation Controls
-function playTimeAnimation() {
-  if (!timeSlider) return;
+// function playTimeAnimation() {
+//   if (!timeSlider) return;
 
-  const playIcon = document.getElementById("playIcon");
-  const speed = parseFloat(document.getElementById("animationSpeed").value);
+//   const playIcon = document.getElementById("playIcon");
+//   const speed = parseFloat(document.getElementById("animationSpeed").value);
 
-  if (timeAnimation) {
-    // Pause
-    clearInterval(timeAnimation);
-    timeAnimation = null;
-    playIcon.className = "fas fa-play";
-  } else {
-    // Play
-    playIcon.className = "fas fa-pause";
+//   if (timeAnimation) {
+//     // Pause
+//     clearInterval(timeAnimation);
+//     timeAnimation = null;
+//     playIcon.className = "fas fa-play";
+//   } else {
+//     // Play
+//     playIcon.className = "fas fa-pause";
 
-    const fullExtent = timeSlider.fullTimeExtent;
-    const interval = timeSlider.stops.interval;
-    const animationDelay = 1000 / speed; // milliseconds
+//     const fullExtent = timeSlider.fullTimeExtent;
+//     const interval = timeSlider.stops.interval;
+//     const animationDelay = 1000 / speed; // milliseconds
 
-    timeAnimation = setInterval(() => {
-      const currentEnd = timeSlider.timeExtent.end;
-      const nextEnd = new Date(
-        currentEnd.getTime() + interval.value * 86400000
-      ); // Convert days to ms
+//     timeAnimation = setInterval(() => {
+//       const currentEnd = timeSlider.timeExtent.end;
+//       const nextEnd = new Date(
+//         currentEnd.getTime() + interval.value * 86400000
+//       ); // Convert days to ms
 
-      if (nextEnd <= fullExtent.end) {
-        timeSlider.timeExtent = {
-          start: timeSlider.timeExtent.start,
-          end: nextEnd,
-        };
-      } else {
-        // Loop back to start
-        timeSlider.timeExtent = {
-          start: fullExtent.start,
-          end: new Date(
-            fullExtent.start.getTime() +
-              (currentEnd - timeSlider.timeExtent.start)
-          ),
-        };
-      }
-    }, animationDelay);
-  }
-}
+//       if (nextEnd <= fullExtent.end) {
+//         timeSlider.timeExtent = {
+//           start: timeSlider.timeExtent.start,
+//           end: nextEnd,
+//         };
+//       } else {
+//         // Loop back to start
+//         timeSlider.timeExtent = {
+//           start: fullExtent.start,
+//           end: new Date(
+//             fullExtent.start.getTime() +
+//               (currentEnd - timeSlider.timeExtent.start)
+//           ),
+//         };
+//       }
+//     }, animationDelay);
+//   }
+// }
 
-function stopTimeAnimation() {
-  if (timeAnimation) {
-    clearInterval(timeAnimation);
-    timeAnimation = null;
-    document.getElementById("playIcon").className = "fas fa-play";
-  }
+// function stopTimeAnimation() {
+//   if (timeAnimation) {
+//     clearInterval(timeAnimation);
+//     timeAnimation = null;
+//     document.getElementById("playIcon").className = "fas fa-play";
+//   }
 
-  // Reset to full extent
-  if (timeSlider) {
-    timeSlider.timeExtent = timeSlider.fullTimeExtent;
-  }
-}
+//   // Reset to full extent
+//   if (timeSlider) {
+//     timeSlider.timeExtent = timeSlider.fullTimeExtent;
+//   }
+// }
 
 // Export spatial analysis functions
 // window.startBufferAnalysis = startBufferAnalysis;
@@ -7686,29 +7693,29 @@ function getAnalysisDrawSymbol(type) {
 }
 
 // Stop analysis drawing
-function stopAnalysisDrawing() {
-  const stateManager = getState().stateManager;
-  const sketchViewModel = stateManager.getSketchViewModel();
+// function stopAnalysisDrawing() {
+//   const stateManager = getState().stateManager;
+//   const sketchViewModel = stateManager.getSketchViewModel();
 
-  stateManager.setAnalysisDrawing(false);
-  stateManager.setAnalysisDrawType(null);
+//   stateManager.setAnalysisDrawing(false);
+//   stateManager.setAnalysisDrawType(null);
 
-  // Cancel any active sketching
-  if (sketchViewModel) {
-    sketchViewModel.cancel();
-  }
+//   // Cancel any active sketching
+//   if (sketchViewModel) {
+//     sketchViewModel.cancel();
+//   }
 
-  // Remove event handlers
-  if (window.analysisHandles) {
-    window.analysisHandles.forEach((handle) => handle.remove());
-    window.analysisHandles = [];
-  }
+//   // Remove event handlers
+//   if (window.analysisHandles) {
+//     window.analysisHandles.forEach((handle) => handle.remove());
+//     window.analysisHandles = [];
+//   }
 
-  // Reset drawing tool buttons
-  document
-    .querySelectorAll(".draw-mini-btn")
-    .forEach((btn) => btn.classList.remove("active"));
-}
+//   // Reset drawing tool buttons
+//   document
+//     .querySelectorAll(".draw-mini-btn")
+//     .forEach((btn) => btn.classList.remove("active"));
+// }
 
 // App Tour Function
 function startAppTour() {
@@ -8068,8 +8075,8 @@ export {
   locateUser,
 
   // Measurement functions (will be moved to measurement-manager.js)
-  toggleMeasurement,
-  closeMeasurementResults,
+  // toggleMeasurement,
+  // closeMeasurementResults,
   // closeDistancePanel,
   // clearDistanceMeasurement,
 
@@ -8120,14 +8127,14 @@ export {
   // closeIntersectModal,
 
   // Visualization functions (will be moved to visualization-manager.js)
-  toggleHeatmap,
-  selectColorScheme,
-  showHeatmapSettings,
-  closeHeatmapSettings,
-  applyHeatmapSettings,
-  toggleTimeControls,
-  playTimeAnimation,
-  stopTimeAnimation,
+  // toggleHeatmap,
+  // selectColorScheme,
+  // showHeatmapSettings,
+  // closeHeatmapSettings,
+  // applyHeatmapSettings,
+  // toggleTimeControls,
+  // playTimeAnimation,
+  // stopTimeAnimation,
 
   // Popup functions (will be moved to popup-manager.js)
   closeCustomPopup,

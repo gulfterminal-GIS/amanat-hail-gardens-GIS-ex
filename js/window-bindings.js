@@ -42,9 +42,9 @@ export function bindWindowFunctions(managers) {
     basemapManager,
     drawingManager,
     analysisManager,
+    measurementManager,
+    visualizationManager,
     // Future managers will be added here as they're created:
-    // measurementManager,
-    // visualizationManager,
     // popupManager,
     // attributeTable,
     // tourManager,
@@ -229,35 +229,35 @@ export function bindWindowFunctions(managers) {
   // ============================================================================
   
   window.toggleHeatmap = () => {
-    return scriptFunctions.toggleHeatmap();
+    return visualizationManager.toggleHeatmap();
   };
 
   window.selectColorScheme = (scheme) => {
-    return scriptFunctions.selectColorScheme(scheme);
+    return visualizationManager.selectColorScheme(scheme);
   };
 
   window.showHeatmapSettings = () => {
-    return scriptFunctions.showHeatmapSettings();
+    return visualizationManager.showHeatmapSettings();
   };
 
   window.closeHeatmapSettings = () => {
-    return scriptFunctions.closeHeatmapSettings();
+    return visualizationManager.closeHeatmapSettings();
   };
 
   window.applyHeatmapSettings = () => {
-    return scriptFunctions.applyHeatmapSettings();
+    return visualizationManager.applyHeatmapSettings();
   };
 
   window.toggleTimeControls = () => {
-    return scriptFunctions.toggleTimeControls();
+    return visualizationManager.toggleTimeControls();
   };
 
   window.playTimeAnimation = () => {
-    return scriptFunctions.playTimeAnimation();
+    return visualizationManager.playTimeAnimation();
   };
 
   window.stopTimeAnimation = () => {
-    return scriptFunctions.stopTimeAnimation();
+    return visualizationManager.stopTimeAnimation();
   };
 
   // ============================================================================
@@ -275,23 +275,15 @@ export function bindWindowFunctions(managers) {
 
   // ============================================================================
   // MEASUREMENT
-  // Future module: js/tools/measurement-manager.js
+  // Module: js/tools/measurement-manager.js
   // ============================================================================
   
-  window.closeMeasurementResults = () => {
-    return scriptFunctions.closeMeasurementResults();
+  window.toggleMeasurement = () => {
+    return measurementManager.toggleMeasurement();
   };
 
   window.closeMeasurementResults = () => {
-    return scriptFunctions.closeMeasurementResults();
-  };
-
-  window.closeDistancePanel = () => {
-    return scriptFunctions.closeDistancePanel();
-  };
-
-  window.clearDistanceMeasurement = () => {
-    return scriptFunctions.clearDistanceMeasurement();
+    return measurementManager.closeMeasurementResults();
   };
 
   // ============================================================================

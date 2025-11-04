@@ -14,6 +14,8 @@ import { UploadHandler } from "./layers/upload-handler.js";
 import { BasemapManager } from "./layers/basemap-manager.js";
 import { DrawingManager } from "./tools/drawing-manager.js";
 import { AnalysisManager } from "./tools/analysis-manager.js";
+import { MeasurementManager } from "./tools/measurement-manager.js";
+import { VisualizationManager } from "./tools/visualization-manager.js";
 import { bindWindowFunctions } from "./window-bindings.js";
 import { initializeMap } from "../script.js";
 
@@ -53,6 +55,12 @@ const layerManager = new LayerManager(stateManager, notificationManager);
 // Create AnalysisManager instance (depends on DrawingManager)
 const analysisManager = new AnalysisManager(stateManager, notificationManager, layerManager, drawingManager);
 
+// Create MeasurementManager instance (depends on PanelManager and DrawingManager)
+const measurementManager = new MeasurementManager(stateManager, notificationManager, panelManager, drawingManager);
+
+// Create VisualizationManager instance
+const visualizationManager = new VisualizationManager(stateManager, notificationManager, layerManager);
+
 // Create UploadHandler instance
 const uploadHandler = new UploadHandler(stateManager, layerManager, notificationManager);
 
@@ -73,6 +81,8 @@ async function initializeApplication() {
     console.log("BasemapManager created and ready");
     console.log("DrawingManager created and ready");
     console.log("AnalysisManager created and ready");
+    console.log("MeasurementManager created and ready");
+    console.log("VisualizationManager created and ready");
 
     // Initialize the map with injected dependencies
     await initializeMap(
@@ -85,7 +95,9 @@ async function initializeApplication() {
       uploadHandler,
       basemapManager,
       drawingManager,
-      analysisManager
+      analysisManager,
+      measurementManager,
+      visualizationManager
     );
 
     // Initialize tab system
@@ -108,6 +120,8 @@ async function initializeApplication() {
       basemapManager,
       drawingManager,
       analysisManager,
+      measurementManager,
+      visualizationManager,
       // Future managers will be added here as they're created
     });
 
