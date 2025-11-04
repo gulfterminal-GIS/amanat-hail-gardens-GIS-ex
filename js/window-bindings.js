@@ -38,11 +38,11 @@ export function bindWindowFunctions(managers) {
     tabSystem,
     searchManager,
     layerManager,
+    uploadHandler,
+    basemapManager,
     drawingManager,
     analysisManager,
     // Future managers will be added here as they're created:
-    // uploadHandler,
-    // basemapManager,
     // measurementManager,
     // visualizationManager,
     // popupManager,

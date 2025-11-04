@@ -8,10 +8,11 @@
 import { loadModule } from "../core/module-loader.js";
 
 export class AnalysisManager {
-  constructor(stateManager, notificationManager, layerManager) {
+  constructor(stateManager, notificationManager, layerManager, drawingManager) {
     this.stateManager = stateManager;
     this.notificationManager = notificationManager;
     this.layerManager = layerManager;
+    this.drawingManager = drawingManager;
     this.analysisLayer = null;
     this.distanceMeasurementActive = false;
     this.distanceFeatures = [];
@@ -162,9 +163,8 @@ export class AnalysisManager {
     // Initialize SketchViewModel if needed
     let sketchViewModel = this.stateManager.getSketchViewModel();
     if (!sketchViewModel) {
-      // Get drawingManager from global state
-      const { drawingManager } = window.getState();
-      sketchViewModel = await drawingManager.initializeSketchViewModel();
+      // Get drawingManager from instance
+      sketchViewModel = await this.drawingManager.initializeSketchViewModel();
     }
 
     // Cancel any existing drawing
@@ -609,8 +609,7 @@ export class AnalysisManager {
     let sketchViewModel = this.stateManager.getSketchViewModel();
 
     if (!sketchViewModel) {
-      const { drawingManager } = window.getState();
-      sketchViewModel = await drawingManager.initializeSketchViewModel();
+      sketchViewModel = await this.drawingManager.initializeSketchViewModel();
     }
 
     // Clear previous drawing for this feature
@@ -1162,8 +1161,7 @@ export class AnalysisManager {
       // Initialize sketch for point drawing
       let sketchViewModel = this.stateManager.getSketchViewModel();
       if (!sketchViewModel) {
-        const { drawingManager } = window.getState();
-        sketchViewModel = await drawingManager.initializeSketchViewModel();
+        sketchViewModel = await this.drawingManager.initializeSketchViewModel();
       }
 
       // Clear any previous distance drawing handler

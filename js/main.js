@@ -50,8 +50,8 @@ const searchManager = new SearchManager(stateManager, notificationManager);
 // Create LayerManager instance
 const layerManager = new LayerManager(stateManager, notificationManager);
 
-// Create AnalysisManager instance
-const analysisManager = new AnalysisManager(stateManager, notificationManager, layerManager);
+// Create AnalysisManager instance (depends on DrawingManager)
+const analysisManager = new AnalysisManager(stateManager, notificationManager, layerManager, drawingManager);
 
 // Create UploadHandler instance
 const uploadHandler = new UploadHandler(stateManager, layerManager, notificationManager);
