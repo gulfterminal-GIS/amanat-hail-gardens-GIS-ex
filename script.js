@@ -2,8 +2,7 @@ import { StateManager } from "./js/core/state-manager.js";
 import { MapInitializer } from "./js/core/map-initializer.js";
 import { NotificationManager } from "./js/ui/notification-manager.js";
 import { PanelManager } from "./js/ui/panel-manager.js";
-import { LayerManager } from "./js/layers/layer-manager.js";
-import { loadModule, loadModules } from "./js/core/module-loader.js";
+import { loadModule } from "./js/core/module-loader.js";
 
 // ============================================================================
 // GLOBAL VARIABLES - NOW MANAGED BY StateManager (js/core/state-manager.js)
@@ -33,37 +32,37 @@ function getState() {
 
 // These states are managed by StateManager, keeping references for transition
 // Classification state
-const classificationState = {
-  currentLayer: null,
-  renderers: new Map(),
-};
+// const classificationState = {
+//   currentLayer: null,
+//   renderers: new Map(),
+// };
 
 // Analysis state
-const analysisState = {
-  isDrawing: false,
-  drawType: null,
-  features: {
-    buffer: [],
-    intersect1: null,
-    intersect2: null,
-  },
-};
+// const analysisState = {
+//   isDrawing: false,
+//   drawType: null,
+//   features: {
+//     buffer: [],
+//     intersect1: null,
+//     intersect2: null,
+//   },
+// };
 
 // Feature Tour System state managed by StateManager
-const tourState = {
-  isActive: false,
-  interval: null,
-  currentIndex: 0,
-  features: [],
-  highlightHandle: null,
-  // UI references managed locally
-  controls: {
-    auto: null,
-    chevronIcon: null,
-    chevronBtn: null,
-    details: null,
-  },
-};
+// const tourState = {
+//   isActive: false,
+//   interval: null,
+//   currentIndex: 0,
+//   features: [],
+//   highlightHandle: null,
+//   // UI references managed locally
+//   controls: {
+//     auto: null,
+//     chevronIcon: null,
+//     chevronBtn: null,
+//     details: null,
+//   },
+// };
 
 // Other state
 let countryInfoTimeout = null;
@@ -89,7 +88,8 @@ async function initializeMap(
   visualizationManager = null,
   popupManager = null,
   attributeTable = null,
-  tourManager = null
+  tourManager = null,
+  countryInfo = null
 ) {
   try {
     // Store instances at module level for use by other functions
@@ -109,6 +109,7 @@ async function initializeMap(
       popupManager,
       attributeTable,
       tourManager,
+      countryInfo,
     };
 
     // Initialize state
@@ -854,7 +855,8 @@ function initializeUI(injectedStateManager) {
   // initializeTools();
 
   // Initialize coordinate display (pass view for proper scope)
-  initializeCoordinateDisplay(view);
+  // EXTRACTED TO: js/events/coordinate-display.js
+  // initializeCoordinateDisplay(view);
 
   // Initialize fullscreen listener
   initializeFullscreenListener();
@@ -2543,205 +2545,208 @@ async function locateUser() {
 }
 
 // Initialize coordinate display
-function initializeCoordinateDisplay(view) {
-  // Fallback to window.view if not passed (backward compatibility)
-  const mapView = view || window.view;
-  if (!mapView) {
-    console.warn("initializeCoordinateDisplay: view not available");
-    return;
-  }
+// function initializeCoordinateDisplay(view) {
+//   // Fallback to window.view if not passed (backward compatibility)
+//   const mapView = view || window.view;
+//   if (!mapView) {
+//     console.warn("initializeCoordinateDisplay: view not available");
+//     return;
+//   }
 
-  let currentCoords = { lat: 0, lon: 0 };
+//   let currentCoords = { lat: 0, lon: 0 };
 
-  mapView.on("pointer-move", (event) => {
-    const point = mapView.toMap({ x: event.x, y: event.y });
-    if (point) {
-      currentCoords.lat = point.latitude.toFixed(6);
-      currentCoords.lon = point.longitude.toFixed(6);
-      document.getElementById(
-        "coordDisplay"
-      ).textContent = `Lat: ${currentCoords.lat}, Lon: ${currentCoords.lon}`;
-    }
-  });
+//   mapView.on("pointer-move", (event) => {
+//     const point = mapView.toMap({ x: event.x, y: event.y });
+//     if (point) {
+//       currentCoords.lat = point.latitude.toFixed(6);
+//       currentCoords.lon = point.longitude.toFixed(6);
+//       document.getElementById(
+//         "coordDisplay"
+//       ).textContent = `Lat: ${currentCoords.lat}, Lon: ${currentCoords.lon}`;
+//     }
+//   });
 
-  // Add copy functionality
-  const copyBtn = document.getElementById("copyCoords");
-  if (copyBtn) {
-    copyBtn.addEventListener("click", () => {
-      const coordText = `${currentCoords.lat}, ${currentCoords.lon}`;
-      navigator.clipboard
-        .writeText(coordText)
-        .then(() => {
-          // Visual feedback
-          copyBtn.classList.add("copied");
-          const icon = copyBtn.querySelector("i");
-          icon.classList.remove("fa-copy");
-          icon.classList.add("fa-check");
+//   // Add copy functionality
+//   const copyBtn = document.getElementById("copyCoords");
+//   if (copyBtn) {
+//     copyBtn.addEventListener("click", () => {
+//       const coordText = `${currentCoords.lat}, ${currentCoords.lon}`;
+//       navigator.clipboard
+//         .writeText(coordText)
+//         .then(() => {
+//           // Visual feedback
+//           copyBtn.classList.add("copied");
+//           const icon = copyBtn.querySelector("i");
+//           icon.classList.remove("fa-copy");
+//           icon.classList.add("fa-check");
 
-          showNotification("Coordinates copied!", "success");
+//           showNotification("Coordinates copied!", "success");
 
-          // Reset after 2 seconds
-          setTimeout(() => {
-            copyBtn.classList.remove("copied");
-            icon.classList.remove("fa-check");
-            icon.classList.add("fa-copy");
-          }, 2000);
-        })
-        .catch(() => {
-          showNotification("Failed to copy coordinates", "error");
-        });
-    });
-  }
-}
+//           // Reset after 2 seconds
+//           setTimeout(() => {
+//             copyBtn.classList.remove("copied");
+//             icon.classList.remove("fa-check");
+//             icon.classList.add("fa-copy");
+//           }, 2000);
+//         })
+//         .catch(() => {
+//           showNotification("Failed to copy coordinates", "error");
+//         });
+//     });
+//   }
+// }
 
+// ============================================================================
+// EXTRACTED TO: js/events/map-event-handler.js
+// ============================================================================
 // Initialize event handlers
-function initializeEventHandlers(stateManager) {
-    const { popupManager } = getState();
+// function initializeEventHandlers(stateManager) {
+//     const { popupManager } = getState();
 
-  // Get state from StateManager for proper scope access
-  const view = stateManager ? stateManager.getView() : window.view;
-  const uploadedLayers = stateManager
-    ? stateManager.getUploadedLayers()
-    : window.uploadedLayers;
-  const countriesLayer = stateManager
-    ? stateManager.getCountriesLayer()
-    : window.countriesLayer;
-  const flashGraphicsLayer = stateManager
-    ? stateManager.getFlashGraphicsLayer()
-    : window.flashGraphicsLayer;
+//   // Get state from StateManager for proper scope access
+//   const view = stateManager ? stateManager.getView() : window.view;
+//   const uploadedLayers = stateManager
+//     ? stateManager.getUploadedLayers()
+//     : window.uploadedLayers;
+//   const countriesLayer = stateManager
+//     ? stateManager.getCountriesLayer()
+//     : window.countriesLayer;
+//   const flashGraphicsLayer = stateManager
+//     ? stateManager.getFlashGraphicsLayer()
+//     : window.flashGraphicsLayer;
 
   // Handle country click for info display (nested function with closure access)
-  async function handleCountryClick(event) {
-    if (!countriesLayer) return;
+  // async function handleCountryClick(event) {
+  //   if (!countriesLayer) return;
 
-    // First check if we clicked on any uploaded features
-    try {
-      const response = await view.hitTest(event);
-      const uploadedFeatureHit = response.results.find(
-        (result) =>
-          result.graphic &&
-          result.graphic.layer &&
-          uploadedLayers.includes(result.graphic.layer)
-      );
+  //   // First check if we clicked on any uploaded features
+  //   try {
+  //     const response = await view.hitTest(event);
+  //     const uploadedFeatureHit = response.results.find(
+  //       (result) =>
+  //         result.graphic &&
+  //         result.graphic.layer &&
+  //         uploadedLayers.includes(result.graphic.layer)
+  //     );
 
-      // If we clicked on an uploaded feature, don't show country info
-      if (uploadedFeatureHit) {
-        return;
-      }
+  //     // If we clicked on an uploaded feature, don't show country info
+  //     if (uploadedFeatureHit) {
+  //       return;
+  //     }
 
-      // Now proceed with country query
-      const query = countriesLayer.createQuery();
-      query.geometry = event.mapPoint;
-      query.spatialRelationship = "intersects";
-      query.outFields = ["COUNTRY", "Shape__Area", "Shape__Length"];
-      query.returnGeometry = true;
+  //     // Now proceed with country query
+  //     const query = countriesLayer.createQuery();
+  //     query.geometry = event.mapPoint;
+  //     query.spatialRelationship = "intersects";
+  //     query.outFields = ["COUNTRY", "Shape__Area", "Shape__Length"];
+  //     query.returnGeometry = true;
 
-      const result = await countriesLayer.queryFeatures(query);
+  //     const result = await countriesLayer.queryFeatures(query);
 
-      if (result.features.length > 0) {
-        const feature = result.features[0];
-        const countryName = feature.attributes.COUNTRY;
-        const area = Math.floor(feature.attributes.Shape__Area / 1000000);
-        const length = Math.floor(feature.attributes.Shape__Length / 1000);
+  //     if (result.features.length > 0) {
+  //       const feature = result.features[0];
+  //       const countryName = feature.attributes.COUNTRY;
+  //       const area = Math.floor(feature.attributes.Shape__Area / 1000000);
+  //       const length = Math.floor(feature.attributes.Shape__Length / 1000);
 
-        // Clear previous animations
-        flashGraphicsLayer.removeAll();
+  //       // Clear previous animations
+  //       flashGraphicsLayer.removeAll();
 
-        // Update info display
-        document.getElementById("countryName").textContent = countryName;
-        document.getElementById("countryDetails").innerHTML = `
-          <strong>Area:</strong> ${area.toLocaleString()} km²<br>
-          <strong>Perimeter:</strong> ${length.toLocaleString()} km
-        `;
+  //       // Update info display
+  //       document.getElementById("countryName").textContent = countryName;
+  //       document.getElementById("countryDetails").innerHTML = `
+  //         <strong>Area:</strong> ${area.toLocaleString()} km²<br>
+  //         <strong>Perimeter:</strong> ${length.toLocaleString()} km
+  //       `;
 
-        // Show the info display
-        const infoDisplay = document.getElementById("countryInfo");
-        infoDisplay.classList.remove("hidden");
+  //       // Show the info display
+  //       const infoDisplay = document.getElementById("countryInfo");
+  //       infoDisplay.classList.remove("hidden");
 
-        // Zoom to country with animation
-        view.goTo({
-          target: feature.geometry.extent.expand(1.2),
-          duration: 1000,
-        });
+  //       // Zoom to country with animation
+  //       view.goTo({
+  //         target: feature.geometry.extent.expand(1.2),
+  //         duration: 1000,
+  //       });
 
-        // Add flash animation
-        createCountryFlashAnimation(feature.geometry);
+  //       // Add flash animation
+  //       createCountryFlashAnimation(feature.geometry);
 
-        // Hide after 5 seconds
-        getState().stateManager.clearCountryInfoTimeout();
-        getState().stateManager.setCountryInfoTimeout(
-          setTimeout(() => {
-            infoDisplay.classList.add("hidden");
-            getState().stateManager.getFlashGraphicsLayer().removeAll();
-          }, 5000)
-        );
-      }
-    } catch (error) {
-      console.error("Error querying country:", error);
-    }
-  }
+  //       // Hide after 5 seconds
+  //       getState().stateManager.clearCountryInfoTimeout();
+  //       getState().stateManager.setCountryInfoTimeout(
+  //         setTimeout(() => {
+  //           infoDisplay.classList.add("hidden");
+  //           getState().stateManager.getFlashGraphicsLayer().removeAll();
+  //         }, 5000)
+  //       );
+  //     }
+  //   } catch (error) {
+  //     console.error("Error querying country:", error);
+  //   }
+  // }
 
   // Click handler for features
   // In initializeEventHandlers function, replace the click handler with this:
-  view.on("click", async (event) => {
-    // Check for country first
-    await handleCountryClick(event);
+  // view.on("click", async (event) => {
+  //   // Check for country first
+  //   await handleCountryClick(event);
 
-    try {
-      const response = await view.hitTest(event);
+  //   try {
+  //     const response = await view.hitTest(event);
 
-      // Filter for actual features with graphics
-      const results = response.results.filter(
-        (result) =>
-          result.graphic && result.graphic.layer && result.graphic.attributes
-      );
+  //     // Filter for actual features with graphics
+  //     const results = response.results.filter(
+  //       (result) =>
+  //         result.graphic && result.graphic.layer && result.graphic.attributes
+  //     );
 
-      if (results.length > 0) {
-        const result = results[0];
-        const graphic = result.graphic;
+  //     if (results.length > 0) {
+  //       const result = results[0];
+  //       const graphic = result.graphic;
 
-        // For feature layers, query the feature to ensure we have all attributes
-        if (graphic.layer && graphic.layer.queryFeatures) {
-          try {
-            const query = graphic.layer.createQuery();
-            query.where = `${graphic.layer.objectIdField} = ${
-              graphic.attributes[graphic.layer.objectIdField]
-            }`;
-            query.outFields = ["*"];
-            query.returnGeometry = true;
+  //       // For feature layers, query the feature to ensure we have all attributes
+  //       if (graphic.layer && graphic.layer.queryFeatures) {
+  //         try {
+  //           const query = graphic.layer.createQuery();
+  //           query.where = `${graphic.layer.objectIdField} = ${
+  //             graphic.attributes[graphic.layer.objectIdField]
+  //           }`;
+  //           query.outFields = ["*"];
+  //           query.returnGeometry = true;
 
-            const featureSet = await graphic.layer.queryFeatures(query);
-            if (featureSet.features.length > 0) {
-              // Use the queried feature which should have all attributes
-              popupManager.showCustomPopup(featureSet.features[0], event.mapPoint);
-            } else {
-              popupManager.showCustomPopup(graphic, event.mapPoint);
-            }
-          } catch (queryError) {
-            console.warn(
-              "Could not query feature, using hitTest result:",
-              queryError
-            );
-            popupManager.showCustomPopup(graphic, event.mapPoint);
-          }
-        } else {
-          popupManager.showCustomPopup(graphic, event.mapPoint);
-        }
-      } else {
-        popupManager.closeCustomPopup();
-      }
-    } catch (error) {
-      console.error("Error in click handler:", error);
-    }
-  });
+  //           const featureSet = await graphic.layer.queryFeatures(query);
+  //           if (featureSet.features.length > 0) {
+  //             // Use the queried feature which should have all attributes
+  //             popupManager.showCustomPopup(featureSet.features[0], event.mapPoint);
+  //           } else {
+  //             popupManager.showCustomPopup(graphic, event.mapPoint);
+  //           }
+  //         } catch (queryError) {
+  //           console.warn(
+  //             "Could not query feature, using hitTest result:",
+  //             queryError
+  //           );
+  //           popupManager.showCustomPopup(graphic, event.mapPoint);
+  //         }
+  //       } else {
+  //         popupManager.showCustomPopup(graphic, event.mapPoint);
+  //       }
+  //     } else {
+  //       popupManager.closeCustomPopup();
+  //     }
+  //   } catch (error) {
+  //     console.error("Error in click handler:", error);
+  //   }
+  // });
 
   // Search functionality (pass view for proper scope)
   // COMMENTED OUT - EXTRACTED TO js/ui/search-manager.js
   // initializeSearch(view);
-}
+// }
 
 // Export initializeEventHandlers for MapInitializer
-window.initializeEventHandlers = initializeEventHandlers;
+// window.initializeEventHandlers = initializeEventHandlers;
 
 // ============================================================================
 // COMMENTED OUT - Moved inside initializeEventHandlers as nested function
@@ -2755,77 +2760,77 @@ window.initializeEventHandlers = initializeEventHandlers;
 // }
 // Create modern flash animation for country
 // Create modern flash animation for country
-async function createCountryFlashAnimation(geometry) {
-  const [Graphic] = await Promise.all([loadModule("esri/Graphic")]);
+// async function createCountryFlashAnimation(geometry) {
+//   const [Graphic] = await Promise.all([loadModule("esri/Graphic")]);
 
-  // Clear previous animations
-  flashGraphicsLayer.removeAll();
+//   // Clear previous animations
+//   flashGraphicsLayer.removeAll();
 
-  // Simple yellow flash animation
-  let opacity = 1;
-  const flashInterval = 50; // milliseconds
-  let flashCount = 0;
-  const maxFlashes = 3;
+//   // Simple yellow flash animation
+//   let opacity = 1;
+//   const flashInterval = 50; // milliseconds
+//   let flashCount = 0;
+//   const maxFlashes = 3;
 
-  const flash = () => {
-    flashGraphicsLayer.removeAll();
+//   const flash = () => {
+//     flashGraphicsLayer.removeAll();
 
-    // Create simple flash graphic
-    const flashGraphic = new Graphic({
-      geometry: geometry,
-      symbol: {
-        type: "simple-fill",
-        color: [255, 255, 0, opacity * 0.4], // Yellow fill
-        outline: {
-          color: [255, 255, 0, opacity], // Yellow outline
-          width: 3,
-        },
-      },
-    });
+//     // Create simple flash graphic
+//     const flashGraphic = new Graphic({
+//       geometry: geometry,
+//       symbol: {
+//         type: "simple-fill",
+//         color: [255, 255, 0, opacity * 0.4], // Yellow fill
+//         outline: {
+//           color: [255, 255, 0, opacity], // Yellow outline
+//           width: 3,
+//         },
+//       },
+//     });
 
-    flashGraphicsLayer.add(flashGraphic);
+//     flashGraphicsLayer.add(flashGraphic);
 
-    // Toggle opacity for flash effect
-    if (flashCount % 2 === 0) {
-      opacity = 0.3;
-    } else {
-      opacity = 1;
-    }
+//     // Toggle opacity for flash effect
+//     if (flashCount % 2 === 0) {
+//       opacity = 0.3;
+//     } else {
+//       opacity = 1;
+//     }
 
-    flashCount++;
+//     flashCount++;
 
-    if (flashCount < maxFlashes * 2) {
-      setTimeout(flash, flashInterval);
-    } else {
-      // Final highlight
-      setTimeout(() => {
-        flashGraphicsLayer.removeAll();
+//     if (flashCount < maxFlashes * 2) {
+//       setTimeout(flash, flashInterval);
+//     } else {
+//       // Final highlight
+//       setTimeout(() => {
+//         flashGraphicsLayer.removeAll();
 
-        const finalGraphic = new Graphic({
-          geometry: geometry,
-          symbol: {
-            type: "simple-fill",
-            color: [255, 255, 0, 0.15], // Light yellow fill
-            outline: {
-              color: [255, 215, 0], // Gold outline
-              width: 2,
-            },
-          },
-        });
+//         const finalGraphic = new Graphic({
+//           geometry: geometry,
+//           symbol: {
+//             type: "simple-fill",
+//             color: [255, 255, 0, 0.15], // Light yellow fill
+//             outline: {
+//               color: [255, 215, 0], // Gold outline
+//               width: 2,
+//             },
+//           },
+//         });
 
-        flashGraphicsLayer.add(finalGraphic);
+//         flashGraphicsLayer.add(finalGraphic);
 
-        // Fade out after 2 seconds
-        setTimeout(() => {
-          flashGraphicsLayer.removeAll();
-        }, 2000);
-      }, 100);
-    }
-  };
+//         // Fade out after 2 seconds
+//         setTimeout(() => {
+//           flashGraphicsLayer.removeAll();
+//         }, 2000);
+//       }, 100);
+//     }
+//   };
 
-  // Start the flash immediately
-  flash();
-}
+//   // Start the flash immediately
+//   flash();
+// }
 
 // ============================================================================
 // SEARCH FUNCTIONALITY - EXTRACTED TO js/ui/search-manager.js
@@ -6112,34 +6117,34 @@ window.currentHeatmapSettings = {
 //   console.log("Intersect modal opened");
 // }
 
-window.debugModals = function () {
-  const bufferModal = document.getElementById("bufferModal");
-  const intersectModal = document.getElementById("intersectModal");
+// window.debugModals = function () {
+//   const bufferModal = document.getElementById("bufferModal");
+//   const intersectModal = document.getElementById("intersectModal");
 
-  console.log("Buffer Modal:", {
-    exists: !!bufferModal,
-    classes: bufferModal?.className,
-    display: bufferModal ? window.getComputedStyle(bufferModal).display : "N/A",
-    visibility: bufferModal
-      ? window.getComputedStyle(bufferModal).visibility
-      : "N/A",
-    zIndex: bufferModal ? window.getComputedStyle(bufferModal).zIndex : "N/A",
-  });
+//   console.log("Buffer Modal:", {
+//     exists: !!bufferModal,
+//     classes: bufferModal?.className,
+//     display: bufferModal ? window.getComputedStyle(bufferModal).display : "N/A",
+//     visibility: bufferModal
+//       ? window.getComputedStyle(bufferModal).visibility
+//       : "N/A",
+//     zIndex: bufferModal ? window.getComputedStyle(bufferModal).zIndex : "N/A",
+//   });
 
-  console.log("Intersect Modal:", {
-    exists: !!intersectModal,
-    classes: intersectModal?.className,
-    display: intersectModal
-      ? window.getComputedStyle(intersectModal).display
-      : "N/A",
-    visibility: intersectModal
-      ? window.getComputedStyle(intersectModal).visibility
-      : "N/A",
-    zIndex: intersectModal
-      ? window.getComputedStyle(intersectModal).zIndex
-      : "N/A",
-  });
-};
+//   console.log("Intersect Modal:", {
+//     exists: !!intersectModal,
+//     classes: intersectModal?.className,
+//     display: intersectModal
+//       ? window.getComputedStyle(intersectModal).display
+//       : "N/A",
+//     visibility: intersectModal
+//       ? window.getComputedStyle(intersectModal).visibility
+//       : "N/A",
+//     zIndex: intersectModal
+//       ? window.getComputedStyle(intersectModal).zIndex
+//       : "N/A",
+//   });
+// };
 // Update closeIntersectModal to properly clean up
 // function closeIntersectModal() {
 //   const modal = document.getElementById("intersectModal");
@@ -7464,31 +7469,31 @@ let timeEnabledLayer = null;
 // window.setBufferSource = setBufferSource;
 
 // Add this function to minimize/restore modal
-window.toggleModalMinimize = function (modalId) {
-  const modal = document.getElementById(modalId);
-  const modalContent = modal.querySelector(".modal-content");
+// window.toggleModalMinimize = function (modalId) {
+//   const modal = document.getElementById(modalId);
+//   const modalContent = modal.querySelector(".modal-content");
 
-  if (modal.classList.contains("minimized")) {
-    modal.classList.remove("minimized");
-    modalContent.style.display = "";
-  } else {
-    modal.classList.add("minimized");
-    modalContent.style.display = "none";
+//   if (modal.classList.contains("minimized")) {
+//     modal.classList.remove("minimized");
+//     modalContent.style.display = "";
+//   } else {
+//     modal.classList.add("minimized");
+//     modalContent.style.display = "none";
 
-    // Show a small floating indicator
-    const indicator = document.createElement("div");
-    indicator.className = "modal-minimized-indicator";
-    indicator.innerHTML = `
-      <span>${
-        modalId === "bufferModal" ? "Buffer" : "Intersection"
-      } Analysis</span>
-      <button onclick="toggleModalMinimize('${modalId}')">
-        <i class="fas fa-window-maximize"></i>
-      </button>
-    `;
-    modal.appendChild(indicator);
-  }
-};
+//     // Show a small floating indicator
+//     const indicator = document.createElement("div");
+//     indicator.className = "modal-minimized-indicator";
+//     indicator.innerHTML = `
+//       <span>${
+//         modalId === "bufferModal" ? "Buffer" : "Intersection"
+//       } Analysis</span>
+//       <button onclick="toggleModalMinimize('${modalId}')">
+//         <i class="fas fa-window-maximize"></i>
+//       </button>
+//     `;
+//     modal.appendChild(indicator);
+//   }
+// };
 
 // Buffer Analysis with existing drawing
 // Update your startBufferDrawing function:
@@ -8029,7 +8034,7 @@ export {
   // Core initialization functions (will be moved to map-initializer.js)
   initializeMap,
   initializeUI,
-  initializeEventHandlers,
+  // initializeEventHandlers,
 
   // Module loader (will be moved to module-loader.js)
   loadModule,

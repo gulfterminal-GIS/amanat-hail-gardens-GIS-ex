@@ -20,6 +20,9 @@ import { PopupManager } from "./features/popup-manager.js";
 import { AttributeTable } from "./features/attribute-table.js";
 import { ClassificationManager } from "./features/classification-manager.js";
 import { TourManager } from "./features/tour-manager.js";
+import { CountryInfo } from "./features/country-info.js";
+import { MapEventHandler } from "./events/map-event-handler.js";
+import { CoordinateDisplay } from "./events/coordinate-display.js";
 import { bindWindowFunctions } from "./window-bindings.js";
 import { initializeMap } from "../script.js";
 
@@ -53,6 +56,9 @@ const classificationManager = new ClassificationManager(stateManager, notificati
 // Create TourManager instance (needed by MapInitializer)
 const tourManager = new TourManager(stateManager, notificationManager, popupManager);
 
+// Create CountryInfo instance
+const countryInfo = new CountryInfo(stateManager, notificationManager);
+
 // Create MapInitializer instance
 const mapInitializer = new MapInitializer(stateManager, notificationManager, CONFIG, tourManager, layerManager, classificationManager);
 
@@ -80,6 +86,12 @@ const attributeTable = new AttributeTable(stateManager, notificationManager, pop
 // Create UploadHandler instance
 const uploadHandler = new UploadHandler(stateManager, layerManager, notificationManager);
 
+// Create MapEventHandler instance (depends on PopupManager and CountryInfo)
+const mapEventHandler = new MapEventHandler(stateManager, popupManager, countryInfo);
+
+// Create CoordinateDisplay instance
+const coordinateDisplay = new CoordinateDisplay(stateManager, notificationManager);
+
 
 // Initialize application
 async function initializeApplication() {
@@ -103,6 +115,9 @@ async function initializeApplication() {
     console.log("AttributeTable created and ready");
     console.log("ClassificationManager created and ready");
     console.log("TourManager created and ready");
+    console.log("CountryInfo created and ready");
+    console.log("MapEventHandler created and ready");
+    console.log("CoordinateDisplay created and ready");
 
     // Initialize the map with injected dependencies
     await initializeMap(
@@ -121,7 +136,8 @@ async function initializeApplication() {
       popupManager,
       attributeTable,
       classificationManager,
-      tourManager
+      tourManager,
+      countryInfo
     );
 
     // Initialize tab system
@@ -129,6 +145,12 @@ async function initializeApplication() {
 
     // Initialize search functionality
     await searchManager.initialize();
+
+    // Initialize map event handlers
+    mapEventHandler.initializeEventHandlers();
+
+    // Initialize coordinate display
+    coordinateDisplay.initialize();
 
     // Bind window functions for HTML event handlers (CRITICAL for inline onclick, onchange, etc.)
     bindWindowFunctions({
@@ -150,6 +172,8 @@ async function initializeApplication() {
       attributeTable,
       classificationManager,
       tourManager,
+      countryInfo,
+      mapEventHandler,
       // Future managers will be added here as they're created
     });
 

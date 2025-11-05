@@ -311,7 +311,7 @@
     - Update main.js to import and initialize VisualizationManager
     - _Requirements: 1.2, 1.5, 3.2_
 
-- [-] 8. Extract feature management modules
+- [x] 8. Extract feature management modules
 
   - [x] 8.1 Create js/features/popup-manager.js for popup functionality
 
@@ -352,7 +352,8 @@
     - Update main.js to import and initialize TourManager
     - _Requirements: 1.2, 1.5, 3.2, 3.3_
   
-  - [ ] 8.5 Create js/features/country-info.js for country click feature
+  - [x] 8.5 Create js/features/country-info.js for country click feature
+
     - Extract initializeCountriesLayer and country info display logic
     - Extract flashCountryBoundary and country info timeout handling
     - Create CountryInfo class with country feature methods
@@ -390,16 +391,20 @@
     - Update main.js to import and initialize PrintWidget
     - _Requirements: 1.2, 1.5, 3.2, 3.3_
 
-- [ ] 10. Extract event handling modules
-  - [ ] 10.1 Create js/events/map-event-handler.js for map events
+- [x] 10. Extract event handling modules
+
+  - [x] 10.1 Create js/events/map-event-handler.js for map events
+
     - Extract initializeEventHandlers and map click/pointer-move logic
     - Extract feature click handling and country info display
     - Create MapEventHandler class with event management methods
     - Comment out original event handling code in script.js
     - Update main.js to import and initialize MapEventHandler
+
     - _Requirements: 1.2, 1.5, 3.2_
   
-  - [ ] 10.2 Create js/events/coordinate-display.js for coordinate tracking
+  - [x] 10.2 Create js/events/coordinate-display.js for coordinate tracking
+  
     - Extract initializeCoordinateDisplay and coordinate formatting logic
     - Extract copyCoordinates functionality
     - Create CoordinateDisplay class with coordinate methods

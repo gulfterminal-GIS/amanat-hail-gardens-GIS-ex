@@ -95,16 +95,13 @@ export class MapInitializer {
         }
       );
 
-      // Initialize UI and event handlers (still in script.js)
+      // Initialize UI (still in script.js)
       // Pass StateManager so functions have proper access to state
       if (window.initializeUI) {
         console.log("Initializing UI components...");
         window.initializeUI(this.stateManager);
       }
-      if (window.initializeEventHandlers) {
-        console.log("Setting up event handlers...");
-        window.initializeEventHandlers(this.stateManager);
-      }
+      // Note: Event handlers are now initialized by MapEventHandler in main.js
 
       // Handle loading screen
       this.handleLoadingScreen();
