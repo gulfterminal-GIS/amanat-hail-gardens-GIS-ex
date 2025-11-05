@@ -45,8 +45,8 @@ export function bindWindowFunctions(managers) {
     measurementManager,
     visualizationManager,
     popupManager,
+    attributeTable,
     // Future managers will be added here as they're created:
-    // attributeTable,
     // tourManager,
     // classificationManager,
     // countryInfo,
@@ -74,30 +74,30 @@ export function bindWindowFunctions(managers) {
   // ============================================================================
   
   window.toggleAttributeTable = () => {
-    return scriptFunctions.toggleAttributeTable();
+    return attributeTable.toggleAttributeTable();
   };
 
   window.refreshTable = () => {
-    return scriptFunctions.refreshTable();
+    return attributeTable.refreshTable();
   };
 
   window.sortTable = (column) => {
-    return scriptFunctions.sortTable(column);
+    return attributeTable.sortTable(column);
   };
   window.selectTableRow = (rowId) => {
-    return scriptFunctions.selectTableRow(rowId);
+    return attributeTable.selectTableRow(rowId);
   };
 
   window.showExportOptions = () => {
-    return scriptFunctions.showExportOptions();
+    return attributeTable.showExportOptions();
   };
 
   window.previousPage = () => {
-    return scriptFunctions.previousPage();
+    return attributeTable.previousPage();
   };
 
   window.nextPage = () => {
-    return scriptFunctions.nextPage();
+    return attributeTable.nextPage();
   };
 
   // ============================================================================

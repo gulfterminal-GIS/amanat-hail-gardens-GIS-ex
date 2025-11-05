@@ -321,7 +321,8 @@
     - Update main.js to import and initialize PopupManager
     - _Requirements: 1.2, 1.5, 3.2, 3.3_
   
-  - [ ] 8.2 Create js/features/attribute-table.js for data table
+  - [x] 8.2 Create js/features/attribute-table.js for data table
+
     - Extract toggleAttributeTable, initializeTableLayerSelect, loadTableData
     - Extract renderTable, searchTable, updatePagination, export functions
     - Extract showTableLoading, showTableError, clearTable, showTableStatistics

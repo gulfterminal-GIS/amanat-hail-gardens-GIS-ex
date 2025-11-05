@@ -87,7 +87,8 @@ async function initializeMap(
   analysisManager = null,
   measurementManager = null,
   visualizationManager = null,
-  popupManager = null
+  popupManager = null,
+  attributeTable = null
 ) {
   try {
     // Store instances at module level for use by other functions
@@ -105,6 +106,7 @@ async function initializeMap(
       measurementManager,
       visualizationManager,
       popupManager,
+      attributeTable,
     };
 
     // Initialize state
@@ -3687,17 +3689,17 @@ async function createCountryFlashAnimation(geometry) {
 //     .join(" ");
 // }
 
-function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-}
+// function debounce(func, wait) {
+//   let timeout;
+//   return function executedFunction(...args) {
+//     const later = () => {
+//       clearTimeout(timeout);
+//       func(...args);
+//     };
+//     clearTimeout(timeout);
+//     timeout = setTimeout(later, wait);
+//   };
+// }
 
 // Wrapper function for backward compatibility
 function showNotification(message, type = "info") {
@@ -3707,33 +3709,6 @@ function showNotification(message, type = "info") {
     console.warn("NotificationManager not initialized yet:", message);
   }
 }
-
-// Add animation styles
-const style = document.createElement("style");
-style.textContent = `
-  @keyframes slideIn {
-    from {
-      transform: translateX(-50%) translateY(-100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
-    }
-  }
-  
-  @keyframes slideOut {
-    from {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
-    }
-    to {
-      transform: translateX(-50%) translateY(-100%);
-      opacity: 0;
-    }
-  }
-`;
-document.head.appendChild(style);
 
 // Update the window resize handler (find and replace the existing one)
 // Find and update the window resize handler:
@@ -4479,509 +4454,515 @@ async function togglePrint() {
 // window.deleteBookmark = deleteBookmark;
 // window.closeMeasurementResults = closeMeasurementResults;
 
-// Attribute Table System
-let currentTableLayer = null;
-let tableData = [];
-let filteredData = [];
-let currentPage = 1;
-const recordsPerPage = 50;
-let sortColumn = null;
-let sortDirection = "asc";
+// ============================================================================
+// COMMENTED OUT - Moved to js/features/attribute-table.js
+// ============================================================================
+// Attribute Table System - All functionality extracted to AttributeTable class
+// ============================================================================
 
-// Toggle Attribute Table
-async function toggleAttributeTable() {
-  const tableWidget = document.getElementById("attributeTableWidget");
-  const btn = document.getElementById("tableBtn");
+// // Attribute Table System
+// let currentTableLayer = null;
+// let tableData = [];
+// let filteredData = [];
+// let currentPage = 1;
+// const recordsPerPage = 50;
+// let sortColumn = null;
+// let sortDirection = "asc";
 
-  if (!tableWidget) {
-    console.error("Attribute table widget not found");
-    return;
-  }
+// // Toggle Attribute Table
+// async function toggleAttributeTable() {
+//   const tableWidget = document.getElementById("attributeTableWidget");
+//   const btn = document.getElementById("tableBtn");
 
-  if (tableWidget.classList.contains("hidden")) {
-    tableWidget.classList.remove("hidden");
-    if (btn) btn.classList.add("active");
-    initializeTableLayerSelect();
+//   if (!tableWidget) {
+//     console.error("Attribute table widget not found");
+//     return;
+//   }
 
-    if (getState().stateManager.getUploadedLayers().length > 0) {
-      const select = document.getElementById("tableLayerSelect");
-      if (select) {
-        select.value = 0;
-        await loadTableData(0);
-      }
-    }
-  } else {
-    tableWidget.classList.add("hidden");
-    if (btn) btn.classList.remove("active");
-  }
-}
+//   if (tableWidget.classList.contains("hidden")) {
+//     tableWidget.classList.remove("hidden");
+//     if (btn) btn.classList.add("active");
+//     initializeTableLayerSelect();
+
+//     if (getState().stateManager.getUploadedLayers().length > 0) {
+//       const select = document.getElementById("tableLayerSelect");
+//       if (select) {
+//         select.value = 0;
+//         await loadTableData(0);
+//       }
+//     }
+//   } else {
+//     tableWidget.classList.add("hidden");
+//     if (btn) btn.classList.remove("active");
+//   }
+// }
 
 // Initialize layer select dropdown
-function initializeTableLayerSelect() {
-  const select = document.getElementById("tableLayerSelect");
-  select.innerHTML = '<option value="">Select a layer...</option>';
+// function initializeTableLayerSelect() {
+//   const select = document.getElementById("tableLayerSelect");
+//   select.innerHTML = '<option value="">Select a layer...</option>';
 
-  getState()
-    .stateManager.getUploadedLayers()
-    .forEach((layer, index) => {
-      const option = document.createElement("option");
-      option.value = index;
-      option.textContent = layer.title;
-      select.appendChild(option);
-    });
+//   getState()
+//     .stateManager.getUploadedLayers()
+//     .forEach((layer, index) => {
+//       const option = document.createElement("option");
+//       option.value = index;
+//       option.textContent = layer.title;
+//       select.appendChild(option);
+//     });
 
-  select.addEventListener("change", async (e) => {
-    if (e.target.value !== "") {
-      await loadTableData(parseInt(e.target.value));
-    } else {
-      clearTable();
-    }
-  });
+//   select.addEventListener("change", async (e) => {
+//     if (e.target.value !== "") {
+//       await loadTableData(parseInt(e.target.value));
+//     } else {
+//       clearTable();
+//     }
+//   });
 
-  // Initialize search
-  const searchInput = document.getElementById("tableSearchInput");
-  searchInput.addEventListener(
-    "input",
-    debounce((e) => {
-      filterTableData(e.target.value);
-    }, 300)
-  );
-}
+//   // Initialize search
+//   const searchInput = document.getElementById("tableSearchInput");
+//   searchInput.addEventListener(
+//     "input",
+//     debounce((e) => {
+//       filterTableData(e.target.value);
+//     }, 300)
+//   );
+// }
 
 // Load table data from layer
-async function loadTableData(layerIndex) {
-  try {
-    const layer = getState().stateManager.getUploadedLayers()[layerIndex];
-    if (!layer) return;
+// async function loadTableData(layerIndex) {
+//   try {
+//     const layer = getState().stateManager.getUploadedLayers()[layerIndex];
+//     if (!layer) return;
 
-    currentTableLayer = layer;
-    showTableLoading();
+//     currentTableLayer = layer;
+//     showTableLoading();
 
-    // Query all features
-    const query = layer.createQuery();
-    query.where = "1=1";
-    query.outFields = ["*"];
-    query.returnGeometry = true;
+//     // Query all features
+//     const query = layer.createQuery();
+//     query.where = "1=1";
+//     query.outFields = ["*"];
+//     query.returnGeometry = true;
 
-    const result = await layer.queryFeatures(query);
+//     const result = await layer.queryFeatures(query);
 
-    // Convert features to table data
-    tableData = result.features.map((feature, index) => ({
-      _id: index,
-      _feature: feature,
-      ...feature.attributes,
-    }));
+//     // Convert features to table data
+//     tableData = result.features.map((feature, index) => ({
+//       _id: index,
+//       _feature: feature,
+//       ...feature.attributes,
+//     }));
 
-    filteredData = [...tableData];
-    currentPage = 1;
+//     filteredData = [...tableData];
+//     currentPage = 1;
 
-    renderTable();
-    updatePagination();
-  } catch (error) {
-    console.error("Error loading table data:", error);
-    showTableError("Error loading data");
-  }
-}
+//     renderTable();
+//     updatePagination();
+//   } catch (error) {
+//     console.error("Error loading table data:", error);
+//     showTableError("Error loading data");
+//   }
+// }
 
 // Show loading state
-function showTableLoading() {
-  const container = document.getElementById("tableContainer");
-  container.innerHTML = `
-    <div class="table-empty-state">
-      <i class="fas fa-spinner fa-spin"></i>
-      <p>Loading data...</p>
-    </div>
-  `;
-}
+// function showTableLoading() {
+//   const container = document.getElementById("tableContainer");
+//   container.innerHTML = `
+//     <div class="table-empty-state">
+//       <i class="fas fa-spinner fa-spin"></i>
+//       <p>Loading data...</p>
+//     </div>
+//   `;
+// }
 
 // Show error state
-function showTableError(message) {
-  const container = document.getElementById("tableContainer");
-  container.innerHTML = `
-    <div class="table-empty-state">
-      <i class="fas fa-exclamation-triangle"></i>
-      <p>${message}</p>
-    </div>
-  `;
-}
+// function showTableError(message) {
+//   const container = document.getElementById("tableContainer");
+//   container.innerHTML = `
+//     <div class="table-empty-state">
+//       <i class="fas fa-exclamation-triangle"></i>
+//       <p>${message}</p>
+//     </div>
+//   `;
+// }
 
 // Clear table
-function clearTable() {
-  const container = document.getElementById("tableContainer");
-  container.innerHTML = `
-    <div class="table-empty-state">
-      <i class="fas fa-table"></i>
-      <p>Select a layer to view its attributes</p>
-    </div>
-  `;
-  document.getElementById("tablePaginationInfo").textContent = "0 records";
-  document.getElementById("tablePageInfo").textContent = "Page 0 of 0";
-}
+// function clearTable() {
+//   const container = document.getElementById("tableContainer");
+//   container.innerHTML = `
+//     <div class="table-empty-state">
+//       <i class="fas fa-table"></i>
+//       <p>Select a layer to view its attributes</p>
+//     </div>
+//   `;
+//   document.getElementById("tablePaginationInfo").textContent = "0 records";
+//   document.getElementById("tablePageInfo").textContent = "Page 0 of 0";
+// }
 
 // Render table
-function renderTable() {
-  if (filteredData.length === 0) {
-    showTableError("No data to display");
-    return;
-  }
+// function renderTable() {
+//   if (filteredData.length === 0) {
+//     showTableError("No data to display");
+//     return;
+//   }
 
-  const { popupManager } = getState();
+//   const { popupManager } = getState();
 
-  // Get columns (excluding internal fields)
-  const columns = Object.keys(filteredData[0]).filter(
-    (key) => !key.startsWith("_") && key !== "ObjectID" && key !== "FID"
-  );
+//   // Get columns (excluding internal fields)
+//   const columns = Object.keys(filteredData[0]).filter(
+//     (key) => !key.startsWith("_") && key !== "ObjectID" && key !== "FID"
+//   );
 
-  // Calculate pagination
-  const startIndex = (currentPage - 1) * recordsPerPage;
-  const endIndex = Math.min(startIndex + recordsPerPage, filteredData.length);
-  const pageData = filteredData.slice(startIndex, endIndex);
+//   // Calculate pagination
+//   const startIndex = (currentPage - 1) * recordsPerPage;
+//   const endIndex = Math.min(startIndex + recordsPerPage, filteredData.length);
+//   const pageData = filteredData.slice(startIndex, endIndex);
 
-  // Build table HTML
-  let html = '<table class="attribute-data-table">';
+//   // Build table HTML
+//   let html = '<table class="attribute-data-table">';
 
-  // Header
-  html += "<thead><tr>";
-  html += '<th style="width: 50px;">#</th>';
-  columns.forEach((col) => {
-    const sortClass = sortColumn === col ? `sort-${sortDirection}` : "";
-    html += `<th class="${sortClass}" onclick="sortTable('${col}')">
-      ${popupManager.formatFieldName(col)}</th>`;
-  });
-  html += "</tr></thead>";
+//   // Header
+//   html += "<thead><tr>";
+//   html += '<th style="width: 50px;">#</th>';
+//   columns.forEach((col) => {
+//     const sortClass = sortColumn === col ? `sort-${sortDirection}` : "";
+//     html += `<th class="${sortClass}" onclick="sortTable('${col}')">
+//       ${popupManager.formatFieldName(col)}</th>`;
+//   });
+//   html += "</tr></thead>";
 
-  // Body
-  html += "<tbody>";
-  pageData.forEach((row, index) => {
-    html += `<tr onclick="selectTableRow(${row._id})" data-id="${row._id}">`;
-    html += `<td>${startIndex + index + 1}</td>`;
-    columns.forEach((col) => {
-      const value = formatTableValue(row[col]);
-      html += `<td>${value}</td>`;
-    });
-    html += "</tr>";
-  });
-  html += "</tbody>";
-  html += "</table>";
+//   // Body
+//   html += "<tbody>";
+//   pageData.forEach((row, index) => {
+//     html += `<tr onclick="selectTableRow(${row._id})" data-id="${row._id}">`;
+//     html += `<td>${startIndex + index + 1}</td>`;
+//     columns.forEach((col) => {
+//       const value = formatTableValue(row[col]);
+//       html += `<td>${value}</td>`;
+//     });
+//     html += "</tr>";
+//   });
+//   html += "</tbody>";
+//   html += "</table>";
 
-  document.getElementById("tableContainer").innerHTML = html;
-}
+//   document.getElementById("tableContainer").innerHTML = html;
+// }
 
 // Format table value
-function formatTableValue(value) {
-  if (value === null || value === undefined) {
-    return '<span style="color: #999; font-style: italic;">null</span>';
-  }
-  if (typeof value === "boolean") {
-    return value
-      ? '<span style="color: #4CAF50;">✓</span>'
-      : '<span style="color: #f44336;">✗</span>';
-  }
-  if (typeof value === "number") {
-    return value.toLocaleString();
-  }
-  if (typeof value === "string" && value.length > 50) {
-    return value.substring(0, 50) + "...";
-  }
-  return value.toString();
-}
+// function formatTableValue(value) {
+//   if (value === null || value === undefined) {
+//     return '<span style="color: #999; font-style: italic;">null</span>';
+//   }
+//   if (typeof value === "boolean") {
+//     return value
+//       ? '<span style="color: #4CAF50;">✓</span>'
+//       : '<span style="color: #f44336;">✗</span>';
+//   }
+//   if (typeof value === "number") {
+//     return value.toLocaleString();
+//   }
+//   if (typeof value === "string" && value.length > 50) {
+//     return value.substring(0, 50) + "...";
+//   }
+//   return value.toString();
+// }
 
 // Sort table
-function sortTable(column) {
-  if (sortColumn === column) {
-    sortDirection = sortDirection === "asc" ? "desc" : "asc";
-  } else {
-    sortColumn = column;
-    sortDirection = "asc";
-  }
+// function sortTable(column) {
+//   if (sortColumn === column) {
+//     sortDirection = sortDirection === "asc" ? "desc" : "asc";
+//   } else {
+//     sortColumn = column;
+//     sortDirection = "asc";
+//   }
 
-  filteredData.sort((a, b) => {
-    const aVal = a[column];
-    const bVal = b[column];
+//   filteredData.sort((a, b) => {
+//     const aVal = a[column];
+//     const bVal = b[column];
 
-    if (aVal === null || aVal === undefined) return 1;
-    if (bVal === null || bVal === undefined) return -1;
+//     if (aVal === null || aVal === undefined) return 1;
+//     if (bVal === null || bVal === undefined) return -1;
 
-    let comparison = 0;
-    if (typeof aVal === "number" && typeof bVal === "number") {
-      comparison = aVal - bVal;
-    } else {
-      comparison = aVal.toString().localeCompare(bVal.toString());
-    }
+//     let comparison = 0;
+//     if (typeof aVal === "number" && typeof bVal === "number") {
+//       comparison = aVal - bVal;
+//     } else {
+//       comparison = aVal.toString().localeCompare(bVal.toString());
+//     }
 
-    return sortDirection === "asc" ? comparison : -comparison;
-  });
+//     return sortDirection === "asc" ? comparison : -comparison;
+//   });
 
-  currentPage = 1;
-  renderTable();
-  updatePagination();
-}
+//   currentPage = 1;
+//   renderTable();
+//   updatePagination();
+// }
 
 // Filter table data
-function filterTableData(searchTerm) {
-  if (!searchTerm) {
-    filteredData = [...tableData];
-  } else {
-    const term = searchTerm.toLowerCase();
-    filteredData = tableData.filter((row) => {
-      return Object.values(row).some((value) => {
-        if (value === null || value === undefined) return false;
-        return value.toString().toLowerCase().includes(term);
-      });
-    });
-  }
+// function filterTableData(searchTerm) {
+//   if (!searchTerm) {
+//     filteredData = [...tableData];
+//   } else {
+//     const term = searchTerm.toLowerCase();
+//     filteredData = tableData.filter((row) => {
+//       return Object.values(row).some((value) => {
+//         if (value === null || value === undefined) return false;
+//         return value.toString().toLowerCase().includes(term);
+//       });
+//     });
+//   }
 
-  currentPage = 1;
-  renderTable();
-  updatePagination();
-}
+//   currentPage = 1;
+//   renderTable();
+//   updatePagination();
+// }
 
 // Select table row
-async function selectTableRow(id) {
-  const row = tableData.find((r) => r._id === id);
-  if (!row || !row._feature) return;
+// async function selectTableRow(id) {
+//   const row = tableData.find((r) => r._id === id);
+//   if (!row || !row._feature) return;
 
-  // Highlight row
-  document.querySelectorAll(".attribute-data-table tr").forEach((tr) => {
-    tr.classList.remove("selected");
-  });
-  document.querySelector(`tr[data-id="${id}"]`).classList.add("selected");
+//   // Highlight row
+//   document.querySelectorAll(".attribute-data-table tr").forEach((tr) => {
+//     tr.classList.remove("selected");
+//   });
+//   document.querySelector(`tr[data-id="${id}"]`).classList.add("selected");
 
-  // Zoom to feature
-  if (row._feature.geometry) {
-    await view.goTo({
-      target: row._feature.geometry,
-      zoom: view.zoom + 2,
-    });
+//   // Zoom to feature
+//   if (row._feature.geometry) {
+//     await view.goTo({
+//       target: row._feature.geometry,
+//       zoom: view.zoom + 2,
+//     });
 
-    // Flash the feature
-    flashFeature(row._feature);
-  }
-}
+//     // Flash the feature
+//     flashFeature(row._feature);
+//   }
+// }
 
 // Flash feature on map
-async function flashFeature(feature) {
-  const [Graphic] = await Promise.all([loadModule("esri/Graphic")]);
+// async function flashFeature(feature) {
+//   const [Graphic] = await Promise.all([loadModule("esri/Graphic")]);
 
-  const flashGraphic = new Graphic({
-    geometry: feature.geometry,
-    symbol: {
-      type: feature.geometry.type === "point" ? "simple-marker" : "simple-fill",
-      color: [255, 255, 0, 0.6],
-      outline: {
-        color: [255, 255, 0, 1],
-        width: 3,
-      },
-    },
-  });
+//   const flashGraphic = new Graphic({
+//     geometry: feature.geometry,
+//     symbol: {
+//       type: feature.geometry.type === "point" ? "simple-marker" : "simple-fill",
+//       color: [255, 255, 0, 0.6],
+//       outline: {
+//         color: [255, 255, 0, 1],
+//         width: 3,
+//       },
+//     },
+//   });
 
-  view.graphics.add(flashGraphic);
+//   view.graphics.add(flashGraphic);
 
-  // Remove after animation
-  setTimeout(() => {
-    view.graphics.remove(flashGraphic);
-  }, 1000);
-}
+//   // Remove after animation
+//   setTimeout(() => {
+//     view.graphics.remove(flashGraphic);
+//   }, 1000);
+// }
 
 // Pagination controls
-function updatePagination() {
-  const totalPages = Math.ceil(filteredData.length / recordsPerPage);
+// function updatePagination() {
+//   const totalPages = Math.ceil(filteredData.length / recordsPerPage);
 
-  document.getElementById("tablePaginationInfo").textContent = `${
-    filteredData.length
-  } record${filteredData.length !== 1 ? "s" : ""}`;
-  document.getElementById(
-    "tablePageInfo"
-  ).textContent = `Page ${currentPage} of ${totalPages}`;
+//   document.getElementById("tablePaginationInfo").textContent = `${
+//     filteredData.length
+//   } record${filteredData.length !== 1 ? "s" : ""}`;
+//   document.getElementById(
+//     "tablePageInfo"
+//   ).textContent = `Page ${currentPage} of ${totalPages}`;
 
-  document.getElementById("tablePrevBtn").disabled = currentPage === 1;
-  document.getElementById("tableNextBtn").disabled = currentPage === totalPages;
-}
+//   document.getElementById("tablePrevBtn").disabled = currentPage === 1;
+//   document.getElementById("tableNextBtn").disabled = currentPage === totalPages;
+// }
 
 // Continue script.js - Complete pagination and export functions
 
-function previousPage() {
-  if (currentPage > 1) {
-    currentPage--;
-    renderTable();
-    updatePagination();
-  }
-}
+// function previousPage() {
+//   if (currentPage > 1) {
+//     currentPage--;
+//     renderTable();
+//     updatePagination();
+//   }
+// }
 
-function nextPage() {
-  const totalPages = Math.ceil(filteredData.length / recordsPerPage);
-  if (currentPage < totalPages) {
-    currentPage++;
-    renderTable();
-    updatePagination();
-  }
-}
+// function nextPage() {
+//   const totalPages = Math.ceil(filteredData.length / recordsPerPage);
+//   if (currentPage < totalPages) {
+//     currentPage++;
+//     renderTable();
+//     updatePagination();
+//   }
+// }
 
-function refreshTable() {
-  if (currentTableLayer) {
-    const layerIndex = getState()
-      .stateManager.getUploadedLayers()
-      .indexOf(currentTableLayer);
-    if (layerIndex !== -1) {
-      loadTableData(layerIndex);
-    }
-  }
-}
+// function refreshTable() {
+//   if (currentTableLayer) {
+//     const layerIndex = getState()
+//       .stateManager.getUploadedLayers()
+//       .indexOf(currentTableLayer);
+//     if (layerIndex !== -1) {
+//       loadTableData(layerIndex);
+//     }
+//   }
+// }
 
 // Export functionality
-function showExportOptions() {
-  const modal = document.getElementById("exportModal");
-  const select = document.getElementById("exportLayerSelect");
+// function showExportOptions() {
+//   const modal = document.getElementById("exportModal");
+//   const select = document.getElementById("exportLayerSelect");
 
-  // Populate layer select
-  select.innerHTML = '<option value="">Select a layer...</option>';
-  getState()
-    .stateManager.getUploadedLayers()
-    .forEach((layer, index) => {
-      const option = document.createElement("option");
-      option.value = index;
-      option.textContent = layer.title;
-      select.appendChild(option);
-    });
+//   // Populate layer select
+//   select.innerHTML = '<option value="">Select a layer...</option>';
+//   getState()
+//     .stateManager.getUploadedLayers()
+//     .forEach((layer, index) => {
+//       const option = document.createElement("option");
+//       option.value = index;
+//       option.textContent = layer.title;
+//       select.appendChild(option);
+//     });
 
-  modal.classList.remove("hidden");
-}
+//   modal.classList.remove("hidden");
+// }
 
-function closeExportModal() {
-  document.getElementById("exportModal").classList.add("hidden");
-}
+// function closeExportModal() {
+//   document.getElementById("exportModal").classList.add("hidden");
+// }
 
-// Export data in different formats
-async function exportData(format) {
-  const layerIndex = document.getElementById("exportLayerSelect").value;
-  if (layerIndex === "") {
-    showNotification("Please select a layer to export", "error");
-    return;
-  }
+// // Export data in different formats
+// async function exportData(format) {
+//   const layerIndex = document.getElementById("exportLayerSelect").value;
+//   if (layerIndex === "") {
+//     showNotification("Please select a layer to export", "error");
+//     return;
+//   }
 
-  const layer =
-    getState().stateManager.getUploadedLayers()[parseInt(layerIndex)];
+//   const layer =
+//     getState().stateManager.getUploadedLayers()[parseInt(layerIndex)];
 
-  try {
-    showNotification("Preparing export...", "info");
+//   try {
+//     showNotification("Preparing export...", "info");
 
-    // Query all features
-    const query = layer.createQuery();
-    query.where = "1=1";
-    query.outFields = ["*"];
-    query.returnGeometry = true;
+//     // Query all features
+//     const query = layer.createQuery();
+//     query.where = "1=1";
+//     query.outFields = ["*"];
+//     query.returnGeometry = true;
 
-    const result = await layer.queryFeatures(query);
+//     const result = await layer.queryFeatures(query);
 
-    switch (format) {
-      case "csv":
-        exportToCSV(result.features, layer.title);
-        break;
-      case "geojson":
-        exportToGeoJSON(result.features, layer.title);
-        break;
-      case "excel":
-        exportToExcel(result.features, layer.title);
-        break;
-    }
+//     switch (format) {
+//       case "csv":
+//         exportToCSV(result.features, layer.title);
+//         break;
+//       case "geojson":
+//         exportToGeoJSON(result.features, layer.title);
+//         break;
+//       case "excel":
+//         exportToExcel(result.features, layer.title);
+//         break;
+//     }
 
-    closeExportModal();
-  } catch (error) {
-    console.error("Export error:", error);
-    showNotification("Error exporting data", "error");
-  }
-}
+//     closeExportModal();
+//   } catch (error) {
+//     console.error("Export error:", error);
+//     showNotification("Error exporting data", "error");
+//   }
+// }
 
 // Export to CSV
-function exportToCSV(features, filename) {
-  if (features.length === 0) {
-    showNotification("No data to export", "error");
-    return;
-  }
+// function exportToCSV(features, filename) {
+//   if (features.length === 0) {
+//     showNotification("No data to export", "error");
+//     return;
+//   }
 
-  // Get all unique field names
-  const fields = new Set();
-  features.forEach((feature) => {
-    Object.keys(feature.attributes).forEach((key) => {
-      if (!key.startsWith("_")) {
-        fields.add(key);
-      }
-    });
-  });
+//   // Get all unique field names
+//   const fields = new Set();
+//   features.forEach((feature) => {
+//     Object.keys(feature.attributes).forEach((key) => {
+//       if (!key.startsWith("_")) {
+//         fields.add(key);
+//       }
+//     });
+//   });
 
-  const fieldArray = Array.from(fields);
+//   const fieldArray = Array.from(fields);
 
-  // Build CSV content
-  let csv = fieldArray.map((field) => `"${field}"`).join(",") + "\n";
+//   // Build CSV content
+//   let csv = fieldArray.map((field) => `"${field}"`).join(",") + "\n";
 
-  features.forEach((feature) => {
-    const row = fieldArray.map((field) => {
-      const value = feature.attributes[field];
-      if (value === null || value === undefined) return '""';
-      if (
-        typeof value === "string" &&
-        (value.includes(",") || value.includes('"') || value.includes("\n"))
-      ) {
-        return `"${value.replace(/"/g, '""')}"`;
-      }
-      return `"${value}"`;
-    });
-    csv += row.join(",") + "\n";
-  });
+//   features.forEach((feature) => {
+//     const row = fieldArray.map((field) => {
+//       const value = feature.attributes[field];
+//       if (value === null || value === undefined) return '""';
+//       if (
+//         typeof value === "string" &&
+//         (value.includes(",") || value.includes('"') || value.includes("\n"))
+//       ) {
+//         return `"${value.replace(/"/g, '""')}"`;
+//       }
+//       return `"${value}"`;
+//     });
+//     csv += row.join(",") + "\n";
+//   });
 
-  // Download file
-  downloadFile(csv, `${filename}.csv`, "text/csv");
-  showNotification("CSV exported successfully", "success");
-}
+//   // Download file
+//   downloadFile(csv, `${filename}.csv`, "text/csv");
+//   showNotification("CSV exported successfully", "success");
+// }
 
 // Export to GeoJSON
-function exportToGeoJSON(features, filename) {
-  const geojson = {
-    type: "FeatureCollection",
-    features: features.map((feature) => {
-      const geometry = feature.geometry.toJSON();
+// function exportToGeoJSON(features, filename) {
+//   const geojson = {
+//     type: "FeatureCollection",
+//     features: features.map((feature) => {
+//       const geometry = feature.geometry.toJSON();
 
-      // Clean attributes
-      const properties = {};
-      Object.entries(feature.attributes).forEach(([key, value]) => {
-        if (!key.startsWith("_") && value !== null && value !== undefined) {
-          properties[key] = value;
-        }
-      });
+//       // Clean attributes
+//       const properties = {};
+//       Object.entries(feature.attributes).forEach(([key, value]) => {
+//         if (!key.startsWith("_") && value !== null && value !== undefined) {
+//           properties[key] = value;
+//         }
+//       });
 
-      return {
-        type: "Feature",
-        geometry: geometry,
-        properties: properties,
-      };
-    }),
-  };
+//       return {
+//         type: "Feature",
+//         geometry: geometry,
+//         properties: properties,
+//       };
+//     }),
+//   };
 
-  const json = JSON.stringify(geojson, null, 2);
-  downloadFile(json, `${filename}.geojson`, "application/json");
-  showNotification("GeoJSON exported successfully", "success");
-}
+//   const json = JSON.stringify(geojson, null, 2);
+//   downloadFile(json, `${filename}.geojson`, "application/json");
+//   showNotification("GeoJSON exported successfully", "success");
+// }
 
 // Export to Excel (using CSV format that Excel can open)
-function exportToExcel(features, filename) {
-  // For simplicity, we'll create a CSV that Excel can open
-  // For true Excel format, you'd need a library like SheetJS
-  exportToCSV(features, filename + "_excel");
-  showNotification("Data exported for Excel (CSV format)", "success");
-}
+// function exportToExcel(features, filename) {
+//   // For simplicity, we'll create a CSV that Excel can open
+//   // For true Excel format, you'd need a library like SheetJS
+//   exportToCSV(features, filename + "_excel");
+//   showNotification("Data exported for Excel (CSV format)", "success");
+// }
 
 // Download file utility
-function downloadFile(content, filename, mimeType) {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
+// function downloadFile(content, filename, mimeType) {
+//   const blob = new Blob([content], { type: mimeType });
+//   const url = URL.createObjectURL(blob);
+//   const link = document.createElement("a");
+//   link.href = url;
+//   link.download = filename;
+//   document.body.appendChild(link);
+//   link.click();
+//   document.body.removeChild(link);
+//   URL.revokeObjectURL(url);
+// }
 
 // Statistics panel for attribute table
 // function showTableStatistics() {
@@ -8108,15 +8089,15 @@ export {
   toggleWidget,
 
   // Attribute table functions (will be moved to attribute-table.js)
-  toggleAttributeTable,
-  refreshTable,
-  previousPage,
-  nextPage,
-  sortTable,
-  selectTableRow,
-  showExportOptions,
-  closeExportModal,
-  exportData,
+  // toggleAttributeTable,
+  // refreshTable,
+  // previousPage,
+  // nextPage,
+  // sortTable,
+  // selectTableRow,
+  // showExportOptions,
+  // closeExportModal,
+  // exportData,
 
   // Zoom functions (will be moved to toolbar-manager.js or map-event-handler.js)
   zoomIn,
