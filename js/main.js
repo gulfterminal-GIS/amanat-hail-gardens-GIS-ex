@@ -18,6 +18,8 @@ import { MeasurementManager } from "./tools/measurement-manager.js";
 import { VisualizationManager } from "./tools/visualization-manager.js";
 import { PopupManager } from "./features/popup-manager.js";
 import { AttributeTable } from "./features/attribute-table.js";
+import { ClassificationManager } from "./features/classification-manager.js";
+import { TourManager } from "./features/tour-manager.js";
 import { bindWindowFunctions } from "./window-bindings.js";
 import { initializeMap } from "../script.js";
 
@@ -30,17 +32,29 @@ const stateManager = new StateManager();
 // Create NotificationManager instance (FOUNDATION MODULE - used by all)
 const notificationManager = new NotificationManager();
 
-// Create MapInitializer instance
-const mapInitializer = new MapInitializer(stateManager, notificationManager, CONFIG);
+// Create LayerManager instance (needed by MapInitializer)
+const layerManager = new LayerManager(stateManager, notificationManager);
 
 // Create BasemapManager instance (needed by PanelManager)
 const basemapManager = new BasemapManager(stateManager, notificationManager);
 
+// Create DrawingManager instance
+const drawingManager = new DrawingManager(stateManager, notificationManager);
+
 // Create PanelManager instance
 const panelManager = new PanelManager(stateManager, notificationManager, basemapManager);
 
-// Create DrawingManager instance
-const drawingManager = new DrawingManager(stateManager, notificationManager);
+// Create PopupManager instance (needed by TourManager and ClassificationManager)
+const popupManager = new PopupManager(stateManager, notificationManager);
+
+// Create ClassificationManager instance (needed by MapInitializer)
+const classificationManager = new ClassificationManager(stateManager, notificationManager, panelManager, popupManager);
+
+// Create TourManager instance (needed by MapInitializer)
+const tourManager = new TourManager(stateManager, notificationManager, popupManager);
+
+// Create MapInitializer instance
+const mapInitializer = new MapInitializer(stateManager, notificationManager, CONFIG, tourManager, layerManager, classificationManager);
 
 // Create ToolbarManager instance
 const toolbarManager = new ToolbarManager(stateManager, panelManager, notificationManager, drawingManager);
@@ -51,9 +65,6 @@ const tabSystem = new TabSystem(notificationManager);
 // Create SearchManager instance
 const searchManager = new SearchManager(stateManager, notificationManager);
 
-// Create LayerManager instance
-const layerManager = new LayerManager(stateManager, notificationManager);
-
 // Create AnalysisManager instance (depends on DrawingManager)
 const analysisManager = new AnalysisManager(stateManager, notificationManager, layerManager, drawingManager);
 
@@ -62,9 +73,6 @@ const measurementManager = new MeasurementManager(stateManager, notificationMana
 
 // Create VisualizationManager instance
 const visualizationManager = new VisualizationManager(stateManager, notificationManager, layerManager);
-
-// Create PopupManager instance
-const popupManager = new PopupManager(stateManager, notificationManager);
 
 // Create AttributeTable instance
 const attributeTable = new AttributeTable(stateManager, notificationManager, popupManager);
@@ -93,6 +101,8 @@ async function initializeApplication() {
     console.log("VisualizationManager created and ready");
     console.log("PopupManager created and ready");
     console.log("AttributeTable created and ready");
+    console.log("ClassificationManager created and ready");
+    console.log("TourManager created and ready");
 
     // Initialize the map with injected dependencies
     await initializeMap(
@@ -109,7 +119,9 @@ async function initializeApplication() {
       measurementManager,
       visualizationManager,
       popupManager,
-      attributeTable
+      attributeTable,
+      classificationManager,
+      tourManager
     );
 
     // Initialize tab system
@@ -136,6 +148,8 @@ async function initializeApplication() {
       visualizationManager,
       popupManager,
       attributeTable,
+      classificationManager,
+      tourManager,
       // Future managers will be added here as they're created
     });
 

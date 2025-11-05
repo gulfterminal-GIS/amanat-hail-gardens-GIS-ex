@@ -311,7 +311,8 @@
     - Update main.js to import and initialize VisualizationManager
     - _Requirements: 1.2, 1.5, 3.2_
 
-- [ ] 8. Extract feature management modules
+- [-] 8. Extract feature management modules
+
   - [x] 8.1 Create js/features/popup-manager.js for popup functionality
 
     - Extract showCustomPopup, showCustomPopupTour, closeCustomPopup from script.js
@@ -331,7 +332,8 @@
     - Update main.js to import and initialize AttributeTable
     - _Requirements: 1.2, 1.5, 3.2, 3.3_
   
-  - [ ] 8.3 Create js/features/classification-manager.js for data classification
+  - [x] 8.3 Create js/features/classification-manager.js for data classification
+
     - Extract initializeClassificationPanel, analyzeFieldForClassification
     - Extract applyClassification, resetClassification, showClassificationStatistics
     - Extract generateClassificationColors, autoApplyDefaultClassification
@@ -340,9 +342,10 @@
     - Update main.js to import and initialize ClassificationManager
     - _Requirements: 1.2, 1.5, 3.2, 3.3_
   
-  - [ ] 8.4 Create js/features/tour-manager.js for feature tour system
+  - [x] 8.4 Create js/features/tour-manager.js for feature tour system
+
     - Extract setupFeatureTour, createTourControls, startFeatureTour, stopFeatureTour
-    - Extract goToFeature, nextFeature, previousFeature, updateTourInfo
+    - Extract goToFeature, nextFeature, previousFeature, updateTourInfo, startApptour
     - Extract toggleFeatureTour, closeTourControls, manuallyStartTour
     - Create TourManager class with complete tour functionality
     - Comment out original tour code in script.js

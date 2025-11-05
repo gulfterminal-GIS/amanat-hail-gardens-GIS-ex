@@ -88,7 +88,8 @@ async function initializeMap(
   measurementManager = null,
   visualizationManager = null,
   popupManager = null,
-  attributeTable = null
+  attributeTable = null,
+  tourManager = null
 ) {
   try {
     // Store instances at module level for use by other functions
@@ -107,6 +108,7 @@ async function initializeMap(
       visualizationManager,
       popupManager,
       attributeTable,
+      tourManager,
     };
 
     // Initialize state
@@ -149,181 +151,186 @@ async function initializeMap(
 //   }
 // }
 
-async function autoApplyDefaultClassification(layer, fieldName) {
-  try {
-    const { stateManager } = getState();
+// ============================================================================
+// COMMENTED OUT - autoApplyDefaultClassification moved to js/features/classification-manager.js
+// ============================================================================
+// async function autoApplyDefaultClassification(layer, fieldName) {
+//   try {
+//     const { stateManager } = getState();
+//
+//     const stats = await analyzeFieldForClassification(layer, fieldName);
+//     if (!stats || stats.uniqueCount === 0) {
+//       console.warn(`No valid values found in ${fieldName}`);
+//       return;
+//     }
+//
+//     // Store current layer in state
+//     stateManager.setCurrentClassificationLayer(layer);
+//
+//     const colors = generateClassificationColors(stats.sortedValues.length);
+//     const geometryType = layer.geometryType;
+//
+//     const uniqueValueInfos = stats.sortedValues.map(([value, count], index) => {
+//       const color = colors[index];
+//       let symbol;
+//       switch (geometryType) {
+//         case "point":
+//           symbol = {
+//             type: "simple-marker",
+//             color,
+//             size: 10,
+//             outline: { color: [255, 255, 255], width: 1 },
+//           };
+//           break;
+//         case "polyline":
+//           symbol = { type: "simple-line", color, width: 2 };
+//           break;
+//         case "polygon":
+//           symbol = {
+//             type: "simple-fill",
+//             color: [...color, 0.7],
+//             outline: { color, width: 1 },
+//           };
+//           break;
+//       }
+//       return { value, symbol, label: `${value} (${count})` };
+//     });
+//
+//     // Default symbol
+//     const defaultSymbol = createDefaultClassificationSymbol(geometryType);
+//
+//     // Apply renderer
+//     layer.renderer = {
+//       type: "unique-value",
+//       field: fieldName,
+//       uniqueValueInfos,
+//       defaultSymbol,
+//       defaultLabel: "Other",
+//     };
+//
+//     // Show legend
+//     createClassificationLegend(stats, colors, fieldName);
+//
+//     console.log(`Classification applied on ${fieldName}`);
+//   } catch (err) {
+//     console.error("Error auto-applying classification:", err);
+//   }
+// }
 
-    const stats = await analyzeFieldForClassification(layer, fieldName);
-    if (!stats || stats.uniqueCount === 0) {
-      console.warn(`No valid values found in ${fieldName}`);
-      return;
-    }
-
-    // Store current layer in state
-    stateManager.setCurrentClassificationLayer(layer);
-
-    const colors = generateClassificationColors(stats.sortedValues.length);
-    const geometryType = layer.geometryType;
-
-    const uniqueValueInfos = stats.sortedValues.map(([value, count], index) => {
-      const color = colors[index];
-      let symbol;
-      switch (geometryType) {
-        case "point":
-          symbol = {
-            type: "simple-marker",
-            color,
-            size: 10,
-            outline: { color: [255, 255, 255], width: 1 },
-          };
-          break;
-        case "polyline":
-          symbol = { type: "simple-line", color, width: 2 };
-          break;
-        case "polygon":
-          symbol = {
-            type: "simple-fill",
-            color: [...color, 0.7],
-            outline: { color, width: 1 },
-          };
-          break;
-      }
-      return { value, symbol, label: `${value} (${count})` };
-    });
-
-    // Default symbol
-    const defaultSymbol = createDefaultClassificationSymbol(geometryType);
-
-    // Apply renderer
-    layer.renderer = {
-      type: "unique-value",
-      field: fieldName,
-      uniqueValueInfos,
-      defaultSymbol,
-      defaultLabel: "Other",
-    };
-
-    // Show legend
-    createClassificationLegend(stats, colors, fieldName);
-
-    console.log(`Classification applied on ${fieldName}`);
-  } catch (err) {
-    console.error("Error auto-applying classification:", err);
-  }
-}
-
+// EXTRACTED TO: js/features/tour-manager.js
 // Setup feature tour
-async function setupFeatureTour(layer) {
-  try {
-    // Validate layer
-    if (!layer) {
-      console.warn("setupFeatureTour: no layer provided");
-      return;
-    }
+// async function setupFeatureTour(layer) {
+//   try {
+//     // Validate layer
+//     if (!layer) {
+//       console.warn("setupFeatureTour: no layer provided");
+//       return;
+//     }
 
-    const { stateManager } = getState();
+//     const { stateManager } = getState();
 
-    // Query all features
-    const query = layer.createQuery();
-    query.where = "1=1";
-    query.returnGeometry = true;
-    query.outFields = ["*"];
+//     // Query all features
+//     const query = layer.createQuery();
+//     query.where = "1=1";
+//     query.returnGeometry = true;
+//     query.outFields = ["*"];
 
-    const featureSet = await layer.queryFeatures(query);
-    stateManager.setTourFeatures(featureSet.features);
+//     const featureSet = await layer.queryFeatures(query);
+//     stateManager.setTourFeatures(featureSet.features);
 
-    console.log(
-      `Feature tour setup with ${
-        stateManager.getTourFeatures().length
-      } features`
-    );
+//     console.log(
+//       `Feature tour setup with ${
+//         stateManager.getTourFeatures().length
+//       } features`
+//     );
 
-    // Create tour controls
-    createTourControls();
+//     // Create tour controls
+//     createTourControls();
 
-    // Auto-start tour after 2 seconds
-    setTimeout(() => {
-      startFeatureTour();
-    }, 2000);
-  } catch (error) {
-    console.error("Error setting up feature tour:", error);
-  }
-}
+//     // Auto-start tour after 2 seconds
+//     setTimeout(() => {
+//       startFeatureTour();
+//     }, 2000);
+//   } catch (error) {
+//     console.error("Error setting up feature tour:", error);
+//   }
+// }
 
+// EXTRACTED TO: js/features/tour-manager.js
 // Create tour control panel
-function createTourControls() {
-  const { stateManager } = getState();
+// function createTourControls() {
+//   const { stateManager } = getState();
 
-  const controlsDiv = document.createElement("div");
-  controlsDiv.className = "feature-tour-controls";
+//   const controlsDiv = document.createElement("div");
+//   controlsDiv.className = "feature-tour-controls";
 
-  // Create tour controls DOM
-  controlsDiv.innerHTML = `
-    <header class="tour-header">
-        <div class="chevron">
-            <i class="bi bi-chevron-down"></i>
-            </div>
-        <div class="map-actions">
-            <img class="backward-control" src="images/fluent_next-24-regular-back.svg" alt="" onclick="previousFeature()">
-            <div class="auto-control pause" onclick="toggleFeatureTour()"></div>
-            <img class="forward-control" src="images/fluent_next-24-regular.svg" alt="" onclick="nextFeature()">
-        </div>
-        <small class="feature-count" id="tourProgress">0 / 0</small>
-    </header>
+//   // Create tour controls DOM
+//   controlsDiv.innerHTML = `
+//     <header class="tour-header">
+//         <div class="chevron">
+//             <i class="bi bi-chevron-down"></i>
+//             </div>
+//         <div class="map-actions">
+//             <img class="backward-control" src="images/fluent_next-24-regular-back.svg" alt="" onclick="previousFeature()">
+//             <div class="auto-control pause" onclick="toggleFeatureTour()"></div>
+//             <img class="forward-control" src="images/fluent_next-24-regular.svg" alt="" onclick="nextFeature()">
+//         </div>
+//         <small class="feature-count" id="tourProgress">0 / 0</small>
+//     </header>
 
-    <section class="overview" id="tourOverview"></section>
+//     <section class="overview" id="tourOverview"></section>
 
-    <section class="feature-details"></section>
-  `;
+//     <section class="feature-details"></section>
+//   `;
 
-  // Append to body
-  document.body.appendChild(controlsDiv);
+//   // Append to body
+//   document.body.appendChild(controlsDiv);
 
-  // Set references
-  const chevronBtn = controlsDiv.querySelector(
-    ".feature-tour-controls .chevron"
-  );
-  const chevronIcon = controlsDiv.querySelector(
-    ".feature-tour-controls .chevron i"
-  );
-  const autoControl = controlsDiv.querySelector(
-    ".feature-tour-controls .auto-control"
-  );
-  const featureDetails = controlsDiv.querySelector(
-    ".feature-tour-controls .feature-details"
-  );
+//   // Set references
+//   const chevronBtn = controlsDiv.querySelector(
+//     ".feature-tour-controls .chevron"
+//   );
+//   const chevronIcon = controlsDiv.querySelector(
+//     ".feature-tour-controls .chevron i"
+//   );
+//   const autoControl = controlsDiv.querySelector(
+//     ".feature-tour-controls .auto-control"
+//   );
+//   const featureDetails = controlsDiv.querySelector(
+//     ".feature-tour-controls .feature-details"
+//   );
 
-  // Setup chevron handler
-  if (chevronBtn) {
-    chevronBtn.addEventListener("click", () => {
-      const currentlyVisible =
-        getComputedStyle(featureDetails).display !== "none";
-      const newVisible = !currentlyVisible;
+//   // Setup chevron handler
+//   if (chevronBtn) {
+//     chevronBtn.addEventListener("click", () => {
+//       const currentlyVisible =
+//         getComputedStyle(featureDetails).display !== "none";
+//       const newVisible = !currentlyVisible;
 
-      featureDetails.style.display = newVisible ? "flex" : "none";
+//       featureDetails.style.display = newVisible ? "flex" : "none";
 
-      if (chevronIcon) {
-        chevronIcon.classList.toggle("bi-chevron-up", newVisible);
-        chevronIcon.classList.toggle("bi-chevron-down", !newVisible);
-      }
-    });
-  }
+//       if (chevronIcon) {
+//         chevronIcon.classList.toggle("bi-chevron-up", newVisible);
+//         chevronIcon.classList.toggle("bi-chevron-down", !newVisible);
+//       }
+//     });
+//   }
 
-  // if (autoControl) {
-  //   // Set initial states
-  //   // autoControl.classList.remove("play");
-  //   // autoControl.classList.add("pause");
+//   // if (autoControl) {
+//   //   // Set initial states
+//   //   // autoControl.classList.remove("play");
+//   //   // autoControl.classList.add("pause");
 
-  //   autoControl.addEventListener("click", () => {
-  //     // treat "pause" class as playing, "play" as paused
-  //     const isPlaying = autoControl.classList.contains("pause");
-  //     // setDetailsVisible(!isPlaying);
-  //     // toggle classes just in case
-  //     autoControl.classList.toggle("pause", !isPlaying);
-  //     autoControl.classList.toggle("play", isPlaying);
-  //   });
-  // }
-}
+//   //   autoControl.addEventListener("click", () => {
+//   //     // treat "pause" class as playing, "play" as paused
+//   //     const isPlaying = autoControl.classList.contains("pause");
+//   //     // setDetailsVisible(!isPlaying);
+//   //     // toggle classes just in case
+//   //     autoControl.classList.toggle("pause", !isPlaying);
+//   //     autoControl.classList.toggle("play", isPlaying);
+//   //   });
+//   // }
+// }
 
 // function setDetailsVisible(visible) {
 //     // Get references safely
@@ -354,152 +361,152 @@ function createTourControls() {
 // }
 
 // Start feature tour
-function startFeatureTour() {
-  const { stateManager, notificationManager } = getState();
-  const tourFeatures = stateManager.getTourFeatures();
+// function startFeatureTour() {
+//   const { stateManager, notificationManager } = getState();
+//   const tourFeatures = stateManager.getTourFeatures();
 
-  if (!tourFeatures || tourFeatures.length === 0) {
-    notificationManager.showWarning("No features to tour");
-    return;
-  }
+//   if (!tourFeatures || tourFeatures.length === 0) {
+//     notificationManager.showWarning("No features to tour");
+//     return;
+//   }
 
-  stateManager.setFeatureTourActive(true);
-  stateManager.setCurrentFeatureIndex(0);
+//   stateManager.setFeatureTourActive(true);
+//   stateManager.setCurrentFeatureIndex(0);
 
-  // Show controls
-  document.querySelector(".feature-tour-controls").classList.add("active");
+//   // Show controls
+//   document.querySelector(".feature-tour-controls").classList.add("active");
 
-  // Update play button
-  const autoControl = document.querySelector(
-    ".feature-tour-controls .auto-control"
-  );
-  if (autoControl) {
-    autoControl.classList.remove("pause");
-    autoControl.classList.add("play");
-  }
+//   // Update play button
+//   const autoControl = document.querySelector(
+//     ".feature-tour-controls .auto-control"
+//   );
+//   if (autoControl) {
+//     autoControl.classList.remove("pause");
+//     autoControl.classList.add("play");
+//   }
 
-  // Start touring
-  goToFeature(stateManager.getCurrentFeatureIndex());
+//   // Start touring
+//   goToFeature(stateManager.getCurrentFeatureIndex());
 
-  // Auto advance every 3 seconds
-  stateManager.setFeatureTourInterval(
-    setInterval(() => {
-      nextFeature(false); // auto-play
-    }, 7000)
-  );
-}
+//   // Auto advance every 3 seconds
+//   stateManager.setFeatureTourInterval(
+//     setInterval(() => {
+//       nextFeature(false); // auto-play
+//     }, 7000)
+//   );
+// }
 
 // Stop feature tour
-function stopFeatureTour() {
-  const { stateManager } = getState();
+// function stopFeatureTour() {
+//   const { stateManager } = getState();
 
-  stateManager.setFeatureTourActive(false);
+//   stateManager.setFeatureTourActive(false);
 
-  const interval = stateManager.getFeatureTourInterval();
-  if (interval) {
-    clearInterval(interval);
-    stateManager.setFeatureTourInterval(null);
-  }
+//   const interval = stateManager.getFeatureTourInterval();
+//   if (interval) {
+//     clearInterval(interval);
+//     stateManager.setFeatureTourInterval(null);
+//   }
 
-  // Update play button
-  const autoControl = document.querySelector(
-    ".feature-tour-controls .auto-control"
-  );
-  if (autoControl) {
-    autoControl.classList.add("pause");
-    autoControl.classList.remove("play");
-  }
-}
+//   // Update play button
+//   const autoControl = document.querySelector(
+//     ".feature-tour-controls .auto-control"
+//   );
+//   if (autoControl) {
+//     autoControl.classList.add("pause");
+//     autoControl.classList.remove("play");
+//   }
+// }
 
 // Toggle tour play/pause
-function toggleFeatureTour() {
-  const { stateManager } = getState();
-  if (stateManager.isFeatureTourActive()) {
-    stopFeatureTour();
-  } else {
-    startFeatureTour();
-  }
-}
+// function toggleFeatureTour() {
+//   const { stateManager } = getState();
+//   if (stateManager.isFeatureTourActive()) {
+//     stopFeatureTour();
+//   } else {
+//     startFeatureTour();
+//   }
+// }
 
 // Navigate to specific feature
-async function goToFeature(index) {
-  try {
-    const { stateManager, popupManager } = getState();
-    const view = stateManager.getView();
+// async function goToFeature(index) {
+//   try {
+//     const { stateManager, popupManager } = getState();
+//     const view = stateManager.getView();
 
-    if (!view) {
-      console.error("View not available for goToFeature");
-      return;
-    }
+//     if (!view) {
+//       console.error("View not available for goToFeature");
+//       return;
+//     }
 
-    const tourFeatures = stateManager.getTourFeatures();
-    if (!tourFeatures || index < 0 || index >= tourFeatures.length) return;
+//     const tourFeatures = stateManager.getTourFeatures();
+//     if (!tourFeatures || index < 0 || index >= tourFeatures.length) return;
 
-    const feature = tourFeatures[index];
-    stateManager.setCurrentFeatureIndex(index);
+//     const feature = tourFeatures[index];
+//     stateManager.setCurrentFeatureIndex(index);
 
-    // For polygons, calculate center and use appropriate zoom
-    if (feature.geometry.type === "polygon") {
-      const extent = feature.geometry.extent;
+//     // For polygons, calculate center and use appropriate zoom
+//     if (feature.geometry.type === "polygon") {
+//       const extent = feature.geometry.extent;
 
-      await view.goTo(
-        {
-          target: feature.geometry,
-          // zoom: view.zoom // Keep current zoom level or adjust as needed
-          zoom: 17, // Keep current zoom level or adjust as needed
-        },
-        {
-          duration: 3000,
-          easing: "ease-in-out",
-        }
-      );
-    } else {
-      // For other geometry types
-      await view.goTo(
-        {
-          target: feature.geometry,
-          zoom: 16,
-          tilt: 45,
-        },
-        {
-          duration: 3000,
-          easing: "ease-in-out",
-        }
-      );
-    }
+//       await view.goTo(
+//         {
+//           target: feature.geometry,
+//           // zoom: view.zoom // Keep current zoom level or adjust as needed
+//           zoom: 17, // Keep current zoom level or adjust as needed
+//         },
+//         {
+//           duration: 3000,
+//           easing: "ease-in-out",
+//         }
+//       );
+//     } else {
+//       // For other geometry types
+//       await view.goTo(
+//         {
+//           target: feature.geometry,
+//           zoom: 16,
+//           tilt: 45,
+//         },
+//         {
+//           duration: 3000,
+//           easing: "ease-in-out",
+//         }
+//       );
+//     }
 
-    // Highlight the feature
-    const highlightHandle = stateManager.getHighlightHandle();
-    if (highlightHandle) {
-      highlightHandle.remove();
-      stateManager.setHighlightHandle(null);
-    }
+//     // Highlight the feature
+//     const highlightHandle = stateManager.getHighlightHandle();
+//     if (highlightHandle) {
+//       highlightHandle.remove();
+//       stateManager.setHighlightHandle(null);
+//     }
 
-    // Add highlight with proper error handling
-    const tourLayer = stateManager.getTourLayer();
-    if (tourLayer) {
-      try {
-        const layerView = await view.whenLayerView(stateManager.getTourLayer());
-        stateManager.setHighlightHandle(layerView.highlight(feature));
-      } catch (error) {
-        console.warn("Error creating highlight:", error);
-      }
-    }
+//     // Add highlight with proper error handling
+//     const tourLayer = stateManager.getTourLayer();
+//     if (tourLayer) {
+//       try {
+//         const layerView = await view.whenLayerView(stateManager.getTourLayer());
+//         stateManager.setHighlightHandle(layerView.highlight(feature));
+//       } catch (error) {
+//         console.warn("Error creating highlight:", error);
+//       }
+//     }
 
-    // Update info panel
-    updateTourInfo(feature);
+//     // Update info panel
+//     updateTourInfo(feature);
 
-    // Update progress
-    document.getElementById("tourProgress").textContent = `${index + 1} / ${
-      (stateManager.getTourFeatures() || []).length
-    }`;
+//     // Update progress
+//     document.getElementById("tourProgress").textContent = `${index + 1} / ${
+//       (stateManager.getTourFeatures() || []).length
+//     }`;
 
-    // Show popup in left-center position
-    popupManager.showCustomPopupTour(feature);
-  } catch (error) {
-    console.error("Error navigating to feature:", error);
-  }
-}
+//     // Show popup in left-center position
+//     popupManager.showCustomPopupTour(feature);
+//   } catch (error) {
+//     console.error("Error navigating to feature:", error);
+//   }
+// }
 
 // function showCustomPopupTour(graphic) {
 //   const { stateManager } = getState();
@@ -595,104 +602,104 @@ async function goToFeature(index) {
 // }
 
 // Close tour popup
-function closeTourPopup() {
-  const tourPopup = document.getElementById("tourPopup");
-  if (tourPopup) {
-    tourPopup.classList.remove("active");
-  }
-}
+// function closeTourPopup() {
+//   const tourPopup = document.getElementById("tourPopup");
+//   if (tourPopup) {
+//     tourPopup.classList.remove("active");
+//   }
+// }
 
 // Update tour info panel
-function updateTourInfo(feature) {
-  const { stateManager } = getState();
-  const tourOverview = document.getElementById("tourOverview");
-  const attrs = feature.attributes;
+// function updateTourInfo(feature) {
+//   const { stateManager } = getState();
+//   const tourOverview = document.getElementById("tourOverview");
+//   const attrs = feature.attributes;
 
-  // Try to find name field
-  const nameFields = ["اسم الحديقة", "name", "Name", "NAME", "الاسم"];
-  let featureName = null;
+//   // Try to find name field
+//   const nameFields = ["اسم الحديقة", "name", "Name", "NAME", "الاسم"];
+//   let featureName = null;
 
-  for (const field of nameFields) {
-    if (attrs[field] && attrs[field] !== "NULL") {
-      featureName = attrs[field];
-      break;
-    }
-  }
+//   for (const field of nameFields) {
+//     if (attrs[field] && attrs[field] !== "NULL") {
+//       featureName = attrs[field];
+//       break;
+//     }
+//   }
 
-  // If no name found, use a default
-  if (!featureName) {
-    featureName = `حديقه ${(stateManager.getCurrentFeatureIndex() || 0) + 1}`;
-  }
+//   // If no name found, use a default
+//   if (!featureName) {
+//     featureName = `حديقه ${(stateManager.getCurrentFeatureIndex() || 0) + 1}`;
+//   }
 
-  // Only show if is a truthy value
-  const areaValue = attrs.GARDENAREA || attrs.gardenarea || "";
-  const areaHtml = areaValue ? `<p class="area">${areaValue} متر مربع</p>` : "";
+//   // Only show if is a truthy value
+//   const areaValue = attrs.GARDENAREA || attrs.gardenarea || "";
+//   const areaHtml = areaValue ? `<p class="area">${areaValue} متر مربع</p>` : "";
 
-  const statusValue = attrs.GARDENSTATUS || attrs.gardenstatus || "";
-  const statusHtml = statusValue
-    ? `<div class="status">${statusValue}</div>`
-    : "";
+//   const statusValue = attrs.GARDENSTATUS || attrs.gardenstatus || "";
+//   const statusHtml = statusValue
+//     ? `<div class="status">${statusValue}</div>`
+//     : "";
 
-  tourOverview.innerHTML = `
-      <div>
-          <p class="name">${featureName}</p>
-          ${areaHtml}
-      </div>
-      ${statusHtml}
-  `;
-}
+//   tourOverview.innerHTML = `
+//       <div>
+//           <p class="name">${featureName}</p>
+//           ${areaHtml}
+//       </div>
+//       ${statusHtml}
+//   `;
+// }
 
 // Navigation functions
-function nextFeature(manual = true) {
-  const { stateManager } = getState();
+// function nextFeature(manual = true) {
+//   const { stateManager } = getState();
 
-  if (manual) {
-    stopFeatureTour(); // only stop when user explicitly clicks
-  }
+//   if (manual) {
+//     stopFeatureTour(); // only stop when user explicitly clicks
+//   }
 
-  const currentIndex = stateManager.getCurrentFeatureIndex();
-  const tourFeatures = stateManager.getTourFeatures();
-  const nextIndex = (currentIndex + 1) % tourFeatures.length;
-  goToFeature(nextIndex);
-}
+//   const currentIndex = stateManager.getCurrentFeatureIndex();
+//   const tourFeatures = stateManager.getTourFeatures();
+//   const nextIndex = (currentIndex + 1) % tourFeatures.length;
+//   goToFeature(nextIndex);
+// }
 
-function previousFeature(manual = true) {
-  const { stateManager } = getState();
+// function previousFeature(manual = true) {
+//   const { stateManager } = getState();
 
-  if (manual) {
-    stopFeatureTour();
-  }
+//   if (manual) {
+//     stopFeatureTour();
+//   }
 
-  const currentIndex = stateManager.getCurrentFeatureIndex();
-  const tourFeatures = stateManager.getTourFeatures();
-  const prevIndex =
-    currentIndex === 0 ? tourFeatures.length - 1 : currentIndex - 1;
-  goToFeature(prevIndex);
-}
+//   const currentIndex = stateManager.getCurrentFeatureIndex();
+//   const tourFeatures = stateManager.getTourFeatures();
+//   const prevIndex =
+//     currentIndex === 0 ? tourFeatures.length - 1 : currentIndex - 1;
+//   goToFeature(prevIndex);
+// }
 
 // Close tour controls
 // Close tour controls
-function closeTourControls() {
-  stopFeatureTour();
-  document.querySelector(".feature-tour-controls").classList.remove("active");
-  closeTourPopup(); // Add this line
-}
+// function closeTourControls() {
+//   stopFeatureTour();
+//   document.querySelector(".feature-tour-controls").classList.remove("active");
+//   closeTourPopup(); // Add this line
+// }
 
-function manuallyStartTour() {
-  const { stateManager, notificationManager } = getState();
-  const tourFeatures = stateManager.getTourFeatures();
+// function manuallyStartTour() {
+//   const { stateManager, notificationManager } = getState();
+//   const tourFeatures = stateManager.getTourFeatures();
 
-  if (!tourFeatures || tourFeatures.length === 0) {
-    notificationManager.showWarning("No features available for tour");
-    return;
-  }
+//   if (!tourFeatures || tourFeatures.length === 0) {
+//     notificationManager.showWarning("No features available for tour");
+//     return;
+//   }
 
-  document.querySelector(".feature-tour-controls").classList.add("active");
+//   document.querySelector(".feature-tour-controls").classList.add("active");
 
-  if (!stateManager.isFeatureTourActive()) {
-    startFeatureTour();
-  }
-}
+//   if (!stateManager.isFeatureTourActive()) {
+//     startFeatureTour();
+//   }
+// }
 
 // Initialize UI components
 function initializeUI(injectedStateManager) {
@@ -5406,452 +5413,452 @@ window.currentHeatmapSettings = {
 // window.applyHeatmapSettings = applyHeatmapSettings;
 
 // Classification System
-function initializeClassificationPanel() {
-  const layerSelect = document.getElementById("classifyLayerSelect");
-  const fieldSelect = document.getElementById("classifyFieldSelect");
-  const fieldSection = document.getElementById("classifyFieldSection");
-  const actionsSection = document.querySelector(".classification-actions");
-  const { popupManager } = getState();
+// function initializeClassificationPanel() {
+//   const layerSelect = document.getElementById("classifyLayerSelect");
+//   const fieldSelect = document.getElementById("classifyFieldSelect");
+//   const fieldSection = document.getElementById("classifyFieldSection");
+//   const actionsSection = document.querySelector(".classification-actions");
+//   const { popupManager } = getState();
 
-  // Populate layers
-  layerSelect.innerHTML = '<option value="">Choose a layer...</option>';
-  getState()
-    .stateManager.getUploadedLayers()
-    .forEach((layer, index) => {
-      const option = document.createElement("option");
-      option.value = index;
-      option.textContent = layer.title;
-      layerSelect.appendChild(option);
-    });
+//   // Populate layers
+//   layerSelect.innerHTML = '<option value="">Choose a layer...</option>';
+//   getState()
+//     .stateManager.getUploadedLayers()
+//     .forEach((layer, index) => {
+//       const option = document.createElement("option");
+//       option.value = index;
+//       option.textContent = layer.title;
+//       layerSelect.appendChild(option);
+//     });
 
-  // Layer change handler
-  layerSelect.addEventListener("change", async (e) => {
-    const layerIndex = e.target.value;
-    if (layerIndex === "") {
-      fieldSection.style.display = "none";
-      actionsSection.style.display = "none";
-      document.getElementById("fieldStatistics").style.display = "none";
-      return;
-    }
+//   // Layer change handler
+//   layerSelect.addEventListener("change", async (e) => {
+//     const layerIndex = e.target.value;
+//     if (layerIndex === "") {
+//       fieldSection.style.display = "none";
+//       actionsSection.style.display = "none";
+//       document.getElementById("fieldStatistics").style.display = "none";
+//       return;
+//     }
 
-    const layer =
-      getState().stateManager.getUploadedLayers()[parseInt(layerIndex)];
-    getState().stateManager.setCurrentClassificationLayer(layer);
+//     const layer =
+//       getState().stateManager.getUploadedLayers()[parseInt(layerIndex)];
+//     getState().stateManager.setCurrentClassificationLayer(layer);
 
-    // Populate fields
-    fieldSelect.innerHTML = '<option value="">Choose a field...</option>';
-    if (layer.fields) {
-      layer.fields.forEach((field) => {
-        if (
-          field.type === "double" ||
-          field.type === "integer" ||
-          field.type === "single" ||
-          field.type === "small-integer" ||
-          field.type === "string" ||
-          field.type === "oid"
-        ) {
-          const option = document.createElement("option");
-          option.value = field.name;
-          option.textContent = popupManager.formatFieldName(field.name);
-          fieldSelect.appendChild(option);
-        }
-      });
-    }
+//     // Populate fields
+//     fieldSelect.innerHTML = '<option value="">Choose a field...</option>';
+//     if (layer.fields) {
+//       layer.fields.forEach((field) => {
+//         if (
+//           field.type === "double" ||
+//           field.type === "integer" ||
+//           field.type === "single" ||
+//           field.type === "small-integer" ||
+//           field.type === "string" ||
+//           field.type === "oid"
+//         ) {
+//           const option = document.createElement("option");
+//           option.value = field.name;
+//           option.textContent = popupManager.formatFieldName(field.name);
+//           fieldSelect.appendChild(option);
+//         }
+//       });
+//     }
 
-    fieldSection.style.display = "block";
-  });
+//     fieldSection.style.display = "block";
+//   });
 
-  // Field change handler
-  fieldSelect.addEventListener("change", async (e) => {
-    const fieldName = e.target.value;
-    if (fieldName && getState().stateManager.getCurrentClassificationLayer()) {
-      const stats = await analyzeFieldForClassification(
-        getState().stateManager.getCurrentClassificationLayer(),
-        fieldName
-      );
-      showClassificationStatistics(stats);
-      actionsSection.style.display = stats ? "flex" : "none";
-    } else {
-      document.getElementById("fieldStatistics").style.display = "none";
-      actionsSection.style.display = "none";
-    }
-  });
-}
+//   // Field change handler
+//   fieldSelect.addEventListener("change", async (e) => {
+//     const fieldName = e.target.value;
+//     if (fieldName && getState().stateManager.getCurrentClassificationLayer()) {
+//       const stats = await analyzeFieldForClassification(
+//         getState().stateManager.getCurrentClassificationLayer(),
+//         fieldName
+//       );
+//       showClassificationStatistics(stats);
+//       actionsSection.style.display = stats ? "flex" : "none";
+//     } else {
+//       document.getElementById("fieldStatistics").style.display = "none";
+//       actionsSection.style.display = "none";
+//     }
+//   });
+// }
 
 // Analyze field values for classification
-async function analyzeFieldForClassification(layer, fieldName) {
-  try {
-    const query = layer.createQuery();
-    query.outFields = [fieldName];
-    query.where = "1=1";
-    query.returnGeometry = false;
+// async function analyzeFieldForClassification(layer, fieldName) {
+//   try {
+//     const query = layer.createQuery();
+//     query.outFields = [fieldName];
+//     query.where = "1=1";
+//     query.returnGeometry = false;
 
-    const results = await layer.queryFeatures(query);
+//     const results = await layer.queryFeatures(query);
 
-    if (results.features.length === 0) {
-      return null;
-    }
+//     if (results.features.length === 0) {
+//       return null;
+//     }
 
-    const values = results.features.map(
-      (feature) => feature.attributes[fieldName]
-    );
-    const validValues = values.filter(
-      (value) => value !== null && value !== undefined && value !== ""
-    );
+//     const values = results.features.map(
+//       (feature) => feature.attributes[fieldName]
+//     );
+//     const validValues = values.filter(
+//       (value) => value !== null && value !== undefined && value !== ""
+//     );
 
-    // Count occurrences
-    const valueCount = {};
-    validValues.forEach((value) => {
-      const key = String(value);
-      valueCount[key] = (valueCount[key] || 0) + 1;
-    });
+//     // Count occurrences
+//     const valueCount = {};
+//     validValues.forEach((value) => {
+//       const key = String(value);
+//       valueCount[key] = (valueCount[key] || 0) + 1;
+//     });
 
-    // Sort by count
-    const sortedValues = Object.entries(valueCount)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 20); // Limit to top 20
+//     // Sort by count
+//     const sortedValues = Object.entries(valueCount)
+//       .sort((a, b) => b[1] - a[1])
+//       .slice(0, 20); // Limit to top 20
 
-    return {
-      totalFeatures: results.features.length,
-      validCount: validValues.length,
-      uniqueCount: Object.keys(valueCount).length,
-      sortedValues: sortedValues,
-      fieldName: fieldName,
-    };
-  } catch (error) {
-    console.error("Error analyzing field:", error);
-    showNotification("Error analyzing field values", "error");
-    return null;
-  }
-}
+//     return {
+//       totalFeatures: results.features.length,
+//       validCount: validValues.length,
+//       uniqueCount: Object.keys(valueCount).length,
+//       sortedValues: sortedValues,
+//       fieldName: fieldName,
+//     };
+//   } catch (error) {
+//     console.error("Error analyzing field:", error);
+//     showNotification("Error analyzing field values", "error");
+//     return null;
+//   }
+// }
 
 // Show classification statistics
-function showClassificationStatistics(stats) {
-  const statsDiv = document.getElementById("fieldStatistics");
-  const statsContent = statsDiv.querySelector(".stats-content");
+// function showClassificationStatistics(stats) {
+//   const statsDiv = document.getElementById("fieldStatistics");
+//   const statsContent = statsDiv.querySelector(".stats-content");
 
-  if (!stats) {
-    statsDiv.style.display = "none";
-    return;
-  }
+//   if (!stats) {
+//     statsDiv.style.display = "none";
+//     return;
+//   }
 
-  let html = `
-    <div class="stats-summary">
-      <div><strong>Total Features:</strong> ${stats.totalFeatures}</div>
-      <div><strong>Valid Values:</strong> ${stats.validCount}</div>
-      <div><strong>Unique Values:</strong> ${stats.uniqueCount}</div>
-    </div>
-  `;
+//   let html = `
+//     <div class="stats-summary">
+//       <div><strong>Total Features:</strong> ${stats.totalFeatures}</div>
+//       <div><strong>Valid Values:</strong> ${stats.validCount}</div>
+//       <div><strong>Unique Values:</strong> ${stats.uniqueCount}</div>
+//     </div>
+//   `;
 
-  if (stats.uniqueCount <= 20) {
-    html += "<div><strong>Top Values:</strong></div>";
-    html += '<div class="stats-values">';
+//   if (stats.uniqueCount <= 20) {
+//     html += "<div><strong>Top Values:</strong></div>";
+//     html += '<div class="stats-values">';
 
-    stats.sortedValues.forEach(([value, count]) => {
-      const percentage = ((count / stats.validCount) * 100).toFixed(1);
-      html += `
-        <div class="stat-value-item">
-          <span class="stat-value-name">${value}</span>
-          <span class="stat-value-count">${count} (${percentage}%)</span>
-        </div>
-      `;
-    });
+//     stats.sortedValues.forEach(([value, count]) => {
+//       const percentage = ((count / stats.validCount) * 100).toFixed(1);
+//       html += `
+//         <div class="stat-value-item">
+//           <span class="stat-value-name">${value}</span>
+//           <span class="stat-value-count">${count} (${percentage}%)</span>
+//         </div>
+//       `;
+//     });
 
-    html += "</div>";
-  } else {
-    html += `
-      <div style="color: var(--warning-color); margin-top: var(--spacing-sm);">
-        <i class="fas fa-exclamation-triangle"></i> 
-        Too many unique values (${stats.uniqueCount}). Showing top 20 values only.
-      </div>
-    `;
-  }
+//     html += "</div>";
+//   } else {
+//     html += `
+//       <div style="color: var(--warning-color); margin-top: var(--spacing-sm);">
+//         <i class="fas fa-exclamation-triangle"></i> 
+//         Too many unique values (${stats.uniqueCount}). Showing top 20 values only.
+//       </div>
+//     `;
+//   }
 
-  statsContent.innerHTML = html;
-  statsDiv.style.display = "block";
-}
+//   statsContent.innerHTML = html;
+//   statsDiv.style.display = "block";
+// }
 
 // Generate colors for classification
-function generateClassificationColors(count) {
-  const colorSchemes = [
-    // Blue to Red
-    [
-      [56, 149, 211],
-      [65, 171, 93],
-      [255, 204, 0],
-      [255, 127, 0],
-      [215, 25, 28],
-    ],
-    // Purple to Orange
-    [
-      [94, 79, 162],
-      [158, 154, 200],
-      [247, 247, 247],
-      [253, 174, 97],
-      [244, 109, 67],
-    ],
-    // Green gradient
-    [
-      [247, 252, 245],
-      [199, 233, 192],
-      [120, 198, 121],
-      [49, 163, 84],
-      [0, 109, 44],
-    ],
-    // Spectral
-    [
-      [215, 48, 39],
-      [252, 141, 89],
-      [254, 224, 139],
-      [145, 191, 219],
-      [69, 117, 180],
-    ],
-  ];
+// function generateClassificationColors(count) {
+//   const colorSchemes = [
+//     // Blue to Red
+//     [
+//       [56, 149, 211],
+//       [65, 171, 93],
+//       [255, 204, 0],
+//       [255, 127, 0],
+//       [215, 25, 28],
+//     ],
+//     // Purple to Orange
+//     [
+//       [94, 79, 162],
+//       [158, 154, 200],
+//       [247, 247, 247],
+//       [253, 174, 97],
+//       [244, 109, 67],
+//     ],
+//     // Green gradient
+//     [
+//       [247, 252, 245],
+//       [199, 233, 192],
+//       [120, 198, 121],
+//       [49, 163, 84],
+//       [0, 109, 44],
+//     ],
+//     // Spectral
+//     [
+//       [215, 48, 39],
+//       [252, 141, 89],
+//       [254, 224, 139],
+//       [145, 191, 219],
+//       [69, 117, 180],
+//     ],
+//   ];
 
-  // Use a color scheme based on count
-  const schemeIndex = count % colorSchemes.length;
-  const scheme = colorSchemes[schemeIndex];
+//   // Use a color scheme based on count
+//   const schemeIndex = count % colorSchemes.length;
+//   const scheme = colorSchemes[schemeIndex];
 
-  const colors = [];
-  for (let i = 0; i < count; i++) {
-    if (count <= scheme.length) {
-      colors.push(scheme[i]);
-    } else {
-      // Interpolate colors if we need more than available
-      const index = (i / (count - 1)) * (scheme.length - 1);
-      const lowerIndex = Math.floor(index);
-      const upperIndex = Math.ceil(index);
-      const ratio = index - lowerIndex;
+//   const colors = [];
+//   for (let i = 0; i < count; i++) {
+//     if (count <= scheme.length) {
+//       colors.push(scheme[i]);
+//     } else {
+//       // Interpolate colors if we need more than available
+//       const index = (i / (count - 1)) * (scheme.length - 1);
+//       const lowerIndex = Math.floor(index);
+//       const upperIndex = Math.ceil(index);
+//       const ratio = index - lowerIndex;
 
-      const lowerColor = scheme[lowerIndex];
-      const upperColor = scheme[upperIndex];
+//       const lowerColor = scheme[lowerIndex];
+//       const upperColor = scheme[upperIndex];
 
-      const interpolated = [
-        Math.round(lowerColor[0] + (upperColor[0] - lowerColor[0]) * ratio),
-        Math.round(lowerColor[1] + (upperColor[1] - lowerColor[1]) * ratio),
-        Math.round(lowerColor[2] + (upperColor[2] - lowerColor[2]) * ratio),
-      ];
+//       const interpolated = [
+//         Math.round(lowerColor[0] + (upperColor[0] - lowerColor[0]) * ratio),
+//         Math.round(lowerColor[1] + (upperColor[1] - lowerColor[1]) * ratio),
+//         Math.round(lowerColor[2] + (upperColor[2] - lowerColor[2]) * ratio),
+//       ];
 
-      colors.push(interpolated);
-    }
-  }
+//       colors.push(interpolated);
+//     }
+//   }
 
-  return colors;
-}
+//   return colors;
+// }
 
 // Apply classification
-async function applyClassification() {
-  const fieldSelect = document.getElementById("classifyFieldSelect");
-  const fieldName = fieldSelect.value;
+// async function applyClassification() {
+//   const fieldSelect = document.getElementById("classifyFieldSelect");
+//   const fieldName = fieldSelect.value;
 
-  if (!fieldName || !getState().stateManager.getCurrentClassificationLayer()) {
-    showNotification("Please select a field for classification", "error");
-    return;
-  }
+//   if (!fieldName || !getState().stateManager.getCurrentClassificationLayer()) {
+//     showNotification("Please select a field for classification", "error");
+//     return;
+//   }
 
-  try {
-    showNotification("Applying classification...", "info");
+//   try {
+//     showNotification("Applying classification...", "info");
 
-    const stats = await analyzeFieldForClassification(
-      getState().stateManager.getCurrentClassificationLayer(),
-      fieldName
-    );
+//     const stats = await analyzeFieldForClassification(
+//       getState().stateManager.getCurrentClassificationLayer(),
+//       fieldName
+//     );
 
-    if (!stats || stats.uniqueCount === 0) {
-      showNotification("No valid values found", "error");
-      return;
-    }
+//     if (!stats || stats.uniqueCount === 0) {
+//       showNotification("No valid values found", "error");
+//       return;
+//     }
 
-    // Store original renderer
-    const currentLayer =
-      getState().stateManager.getCurrentClassificationLayer();
-    if (!getState().stateManager.getOriginalRenderer(currentLayer.id)) {
-      getState().stateManager.setOriginalRenderer(
-        currentLayer.id,
-        currentLayer.renderer
-      );
-    }
+//     // Store original renderer
+//     const currentLayer =
+//       getState().stateManager.getCurrentClassificationLayer();
+//     if (!getState().stateManager.getOriginalRenderer(currentLayer.id)) {
+//       getState().stateManager.setOriginalRenderer(
+//         currentLayer.id,
+//         currentLayer.renderer
+//       );
+//     }
 
-    const colors = generateClassificationColors(stats.sortedValues.length);
-    const geometryType = currentLayer.geometryType;
+//     const colors = generateClassificationColors(stats.sortedValues.length);
+//     const geometryType = currentLayer.geometryType;
 
-    // Create unique value infos
-    const uniqueValueInfos = stats.sortedValues.map(([value, count], index) => {
-      const color = colors[index];
-      let symbol;
+//     // Create unique value infos
+//     const uniqueValueInfos = stats.sortedValues.map(([value, count], index) => {
+//       const color = colors[index];
+//       let symbol;
 
-      switch (geometryType) {
-        case "point":
-          symbol = {
-            type: "simple-marker",
-            color: color,
-            size: 10,
-            outline: {
-              color: [255, 255, 255, 1],
-              width: 1,
-            },
-          };
-          break;
-        case "polyline":
-          symbol = {
-            type: "simple-line",
-            color: color,
-            width: 3,
-            style: "solid",
-          };
-          break;
-        case "polygon":
-          symbol = {
-            type: "simple-fill",
-            color: [...color, 0.7],
-            outline: {
-              color: color,
-              width: 2,
-            },
-          };
-          break;
-      }
+//       switch (geometryType) {
+//         case "point":
+//           symbol = {
+//             type: "simple-marker",
+//             color: color,
+//             size: 10,
+//             outline: {
+//               color: [255, 255, 255, 1],
+//               width: 1,
+//             },
+//           };
+//           break;
+//         case "polyline":
+//           symbol = {
+//             type: "simple-line",
+//             color: color,
+//             width: 3,
+//             style: "solid",
+//           };
+//           break;
+//         case "polygon":
+//           symbol = {
+//             type: "simple-fill",
+//             color: [...color, 0.7],
+//             outline: {
+//               color: color,
+//               width: 2,
+//             },
+//           };
+//           break;
+//       }
 
-      return {
-        value: value,
-        symbol: symbol,
-        label: `${value} (${count})`,
-      };
-    });
+//       return {
+//         value: value,
+//         symbol: symbol,
+//         label: `${value} (${count})`,
+//       };
+//     });
 
-    // Create default symbol
-    const defaultSymbol = createDefaultClassificationSymbol(geometryType);
+//     // Create default symbol
+//     const defaultSymbol = createDefaultClassificationSymbol(geometryType);
 
-    // Apply renderer
-    currentLayer.renderer = {
-      type: "unique-value",
-      field: fieldName,
-      uniqueValueInfos: uniqueValueInfos,
-      defaultSymbol: defaultSymbol,
-      defaultLabel: "Other",
-    };
+//     // Apply renderer
+//     currentLayer.renderer = {
+//       type: "unique-value",
+//       field: fieldName,
+//       uniqueValueInfos: uniqueValueInfos,
+//       defaultSymbol: defaultSymbol,
+//       defaultLabel: "Other",
+//     };
 
-    // Create legend
-    createClassificationLegend(stats, colors, fieldName);
+//     // Create legend
+//     createClassificationLegend(stats, colors, fieldName);
 
-    // Close panel
-    closeSidePanel();
-    showNotification("Classification applied successfully", "success");
-  } catch (error) {
-    console.error("Error applying classification:", error);
-    showNotification("Error applying classification", "error");
-  }
-}
+//     // Close panel
+//     closeSidePanel();
+//     showNotification("Classification applied successfully", "success");
+//   } catch (error) {
+//     console.error("Error applying classification:", error);
+//     showNotification("Error applying classification", "error");
+//   }
+// }
 
 // Create default symbol for classification
-function createDefaultClassificationSymbol(geometryType) {
-  const grayColor = [128, 128, 128];
+// function createDefaultClassificationSymbol(geometryType) {
+//   const grayColor = [128, 128, 128];
 
-  switch (geometryType) {
-    case "point":
-      return {
-        type: "simple-marker",
-        color: [...grayColor, 0.6],
-        size: 8,
-        outline: {
-          color: [255, 255, 255, 0.8],
-          width: 1,
-        },
-      };
-    case "polyline":
-      return {
-        type: "simple-line",
-        color: [...grayColor, 0.6],
-        width: 2,
-      };
-    case "polygon":
-      return {
-        type: "simple-fill",
-        color: [...grayColor, 0.3],
-        outline: {
-          color: grayColor,
-          width: 1,
-        },
-      };
-  }
-}
+//   switch (geometryType) {
+//     case "point":
+//       return {
+//         type: "simple-marker",
+//         color: [...grayColor, 0.6],
+//         size: 8,
+//         outline: {
+//           color: [255, 255, 255, 0.8],
+//           width: 1,
+//         },
+//       };
+//     case "polyline":
+//       return {
+//         type: "simple-line",
+//         color: [...grayColor, 0.6],
+//         width: 2,
+//       };
+//     case "polygon":
+//       return {
+//         type: "simple-fill",
+//         color: [...grayColor, 0.3],
+//         outline: {
+//           color: grayColor,
+//           width: 1,
+//         },
+//       };
+//   }
+// }
 
 // Create classification legend
-function createClassificationLegend(stats, colors, fieldName) {
-    const { popupManager } = getState();
+// function createClassificationLegend(stats, colors, fieldName) {
+//     const { popupManager } = getState();
 
-  // Remove existing legend
-  const existingLegend = document.getElementById("classificationLegend");
-  if (existingLegend) {
-    existingLegend.remove();
-  }
+//   // Remove existing legend
+//   const existingLegend = document.getElementById("classificationLegend");
+//   if (existingLegend) {
+//     existingLegend.remove();
+//   }
 
-  const legendDiv = document.createElement("div");
-  legendDiv.id = "classificationLegend";
-  legendDiv.className = "classification-legend";
+//   const legendDiv = document.createElement("div");
+//   legendDiv.id = "classificationLegend";
+//   legendDiv.className = "classification-legend";
 
-  let legendHTML = `
-    <div class="widget-header" style="margin: -12px -12px 12px; padding: 12px;">
-      <h3 style="font-size: 16px; display: flex; align-items: center; gap: 8px;">
-        <i class="fas fa-list" style="color: var(--primary-color);"></i>
-        ${
-          fieldName === "GARDENSTATUS"
-            ? "حالة الحديقة"
-            : popupManager.formatFieldName(fieldName)
-        }
-      </h3>
-      <button class="widget-close" onclick="removeClassificationLegend()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-  `;
+//   let legendHTML = `
+//     <div class="widget-header" style="margin: -12px -12px 12px; padding: 12px;">
+//       <h3 style="font-size: 16px; display: flex; align-items: center; gap: 8px;">
+//         <i class="fas fa-list" style="color: var(--primary-color);"></i>
+//         ${
+//           fieldName === "GARDENSTATUS"
+//             ? "حالة الحديقة"
+//             : popupManager.formatFieldName(fieldName)
+//         }
+//       </h3>
+//       <button class="widget-close" onclick="removeClassificationLegend()">
+//         <i class="fas fa-times"></i>
+//       </button>
+//     </div>
+//   `;
 
-  stats.sortedValues.forEach(([value, count], index) => {
-    const color = colors[index];
-    const percentage = ((count / stats.validCount) * 100).toFixed(1);
+//   stats.sortedValues.forEach(([value, count], index) => {
+//     const color = colors[index];
+//     const percentage = ((count / stats.validCount) * 100).toFixed(1);
 
-    legendHTML += `
-      <div class="legend-item">
-        <div class="legend-color" style="background-color: rgb(${color[0]}, ${color[1]}, ${color[2]})"></div>
-        <div class="legend-label">${value}</div>
-        <div class="legend-count">${count}</div>
-      </div>
-    `;
-  });
+//     legendHTML += `
+//       <div class="legend-item">
+//         <div class="legend-color" style="background-color: rgb(${color[0]}, ${color[1]}, ${color[2]})"></div>
+//         <div class="legend-label">${value}</div>
+//         <div class="legend-count">${count}</div>
+//       </div>
+//     `;
+//   });
 
-  legendDiv.innerHTML = legendHTML;
-  document.body.appendChild(legendDiv);
-}
+//   legendDiv.innerHTML = legendHTML;
+//   document.body.appendChild(legendDiv);
+// }
 
 // Reset classification
-function resetClassification() {
-  const currentLayer = getState().stateManager.getCurrentClassificationLayer();
-  if (!currentLayer) return;
+// function resetClassification() {
+//   const currentLayer = getState().stateManager.getCurrentClassificationLayer();
+//   if (!currentLayer) return;
 
-  const originalRenderer = getState().stateManager.getOriginalRenderer(
-    currentLayer.id
-  );
-  if (originalRenderer) {
-    currentLayer.renderer = originalRenderer;
-    getState().stateManager.setOriginalRenderer(currentLayer.id, null);
-  }
+//   const originalRenderer = getState().stateManager.getOriginalRenderer(
+//     currentLayer.id
+//   );
+//   if (originalRenderer) {
+//     currentLayer.renderer = originalRenderer;
+//     getState().stateManager.setOriginalRenderer(currentLayer.id, null);
+//   }
 
-  removeClassificationLegend();
-  showNotification("Classification reset", "success");
-}
+//   removeClassificationLegend();
+//   showNotification("Classification reset", "success");
+// }
 
 // Remove classification legend
-function removeClassificationLegend() {
-  const legend = document.getElementById("classificationLegend");
-  if (legend) {
-    legend.remove();
-  }
-}
+// function removeClassificationLegend() {
+//   const legend = document.getElementById("classificationLegend");
+//   if (legend) {
+//     legend.remove();
+//   }
+// }
 
 // Export classification functions
-window.applyClassification = applyClassification;
-window.resetClassification = resetClassification;
-window.removeClassificationLegend = removeClassificationLegend;
+// window.applyClassification = applyClassification;
+// window.resetClassification = resetClassification;
+// window.removeClassificationLegend = removeClassificationLegend;
 
 // ============================================================================
 // COMMENTED OUT - Spatial Analysis System moved to js/tools/analysis-manager.js
@@ -7712,314 +7719,306 @@ function getAnalysisDrawSymbol(type) {
 // }
 
 // App Tour Function
-function startAppTour() {
-  // Check if Shepherd is loaded
-  if (typeof Shepherd === "undefined") {
-    showNotification(
-      "Tour library not loaded. Please refresh the page.",
-      "error"
-    );
-    return;
-  }
+// function startAppTour() {
+//   // Check if Shepherd is loaded
+//   if (typeof Shepherd === "undefined") {
+//     showNotification(
+//       "Tour library not loaded. Please refresh the page.",
+//       "error"
+//     );
+//     return;
+//   }
 
-  // Create tour
-  const tour = new Shepherd.Tour({
-    useModalOverlay: true,
-    defaultStepOptions: {
-      cancelIcon: {
-        enabled: true,
-      },
-      scrollTo: {
-        behavior: "smooth",
-        block: "center",
-      },
-      classes: "shadow-lg",
-      arrow: true,
-    },
-  });
+//   // Create tour
+//   const tour = new Shepherd.Tour({
+//     useModalOverlay: true,
+//     defaultStepOptions: {
+//       cancelIcon: {
+//         enabled: true,
+//       },
+//       scrollTo: {
+//         behavior: "smooth",
+//         block: "center",
+//       },
+//       classes: "shadow-lg",
+//       arrow: true,
+//     },
+//   });
 
-  // Add after const tour = new Shepherd.Tour({...});
-  tour.on("complete", () => {
-    localStorage.setItem("gisStudioTourCompleted", "true");
-  });
+//   // Add after const tour = new Shepherd.Tour({...});
+//   tour.on("complete", () => {
+//     localStorage.setItem("gisStudioTourCompleted", "true");
+//   });
 
-  tour.on("cancel", () => {
-    localStorage.setItem("gisStudioTourCompleted", "true");
-  });
+//   tour.on("cancel", () => {
+//     localStorage.setItem("gisStudioTourCompleted", "true");
+//   });
 
-  // Reset tour function
-  function resetTour() {
-    localStorage.removeItem("gisStudioTourCompleted");
-    showNotification("Tour will start on next page load", "info");
-  }
+//   // Define tour steps with FontAwesome icons
+//   tour.addStep({
+//     title: '<i class="fas fa-globe-americas"></i> Welcome to GIS Explorer!',
+//     text: "This powerful GIS web application lets you visualize, analyze, and interact with geographic data. Let's take a quick tour of the main features.",
+//     buttons: [
+//       {
+//         text: "Skip Tour",
+//         classes: "shepherd-button-secondary",
+//         action: tour.cancel,
+//       },
+//       {
+//         text: "Let's Start!",
+//         action: tour.next,
+//       },
+//     ],
+//   });
 
-  window.resetTour = resetTour;
+//   tour.addStep({
+//     title: '<i class="fas fa-search"></i> Search Location',
+//     text: "Use the search bar to find any place in the world. Just type an address, city, or landmark and select from the suggestions.",
+//     attachTo: {
+//       element: ".search-container",
+//       on: "bottom",
+//     },
+//     buttons: [
+//       {
+//         text: "Back",
+//         action: tour.back,
+//       },
+//       {
+//         text: "Next",
+//         action: tour.next,
+//       },
+//     ],
+//   });
 
-  // Define tour steps with FontAwesome icons
-  tour.addStep({
-    title: '<i class="fas fa-globe-americas"></i> Welcome to GIS Explorer!',
-    text: "This powerful GIS web application lets you visualize, analyze, and interact with geographic data. Let's take a quick tour of the main features.",
-    buttons: [
-      {
-        text: "Skip Tour",
-        classes: "shepherd-button-secondary",
-        action: tour.cancel,
-      },
-      {
-        text: "Let's Start!",
-        action: tour.next,
-      },
-    ],
-  });
+//   tour.addStep({
+//     title: '<i class="fas fa-cloud-upload-alt"></i> Upload Your Data',
+//     text: "Click here to upload your geographic data. Supports CSV files with coordinates and GeoJSON files with various geometry types.",
+//     attachTo: {
+//       element: "#uploadBtn",
+//       on: "top",
+//     },
+//     buttons: [
+//       {
+//         text: "Back",
+//         action: tour.back,
+//       },
+//       {
+//         text: "Next",
+//         action: tour.next,
+//       },
+//     ],
+//   });
 
-  tour.addStep({
-    title: '<i class="fas fa-search"></i> Search Location',
-    text: "Use the search bar to find any place in the world. Just type an address, city, or landmark and select from the suggestions.",
-    attachTo: {
-      element: ".search-container",
-      on: "bottom",
-    },
-    buttons: [
-      {
-        text: "Back",
-        action: tour.back,
-      },
-      {
-        text: "Next",
-        action: tour.next,
-      },
-    ],
-  });
+//   tour.addStep({
+//     title: '<i class="fas fa-layer-group"></i> Layer Management',
+//     text: "Manage all your uploaded layers here. Toggle visibility, zoom to extent, or remove layers.",
+//     attachTo: {
+//       element: "#layersBtn",
+//       on: "top",
+//     },
+//     buttons: [
+//       {
+//         text: "Back",
+//         action: tour.back,
+//       },
+//       {
+//         text: "Next",
+//         action: tour.next,
+//       },
+//     ],
+//   });
 
-  tour.addStep({
-    title: '<i class="fas fa-cloud-upload-alt"></i> Upload Your Data',
-    text: "Click here to upload your geographic data. Supports CSV files with coordinates and GeoJSON files with various geometry types.",
-    attachTo: {
-      element: "#uploadBtn",
-      on: "top",
-    },
-    buttons: [
-      {
-        text: "Back",
-        action: tour.back,
-      },
-      {
-        text: "Next",
-        action: tour.next,
-      },
-    ],
-  });
+//   tour.addStep({
+//     title: '<i class="fas fa-map"></i> Change Basemap',
+//     text: "Switch between different basemap styles like satellite, streets, topographic, and more.",
+//     attachTo: {
+//       element: "#basemapBtn",
+//       on: "top",
+//     },
+//     buttons: [
+//       {
+//         text: "Back",
+//         action: tour.back,
+//       },
+//       {
+//         text: "Next",
+//         action: tour.next,
+//       },
+//     ],
+//   });
 
-  tour.addStep({
-    title: '<i class="fas fa-layer-group"></i> Layer Management',
-    text: "Manage all your uploaded layers here. Toggle visibility, zoom to extent, or remove layers.",
-    attachTo: {
-      element: "#layersBtn",
-      on: "top",
-    },
-    buttons: [
-      {
-        text: "Back",
-        action: tour.back,
-      },
-      {
-        text: "Next",
-        action: tour.next,
-      },
-    ],
-  });
+//   tour.addStep({
+//     title: '<i class="fas fa-pencil-alt"></i> Drawing Tools',
+//     text: "Draw points, lines, polygons, rectangles, and circles on the map. Customize colors and opacity.",
+//     attachTo: {
+//       element: "#drawBtn",
+//       on: "top",
+//     },
+//     buttons: [
+//       {
+//         text: "Back",
+//         action: tour.back,
+//       },
+//       {
+//         text: "Next",
+//         action: tour.next,
+//       },
+//     ],
+//   });
 
-  tour.addStep({
-    title: '<i class="fas fa-map"></i> Change Basemap',
-    text: "Switch between different basemap styles like satellite, streets, topographic, and more.",
-    attachTo: {
-      element: "#basemapBtn",
-      on: "top",
-    },
-    buttons: [
-      {
-        text: "Back",
-        action: tour.back,
-      },
-      {
-        text: "Next",
-        action: tour.next,
-      },
-    ],
-  });
+//   tour.addStep({
+//     title: '<i class="fas fa-crosshairs"></i> Find Your Location',
+//     text: "Click to zoom to your current location using GPS.",
+//     attachTo: {
+//       element: "#locateBtn",
+//       on: "top",
+//     },
+//     buttons: [
+//       {
+//         text: "Back",
+//         action: tour.back,
+//       },
+//       {
+//         text: "Next",
+//         action: tour.next,
+//       },
+//     ],
+//   });
 
-  tour.addStep({
-    title: '<i class="fas fa-pencil-alt"></i> Drawing Tools',
-    text: "Draw points, lines, polygons, rectangles, and circles on the map. Customize colors and opacity.",
-    attachTo: {
-      element: "#drawBtn",
-      on: "top",
-    },
-    buttons: [
-      {
-        text: "Back",
-        action: tour.back,
-      },
-      {
-        text: "Next",
-        action: tour.next,
-      },
-    ],
-  });
+//   tour.addStep({
+//     title: '<i class="fas fa-chart-area"></i> Spatial Analysis',
+//     text: "Perform spatial analysis like buffer zones, intersections, distance measurements, and area calculations.",
+//     attachTo: {
+//       element: "#analysisBtn",
+//       on: "top",
+//     },
+//     buttons: [
+//       {
+//         text: "Back",
+//         action: tour.back,
+//       },
+//       {
+//         text: "Next",
+//         action: tour.next,
+//       },
+//     ],
+//   });
 
-  tour.addStep({
-    title: '<i class="fas fa-crosshairs"></i> Find Your Location',
-    text: "Click to zoom to your current location using GPS.",
-    attachTo: {
-      element: "#locateBtn",
-      on: "top",
-    },
-    buttons: [
-      {
-        text: "Back",
-        action: tour.back,
-      },
-      {
-        text: "Next",
-        action: tour.next,
-      },
-    ],
-  });
+//   tour.addStep({
+//     title: '<i class="fas fa-fire"></i> Data Visualization',
+//     text: "Create heatmaps and time-based animations to visualize patterns in your data.",
+//     attachTo: {
+//       element: "#visualizeBtn",
+//       on: "top",
+//     },
+//     buttons: [
+//       {
+//         text: "Back",
+//         action: tour.back,
+//       },
+//       {
+//         text: "Next",
+//         action: tour.next,
+//       },
+//     ],
+//   });
 
-  tour.addStep({
-    title: '<i class="fas fa-chart-area"></i> Spatial Analysis',
-    text: "Perform spatial analysis like buffer zones, intersections, distance measurements, and area calculations.",
-    attachTo: {
-      element: "#analysisBtn",
-      on: "top",
-    },
-    buttons: [
-      {
-        text: "Back",
-        action: tour.back,
-      },
-      {
-        text: "Next",
-        action: tour.next,
-      },
-    ],
-  });
+//   tour.addStep({
+//     title: '<i class="fas fa-palette"></i> Classification Tool',
+//     text: "Classify and color-code your data based on attribute values for better visualization.",
+//     attachTo: {
+//       element: "#classificationBtn",
+//       on: "top",
+//     },
+//     buttons: [
+//       {
+//         text: "Back",
+//         action: tour.back,
+//       },
+//       {
+//         text: "Next",
+//         action: tour.next,
+//       },
+//     ],
+//   });
 
-  tour.addStep({
-    title: '<i class="fas fa-fire"></i> Data Visualization',
-    text: "Create heatmaps and time-based animations to visualize patterns in your data.",
-    attachTo: {
-      element: "#visualizeBtn",
-      on: "top",
-    },
-    buttons: [
-      {
-        text: "Back",
-        action: tour.back,
-      },
-      {
-        text: "Next",
-        action: tour.next,
-      },
-    ],
-  });
+//   tour.addStep({
+//     title: '<i class="fas fa-table"></i> Attribute Table',
+//     text: "View and search through all attributes of your layers in a tabular format. Export data as CSV or Excel.",
+//     attachTo: {
+//       element: "#tableBtn",
+//       on: "top",
+//     },
+//     buttons: [
+//       {
+//         text: "Back",
+//         action: tour.back,
+//       },
+//       {
+//         text: "Next",
+//         action: tour.next,
+//       },
+//     ],
+//   });
 
-  tour.addStep({
-    title: '<i class="fas fa-palette"></i> Classification Tool',
-    text: "Classify and color-code your data based on attribute values for better visualization.",
-    attachTo: {
-      element: "#classificationBtn",
-      on: "top",
-    },
-    buttons: [
-      {
-        text: "Back",
-        action: tour.back,
-      },
-      {
-        text: "Next",
-        action: tour.next,
-      },
-    ],
-  });
+//   tour.addStep({
+//     title: '<i class="fas fa-bolt"></i> Quick Actions',
+//     text: "Access frequently used tools: Zoom controls, Home view, Fullscreen mode, Clear all, and this Tour!",
+//     attachTo: {
+//       element: ".quick-actions",
+//       on: "left",
+//     },
+//     buttons: [
+//       {
+//         text: "Back",
+//         action: tour.back,
+//       },
+//       {
+//         text: "Next",
+//         action: tour.next,
+//       },
+//     ],
+//   });
 
-  tour.addStep({
-    title: '<i class="fas fa-table"></i> Attribute Table',
-    text: "View and search through all attributes of your layers in a tabular format. Export data as CSV or Excel.",
-    attachTo: {
-      element: "#tableBtn",
-      on: "top",
-    },
-    buttons: [
-      {
-        text: "Back",
-        action: tour.back,
-      },
-      {
-        text: "Next",
-        action: tour.next,
-      },
-    ],
-  });
+//   tour.addStep({
+//     title: '<i class="fas fa-globe"></i> Country Information',
+//     text: "Click anywhere on the map to see country information including area and perimeter with a beautiful animation.",
+//     attachTo: {
+//       element: "#displayMap",
+//       on: "center",
+//     },
+//     buttons: [
+//       {
+//         text: "Back",
+//         action: tour.back,
+//       },
+//       {
+//         text: "Next",
+//         action: tour.next,
+//       },
+//     ],
+//   });
 
-  tour.addStep({
-    title: '<i class="fas fa-bolt"></i> Quick Actions',
-    text: "Access frequently used tools: Zoom controls, Home view, Fullscreen mode, Clear all, and this Tour!",
-    attachTo: {
-      element: ".quick-actions",
-      on: "left",
-    },
-    buttons: [
-      {
-        text: "Back",
-        action: tour.back,
-      },
-      {
-        text: "Next",
-        action: tour.next,
-      },
-    ],
-  });
+//   tour.addStep({
+//     title: '<i class="fas fa-trophy"></i> You\'re Ready!',
+//     text: "That's it! You now know the basics of GIS Studio. Explore the tools, upload your data, and start creating amazing maps!",
+//     buttons: [
+//       {
+//         text: "Finish Tour",
+//         action: tour.complete,
+//       },
+//     ],
+//   });
 
-  tour.addStep({
-    title: '<i class="fas fa-globe"></i> Country Information',
-    text: "Click anywhere on the map to see country information including area and perimeter with a beautiful animation.",
-    attachTo: {
-      element: "#displayMap",
-      on: "center",
-    },
-    buttons: [
-      {
-        text: "Back",
-        action: tour.back,
-      },
-      {
-        text: "Next",
-        action: tour.next,
-      },
-    ],
-  });
-
-  tour.addStep({
-    title: '<i class="fas fa-trophy"></i> You\'re Ready!',
-    text: "That's it! You now know the basics of GIS Studio. Explore the tools, upload your data, and start creating amazing maps!",
-    buttons: [
-      {
-        text: "Finish Tour",
-        action: tour.complete,
-      },
-    ],
-  });
-
-  // Start the tour
-  tour.start();
-}
+//   // Start the tour
+//   tour.start();
+// }
 
 // Export the tour function
 // window.startAppTour = startAppTour;
 // Make initializeMap available globally for main.js
 // window.initializeMap = initializeMap;
-window.setupFeatureTour = setupFeatureTour;
+// window.setupFeatureTour = setupFeatureTour;
 
 // Export functions for module system - ES6 module exports
 // ES6 Module Exports
@@ -8061,9 +8060,9 @@ export {
   // initializeDrawingPanel,
 
   // Classification functions (will be moved to classification-manager.js)
-  initializeClassificationPanel,
-  applyClassification,
-  resetClassification,
+  // initializeClassificationPanel,
+  // applyClassification,
+  // resetClassification,
 
   // Toolbar functions (will be moved to toolbar-manager.js)
   locateUser,
@@ -8075,11 +8074,11 @@ export {
   // clearDistanceMeasurement,
 
   // Tour functions (will be moved to tour-manager.js)
-  toggleFeatureTour,
-  nextFeature,
-  previousFeature,
-  closeTourControls,
-  manuallyStartTour,
+  // toggleFeatureTour,
+  // nextFeature,
+  // previousFeature,
+  // closeTourControls,
+  // manuallyStartTour,
 
   // Tab system functions (MOVED to js/ui/tab-system.js) ✅
   // initializeMapTabs,
@@ -8136,8 +8135,8 @@ export {
   // copyFeatureInfo,
 
   // App tour function (will be moved to tour-manager.js)
-  startAppTour,
-  closeTourPopup,
+  // startAppTour,
+  // closeTourPopup,
 
   // ============================================================================
   deleteBookmark,

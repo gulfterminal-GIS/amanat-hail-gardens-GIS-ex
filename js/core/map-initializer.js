@@ -6,10 +6,13 @@
 import { loadModule, loadModules } from "./module-loader.js";
 
 export class MapInitializer {
-  constructor(stateManager, notificationManager, config) {
+  constructor(stateManager, notificationManager, config, tourManager = null, layerManager = null, classificationManager = null) {
     this.stateManager = stateManager;
     this.notificationManager = notificationManager;
     this.config = config;
+    this.tourManager = tourManager;
+    this.layerManager = layerManager;
+    this.classificationManager = classificationManager;
   }
 
   /**
@@ -169,41 +172,21 @@ export class MapInitializer {
         await view.goTo(geojsonLayer.fullExtent.expand(1.1));
       }
 
-      // Update layer list UI (still in script.js)
-      if (window.updateLayerList) {
-        window.updateLayerList();
+      // Update layer list UI
+      if (this.layerManager) {
+        this.layerManager.updateLayerList();
       }
 
-      // Setup feature tour after layer loads (still in script.js)
-      if (window.setupFeatureTour) {
-        await window.setupFeatureTour(geojsonLayer);
-        
-        // Setup chevron button event listener
-        // const chevronBtn = document.querySelector(".feature-tour-controls .chevron");
-        // const featureDetails = document.querySelector(".feature-tour-controls .feature-details");
-        
-        // if (chevronBtn && featureDetails) {
-        //   chevronBtn.addEventListener("click", () => {
-        //     const chevronIcon = chevronBtn.querySelector("i");
-        //     const currentlyVisible = window.getComputedStyle(featureDetails).display !== "none";
-        //     const newVisible = !currentlyVisible;
-
-        //     featureDetails.style.display = newVisible ? "flex" : "none";
-
-        //     if (chevronIcon) {
-        //       chevronIcon.classList.toggle("bi-chevron-up", newVisible);
-        //       chevronIcon.classList.toggle("bi-chevron-down", !newVisible);
-        //     }
-        //   });
-        // }
+      // Setup feature tour after layer loads
+      if (this.tourManager) {
+        await this.tourManager.setupFeatureTour(geojsonLayer);
       }
 
       console.log("Default GeoJSON layer loaded successfully");
 
-      // Apply classification automatically on GARDENSTATUS (still in script.js)
-      window.currentClassificationLayer = geojsonLayer;
-      if (window.autoApplyDefaultClassification) {
-        await window.autoApplyDefaultClassification(geojsonLayer, "GARDENSTATUS");
+      // Apply classification automatically on GARDENSTATUS
+      if (this.classificationManager) {
+        await this.classificationManager.autoApplyDefaultClassification(geojsonLayer, "GARDENSTATUS");
       }
     } catch (error) {
       console.error("Error loading default GeoJSON:", error);

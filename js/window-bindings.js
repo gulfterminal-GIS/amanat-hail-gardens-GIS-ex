@@ -46,9 +46,9 @@ export function bindWindowFunctions(managers) {
     visualizationManager,
     popupManager,
     attributeTable,
+    classificationManager,
+    tourManager,
     // Future managers will be added here as they're created:
-    // tourManager,
-    // classificationManager,
     // countryInfo,
     // widgetManager,
     // mapEventHandler,
@@ -102,35 +102,35 @@ export function bindWindowFunctions(managers) {
 
   // ============================================================================
   // TOUR SYSTEM
-  // Future module: js/features/tour-manager.js
+  // Module: js/features/tour-manager.js ✅
   // ============================================================================
   
   window.manuallyStartTour = () => {
-    return scriptFunctions.manuallyStartTour();
+    return tourManager.manuallyStartTour();
   };
 
   window.startAppTour = () => {
-    return scriptFunctions.startAppTour();
+    return tourManager.startAppTour();
   };
 
   window.toggleFeatureTour = () => {
-    return scriptFunctions.toggleFeatureTour();
+    return tourManager.toggleFeatureTour();
   };
 
   window.nextFeature = () => {
-    return scriptFunctions.nextFeature();
+    return tourManager.nextFeature();
   };
 
   window.previousFeature = () => {
-    return scriptFunctions.previousFeature();
+    return tourManager.previousFeature();
   };
 
   window.closeTourControls = () => {
-    return scriptFunctions.closeTourControls();
+    return tourManager.closeTourControls();
   };
 
   window.closeTourPopup = () => {
-    return scriptFunctions.closeTourPopup();
+    return tourManager.closeTourPopup();
   };
 
   // ============================================================================
@@ -266,11 +266,15 @@ export function bindWindowFunctions(managers) {
   // ============================================================================
   
   window.applyClassification = () => {
-    return scriptFunctions.applyClassification();
+    return classificationManager.applyClassification();
   };
 
   window.resetClassification = () => {
-    return scriptFunctions.resetClassification();
+    return classificationManager.resetClassification();
+  };
+
+  window.removeClassificationLegend = () => {
+    return classificationManager.removeClassificationLegend();
   };
 
   // ============================================================================
