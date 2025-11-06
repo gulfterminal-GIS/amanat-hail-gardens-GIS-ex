@@ -361,15 +361,24 @@
     - Update main.js to import and initialize CountryInfo
     - _Requirements: 1.2, 1.5, 3.2_
 
-- [ ] 9. Extract widget modules
-  - [ ] 9.1 Create js/widgets/widget-manager.js for widget lifecycle
+- [x] 9. Extract widget modules
+
+
+
+
+  - [x] 9.1 Create js/widgets/widget-manager.js for widget lifecycle
+
+
+
     - Extract toggleWidget function and widget positioning logic
     - Create WidgetManager class with widget show/hide/position methods
     - Comment out original widget management code in script.js
     - Update main.js to import and initialize WidgetManager
     - _Requirements: 1.2, 1.5, 3.2, 3.3_
   
-  - [ ] 9.2 Create js/widgets/legend-widget.js for legend
+
+  - [x] 9.2 Create js/widgets/legend-widget.js for legend
+
     - Extract legend initialization and update logic
     - Extract createClassificationLegend function
     - Create LegendWidget class with legend methods
@@ -377,14 +386,18 @@
     - Update main.js to import and initialize LegendWidget
     - _Requirements: 1.2, 1.5, 3.2, 3.3_
   
-  - [ ] 9.3 Create js/widgets/bookmarks-widget.js for bookmarks
+
+  - [x] 9.3 Create js/widgets/bookmarks-widget.js for bookmarks
+
     - Extract bookmark initialization, add, go to, and delete logic
     - Create BookmarksWidget class with bookmark methods
     - Comment out original bookmarks code in script.js
     - Update main.js to import and initialize BookmarksWidget
     - _Requirements: 1.2, 1.5, 3.2, 3.3_
   
-  - [ ] 9.4 Create js/widgets/print-widget.js for print functionality
+
+  - [x] 9.4 Create js/widgets/print-widget.js for print functionality
+
     - Extract print widget initialization and print logic
     - Create PrintWidget class with print methods
     - Comment out original print code in script.js

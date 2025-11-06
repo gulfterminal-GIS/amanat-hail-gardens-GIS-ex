@@ -23,6 +23,7 @@ import { TourManager } from "./features/tour-manager.js";
 import { CountryInfo } from "./features/country-info.js";
 import { MapEventHandler } from "./events/map-event-handler.js";
 import { CoordinateDisplay } from "./events/coordinate-display.js";
+import { WidgetManager } from "./widgets/widget-manager.js";
 import { bindWindowFunctions } from "./window-bindings.js";
 import { initializeMap } from "../script.js";
 
@@ -92,6 +93,9 @@ const mapEventHandler = new MapEventHandler(stateManager, popupManager, countryI
 // Create CoordinateDisplay instance
 const coordinateDisplay = new CoordinateDisplay(stateManager, notificationManager);
 
+// Create WidgetManager instance
+const widgetManager = new WidgetManager(stateManager, notificationManager, panelManager, drawingManager, popupManager);
+
 
 // Initialize application
 async function initializeApplication() {
@@ -118,6 +122,7 @@ async function initializeApplication() {
     console.log("CountryInfo created and ready");
     console.log("MapEventHandler created and ready");
     console.log("CoordinateDisplay created and ready");
+    console.log("WidgetManager created and ready");
 
     // Initialize the map with injected dependencies
     await initializeMap(
@@ -152,6 +157,9 @@ async function initializeApplication() {
     // Initialize coordinate display
     coordinateDisplay.initialize();
 
+    // Initialize widget manager fullscreen listener
+    widgetManager.initializeFullscreenListener();
+
     // Bind window functions for HTML event handlers (CRITICAL for inline onclick, onchange, etc.)
     bindWindowFunctions({
       stateManager,
@@ -175,6 +183,7 @@ async function initializeApplication() {
       countryInfo,
       mapEventHandler,
       coordinateDisplay,
+      widgetManager,
       // Future managers will be added here as they're created
     });
 

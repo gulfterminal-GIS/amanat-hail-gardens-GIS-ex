@@ -65,7 +65,7 @@ function getState() {
 // };
 
 // Other state
-let countryInfoTimeout = null;
+// let countryInfoTimeout = null;
 
 // ============================================================================
 // StateManager is now injected through initializeMap
@@ -2481,68 +2481,68 @@ function registerLayerManagerCallbacks(layerManager) {
 
 // Locate user
 // Locate user - Fixed version
-async function locateUser() {
-  const btn = document.getElementById("locateBtn");
+// async function locateUser() {
+//   const btn = document.getElementById("locateBtn");
 
-  if (!navigator.geolocation) {
-    showNotification("Geolocation is not supported by your browser", "error");
-    return;
-  }
+//   if (!navigator.geolocation) {
+//     showNotification("Geolocation is not supported by your browser", "error");
+//     return;
+//   }
 
-  btn.classList.add("locating");
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+//   btn.classList.add("locating");
+//   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-  navigator.geolocation.getCurrentPosition(
-    async (position) => {
-      const [Point, Graphic] = await Promise.all([
-        loadModule("esri/geometry/Point"),
-        loadModule("esri/Graphic"),
-      ]);
+//   navigator.geolocation.getCurrentPosition(
+//     async (position) => {
+//       const [Point, Graphic] = await Promise.all([
+//         loadModule("esri/geometry/Point"),
+//         loadModule("esri/Graphic"),
+//       ]);
 
-      const userLocation = new Point({
-        longitude: position.coords.longitude,
-        latitude: position.coords.latitude,
-      });
+//       const userLocation = new Point({
+//         longitude: position.coords.longitude,
+//         latitude: position.coords.latitude,
+//       });
 
-      // Add location graphic
-      const locationGraphic = new Graphic({
-        geometry: userLocation,
-        symbol: {
-          type: "simple-marker",
-          style: "circle",
-          color: [0, 122, 255, 0.8],
-          size: 12,
-          outline: {
-            color: [255, 255, 255, 1],
-            width: 2,
-          },
-        },
-      });
+//       // Add location graphic
+//       const locationGraphic = new Graphic({
+//         geometry: userLocation,
+//         symbol: {
+//           type: "simple-marker",
+//           style: "circle",
+//           color: [0, 122, 255, 0.8],
+//           size: 12,
+//           outline: {
+//             color: [255, 255, 255, 1],
+//             width: 2,
+//           },
+//         },
+//       });
 
-      view.graphics.add(locationGraphic);
+//       view.graphics.add(locationGraphic);
 
-      // Go to location
-      await view.goTo({
-        target: userLocation,
-        zoom: 15,
-      });
+//       // Go to location
+//       await view.goTo({
+//         target: userLocation,
+//         zoom: 15,
+//       });
 
-      btn.classList.remove("locating");
-      btn.innerHTML = '<i class="fas fa-crosshairs"></i>';
+//       btn.classList.remove("locating");
+//       btn.innerHTML = '<i class="fas fa-crosshairs"></i>';
 
-      // Remove graphic after 5 seconds
-      setTimeout(() => {
-        view.graphics.remove(locationGraphic);
-      }, 5000);
-    },
-    (error) => {
-      btn.classList.remove("locating");
-      btn.innerHTML = '<i class="fas fa-crosshairs"></i>';
-      showNotification("Unable to retrieve your location", "error");
-      console.error("Geolocation error:", error);
-    }
-  );
-}
+//       // Remove graphic after 5 seconds
+//       setTimeout(() => {
+//         view.graphics.remove(locationGraphic);
+//       }, 5000);
+//     },
+//     (error) => {
+//       btn.classList.remove("locating");
+//       btn.innerHTML = '<i class="fas fa-crosshairs"></i>';
+//       showNotification("Unable to retrieve your location", "error");
+//       console.error("Geolocation error:", error);
+//     }
+//   );
+// }
 
 // Initialize coordinate display
 // function initializeCoordinateDisplay(view) {
@@ -3753,170 +3753,173 @@ window.addEventListener("resize", () => {
 // window.removeLayer = removeLayer;
 // window.closeCustomPopup = closeCustomPopup;
 
+// ============================================================================
+// COMMENTED OUT - Moved to js/widgets/widget-manager.js
+// ============================================================================
 // Widget Management System
-const activeWidgets = new Map();
+// const activeWidgets = new Map();
 
-// Replace the toggleWidget function to remove basemapGallery and compass cases
-async function toggleWidget(widgetName) {
-  try {
-    switch (widgetName) {
-      case "legend":
-        await toggleLegend();
-        break;
-      case "bookmarks":
-        await toggleBookmarks();
-        break;
-      case "print":
-        await togglePrint();
-        break;
-      case "home":
-        await toggleHome();
-        break;
-      case "fullscreen":
-        await toggleFullscreen();
-        break;
-      case "swipe":
-        await toggleSwipe();
-        break;
-    }
-  } catch (error) {
-    console.error(`Error toggling ${widgetName} widget:`, error);
-    showNotification(`Error loading ${widgetName} widget`, "error");
-  }
-}
+// // Replace the toggleWidget function to remove basemapGallery and compass cases
+// async function toggleWidget(widgetName) {
+//   try {
+//     switch (widgetName) {
+//       case "legend":
+//         await toggleLegend();
+//         break;
+//       case "bookmarks":
+//         await toggleBookmarks();
+//         break;
+//       case "print":
+//         await togglePrint();
+//         break;
+//       case "home":
+//         await toggleHome();
+//         break;
+//       case "fullscreen":
+//         await toggleFullscreen();
+//         break;
+//       case "swipe":
+//         await toggleSwipe();
+//         break;
+//     }
+//   } catch (error) {
+//     console.error(`Error toggling ${widgetName} widget:`, error);
+//     showNotification(`Error loading ${widgetName} widget`, "error");
+//   }
+// }
 
-// Replace Legend Widget with fixed version
-async function toggleLegend() {
-  const legendDiv = document.getElementById("legendWidget");
+// // Replace Legend Widget with fixed version
+// async function toggleLegend() {
+//   const legendDiv = document.getElementById("legendWidget");
 
-  if (!activeWidgets.has("legend") || legendDiv.classList.contains("hidden")) {
-    if (!activeWidgets.has("legend")) {
-      const [Legend] = await Promise.all([loadModule("esri/widgets/Legend")]);
+//   if (!activeWidgets.has("legend") || legendDiv.classList.contains("hidden")) {
+//     if (!activeWidgets.has("legend")) {
+//       const [Legend] = await Promise.all([loadModule("esri/widgets/Legend")]);
 
-      const legend = new Legend({
-        view: view,
-        container: "legendContent",
-      });
+//       const legend = new Legend({
+//         view: view,
+//         container: "legendContent",
+//       });
 
-      activeWidgets.set("legend", legend);
-    }
+//       activeWidgets.set("legend", legend);
+//     }
 
-    // Update layer infos every time it's shown
-    const legend = activeWidgets.get("legend");
-    legend.layerInfos = [
-      ...getState()
-        .stateManager.getUploadedLayers()
-        .map((layer) => ({
-          layer: layer,
-          title: layer.title,
-        })),
-      {
-        layer: drawLayer,
-        title: "Drawings",
-      },
-    ];
+//     // Update layer infos every time it's shown
+//     const legend = activeWidgets.get("legend");
+//     legend.layerInfos = [
+//       ...getState()
+//         .stateManager.getUploadedLayers()
+//         .map((layer) => ({
+//           layer: layer,
+//           title: layer.title,
+//         })),
+//       {
+//         layer: drawLayer,
+//         title: "Drawings",
+//       },
+//     ];
 
-    legendDiv.classList.remove("hidden");
+//     legendDiv.classList.remove("hidden");
 
-    // Update button state
-    const btn = document.querySelector('[onclick*="legend"]');
-    if (btn) btn.classList.add("active");
-  } else {
-    legendDiv.classList.add("hidden");
+//     // Update button state
+//     const btn = document.querySelector('[onclick*="legend"]');
+//     if (btn) btn.classList.add("active");
+//   } else {
+//     legendDiv.classList.add("hidden");
 
-    // Update button state
-    const btn = document.querySelector('[onclick*="legend"]');
-    if (btn) btn.classList.remove("active");
-  }
-}
+//     // Update button state
+//     const btn = document.querySelector('[onclick*="legend"]');
+//     if (btn) btn.classList.remove("active");
+//   }
+// }
 // Bookmarks Widget
-async function toggleBookmarks() {
-  const bookmarksDiv = document.getElementById("bookmarksWidget");
+// async function toggleBookmarks() {
+//   const bookmarksDiv = document.getElementById("bookmarksWidget");
 
-  if (!activeWidgets.has("bookmarks")) {
-    bookmarksDiv.classList.remove("hidden");
+//   if (!activeWidgets.has("bookmarks")) {
+//     bookmarksDiv.classList.remove("hidden");
 
-    // Remove any inline positioning styles
-    bookmarksDiv.style.position = "";
-    bookmarksDiv.style.top = "";
-    bookmarksDiv.style.left = "";
-    bookmarksDiv.style.right = "";
-    activeWidgets.set("bookmarks", true);
+//     // Remove any inline positioning styles
+//     bookmarksDiv.style.position = "";
+//     bookmarksDiv.style.top = "";
+//     bookmarksDiv.style.left = "";
+//     bookmarksDiv.style.right = "";
+//     activeWidgets.set("bookmarks", true);
 
-    // Initialize bookmarks
-    loadBookmarks();
+//     // Initialize bookmarks
+//     loadBookmarks();
 
-    // Add bookmark button handler
-    document.getElementById("addBookmark").onclick = addBookmark;
-  } else {
-    activeWidgets.delete("bookmarks");
-    bookmarksDiv.classList.add("hidden");
-  }
-}
+//     // Add bookmark button handler
+//     document.getElementById("addBookmark").onclick = addBookmark;
+//   } else {
+//     activeWidgets.delete("bookmarks");
+//     bookmarksDiv.classList.add("hidden");
+//   }
+// }
 
 // Bookmarks functionality
-let bookmarks = JSON.parse(localStorage.getItem("gisBookmarks") || "[]");
+// let bookmarks = JSON.parse(localStorage.getItem("gisBookmarks") || "[]");
 
-function loadBookmarks() {
-  const bookmarksList = document.getElementById("bookmarksList");
-  bookmarksList.innerHTML = "";
+// function loadBookmarks() {
+//   const bookmarksList = document.getElementById("bookmarksList");
+//   bookmarksList.innerHTML = "";
 
-  if (bookmarks.length === 0) {
-    bookmarksList.innerHTML = '<p class="empty-state">No bookmarks saved</p>';
-    return;
-  }
+//   if (bookmarks.length === 0) {
+//     bookmarksList.innerHTML = '<p class="empty-state">No bookmarks saved</p>';
+//     return;
+//   }
 
-  bookmarks.forEach((bookmark, index) => {
-    const bookmarkDiv = document.createElement("div");
-    bookmarkDiv.className = "bookmark-item";
-    bookmarkDiv.innerHTML = `
-      <span class="bookmark-name">${bookmark.name}</span>
-      <button class="bookmark-delete" onclick="deleteBookmark(${index})">
-        <i class="fas fa-trash"></i>
-      </button>
-    `;
+//   bookmarks.forEach((bookmark, index) => {
+//     const bookmarkDiv = document.createElement("div");
+//     bookmarkDiv.className = "bookmark-item";
+//     bookmarkDiv.innerHTML = `
+//       <span class="bookmark-name">${bookmark.name}</span>
+//       <button class="bookmark-delete" onclick="deleteBookmark(${index})">
+//         <i class="fas fa-trash"></i>
+//       </button>
+//     `;
 
-    bookmarkDiv.addEventListener("click", (e) => {
-      if (!e.target.closest(".bookmark-delete")) {
-        goToBookmark(bookmark);
-      }
-    });
+//     bookmarkDiv.addEventListener("click", (e) => {
+//       if (!e.target.closest(".bookmark-delete")) {
+//         goToBookmark(bookmark);
+//       }
+//     });
 
-    bookmarksList.appendChild(bookmarkDiv);
-  });
-}
+//     bookmarksList.appendChild(bookmarkDiv);
+//   });
+// }
 
-async function addBookmark() {
-  const name = prompt("Enter bookmark name:");
-  if (!name) return;
+// async function addBookmark() {
+//   const name = prompt("Enter bookmark name:");
+//   if (!name) return;
 
-  const bookmark = {
-    name: name,
-    extent: view.extent.toJSON(),
-    timestamp: Date.now(),
-  };
+//   const bookmark = {
+//     name: name,
+//     extent: view.extent.toJSON(),
+//     timestamp: Date.now(),
+//   };
 
-  bookmarks.push(bookmark);
-  localStorage.setItem("gisBookmarks", JSON.stringify(bookmarks));
-  loadBookmarks();
-  showNotification("Bookmark saved", "success");
-}
+//   bookmarks.push(bookmark);
+//   localStorage.setItem("gisBookmarks", JSON.stringify(bookmarks));
+//   loadBookmarks();
+//   showNotification("Bookmark saved", "success");
+// }
 
-function deleteBookmark(index) {
-  if (confirm("Delete this bookmark?")) {
-    bookmarks.splice(index, 1);
-    localStorage.setItem("gisBookmarks", JSON.stringify(bookmarks));
-    loadBookmarks();
-    showNotification("Bookmark deleted", "success");
-  }
-}
+// function deleteBookmark(index) {
+//   if (confirm("Delete this bookmark?")) {
+//     bookmarks.splice(index, 1);
+//     localStorage.setItem("gisBookmarks", JSON.stringify(bookmarks));
+//     loadBookmarks();
+//     showNotification("Bookmark deleted", "success");
+//   }
+// }
 
-async function goToBookmark(bookmark) {
-  const [Extent] = await Promise.all([loadModule("esri/geometry/Extent")]);
+// async function goToBookmark(bookmark) {
+//   const [Extent] = await Promise.all([loadModule("esri/geometry/Extent")]);
 
-  const extent = Extent.fromJSON(bookmark.extent);
-  await view.goTo(extent);
-}
+//   const extent = Extent.fromJSON(bookmark.extent);
+//   await view.goTo(extent);
+// }
 
 // COMMENTED OUT - Moved to js/layers/basemap-manager.js
 // Basemap Gallery Widget
@@ -3968,156 +3971,156 @@ async function goToBookmark(bookmark) {
 // }
 
 // Replace toggleFullscreen with this improved implementation
-async function toggleFullscreen() {
-  const btn = document.querySelector('[onclick*="fullscreen"]');
+// async function toggleFullscreen() {
+//   const btn = document.querySelector('[onclick*="fullscreen"]');
 
-  if (!btn) return;
+//   if (!btn) return;
 
-  const icon = btn.querySelector("i");
+//   const icon = btn.querySelector("i");
 
-  const isFullscreen =
-    document.fullscreenElement ||
-    document.webkitFullscreenElement ||
-    document.mozFullScreenElement ||
-    document.msFullscreenElement;
+//   const isFullscreen =
+//     document.fullscreenElement ||
+//     document.webkitFullscreenElement ||
+//     document.mozFullScreenElement ||
+//     document.msFullscreenElement;
 
-  if (!isFullscreen) {
-    const elem = document.documentElement;
-    const requestFullscreen =
-      elem.requestFullscreen ||
-      elem.webkitRequestFullscreen ||
-      elem.mozRequestFullScreen ||
-      elem.msRequestFullscreen;
+//   if (!isFullscreen) {
+//     const elem = document.documentElement;
+//     const requestFullscreen =
+//       elem.requestFullscreen ||
+//       elem.webkitRequestFullscreen ||
+//       elem.mozRequestFullScreen ||
+//       elem.msRequestFullscreen;
 
-    if (requestFullscreen) {
-      requestFullscreen
-        .call(elem)
-        .then(() => {
-          btn.classList.add("active");
-          if (icon) {
-            icon.classList.remove("fa-expand");
-            icon.classList.add("fa-compress");
-          }
+//     if (requestFullscreen) {
+//       requestFullscreen
+//         .call(elem)
+//         .then(() => {
+//           btn.classList.add("active");
+//           if (icon) {
+//             icon.classList.remove("fa-expand");
+//             icon.classList.add("fa-compress");
+//           }
 
-          activeWidgets.set("fullscreen", true);
-          showNotification("Entered fullscreen mode", "success");
-        })
-        .catch((error) => {
-          console.error("Error entering fullscreen:", error);
-          showNotification("Unable to enter fullscreen mode", "error");
-        });
-    }
-  } else {
-    const exitFullscreen =
-      document.exitFullscreen ||
-      document.webkitExitFullscreen ||
-      document.mozCancelFullScreen ||
-      document.msExitFullscreen;
+//           activeWidgets.set("fullscreen", true);
+//           showNotification("Entered fullscreen mode", "success");
+//         })
+//         .catch((error) => {
+//           console.error("Error entering fullscreen:", error);
+//           showNotification("Unable to enter fullscreen mode", "error");
+//         });
+//     }
+//   } else {
+//     const exitFullscreen =
+//       document.exitFullscreen ||
+//       document.webkitExitFullscreen ||
+//       document.mozCancelFullScreen ||
+//       document.msExitFullscreen;
 
-    if (exitFullscreen) {
-      exitFullscreen
-        .call(document)
-        .then(() => {
-          btn.classList.remove("active");
-          if (icon) {
-            icon.classList.remove("fa-compress");
-            icon.classList.add("fa-expand");
-          }
+//     if (exitFullscreen) {
+//       exitFullscreen
+//         .call(document)
+//         .then(() => {
+//           btn.classList.remove("active");
+//           if (icon) {
+//             icon.classList.remove("fa-compress");
+//             icon.classList.add("fa-expand");
+//           }
 
-          activeWidgets.delete("fullscreen");
-          showNotification("Exited fullscreen mode", "success");
-        })
-        .catch((error) => {
-          console.error("Error exiting fullscreen:", error);
-        });
-    }
-  }
-}
+//           activeWidgets.delete("fullscreen");
+//           showNotification("Exited fullscreen mode", "success");
+//         })
+//         .catch((error) => {
+//           console.error("Error exiting fullscreen:", error);
+//         });
+//     }
+//   }
+// }
 // Add fullscreen change listener on app initialization
 // Replace your existing initializeFullscreenListener function:
-function initializeFullscreenListener() {
-  const fullscreenEvents = [
-    "fullscreenchange",
-    "webkitfullscreenchange",
-    "mozfullscreenchange",
-    "MSFullscreenChange",
-  ];
+// function initializeFullscreenListener() {
+//   const fullscreenEvents = [
+//     "fullscreenchange",
+//     "webkitfullscreenchange",
+//     "mozfullscreenchange",
+//     "MSFullscreenChange",
+//   ];
 
-  fullscreenEvents.forEach((eventName) => {
-    document.addEventListener(eventName, () => {
-      const btn = document.querySelector('[onclick*="fullscreen"]');
-      if (!btn) return;
+//   fullscreenEvents.forEach((eventName) => {
+//     document.addEventListener(eventName, () => {
+//       const btn = document.querySelector('[onclick*="fullscreen"]');
+//       if (!btn) return;
 
-      const icon = btn.querySelector("i");
-      if (!icon) return; // Add null check
+//       const icon = btn.querySelector("i");
+//       if (!icon) return; // Add null check
 
-      const isFullscreen =
-        document.fullscreenElement ||
-        document.webkitFullscreenElement ||
-        document.mozFullScreenElement ||
-        document.msFullscreenElement;
+//       const isFullscreen =
+//         document.fullscreenElement ||
+//         document.webkitFullscreenElement ||
+//         document.mozFullScreenElement ||
+//         document.msFullscreenElement;
 
-      if (!isFullscreen) {
-        // User exited fullscreen
-        btn.classList.remove("active");
-        icon.classList.remove("fa-compress");
-        icon.classList.add("fa-expand");
-        activeWidgets.delete("fullscreen");
-      }
-    });
-  });
-}
+//       if (!isFullscreen) {
+//         // User exited fullscreen
+//         btn.classList.remove("active");
+//         icon.classList.remove("fa-compress");
+//         icon.classList.add("fa-expand");
+//         activeWidgets.delete("fullscreen");
+//       }
+//     });
+//   });
+// }
 
 // Replace toggleHome with this implementation using view.goTo()
-async function toggleHome() {
-  const btn = document.querySelector('[onclick*="home"]');
+// async function toggleHome() {
+//   const btn = document.querySelector('[onclick*="home"]');
 
-  if (!homeExtent) {
-    showNotification("Home extent not available", "error");
-    return;
-  }
+//   if (!homeExtent) {
+//     showNotification("Home extent not available", "error");
+//     return;
+//   }
 
-  // Animate button
-  btn.classList.add("active");
+//   // Animate button
+//   btn.classList.add("active");
 
-  // Go to home extent using view's goTo method
-  view
-    .goTo(homeExtent, {
-      duration: 1000,
-      easing: "ease-in-out",
-    })
-    .then(() => {
-      showNotification("Returned to home extent", "success");
+//   // Go to home extent using view's goTo method
+//   view
+//     .goTo(homeExtent, {
+//       duration: 1000,
+//       easing: "ease-in-out",
+//     })
+//     .then(() => {
+//       showNotification("Returned to home extent", "success");
 
-      // Remove active state after animation
-      setTimeout(() => {
-        btn.classList.remove("active");
-      }, 500);
-    })
-    .catch((error) => {
-      console.error("Error going to home extent:", error);
-      showNotification("Unable to return to home extent", "error");
-      btn.classList.remove("active");
-    });
-}
+//       // Remove active state after animation
+//       setTimeout(() => {
+//         btn.classList.remove("active");
+//       }, 500);
+//     })
+//     .catch((error) => {
+//       console.error("Error going to home extent:", error);
+//       showNotification("Unable to return to home extent", "error");
+//       btn.classList.remove("active");
+//     });
+// }
 
 // Zoom in function
-async function zoomIn() {
-  const currentZoom = view.zoom;
-  view.goTo({
-    zoom: currentZoom + 1,
-    duration: 300,
-  });
-}
+// async function zoomIn() {
+//   const currentZoom = view.zoom;
+//   view.goTo({
+//     zoom: currentZoom + 1,
+//     duration: 300,
+//   });
+// }
 
 // Zoom out function
-async function zoomOut() {
-  const currentZoom = view.zoom;
-  view.goTo({
-    zoom: currentZoom - 1,
-    duration: 300,
-  });
-}
+// async function zoomOut() {
+//   const currentZoom = view.zoom;
+//   view.goTo({
+//     zoom: currentZoom - 1,
+//     duration: 300,
+//   });
+// }
 
 // Export zoom functions
 // window.zoomIn = zoomIn;
@@ -4275,88 +4278,88 @@ async function zoomOut() {
 // }
 
 // Replace the toggleSwipe function with this version
-async function toggleSwipe() {
-  if (!activeWidgets.has("swipe")) {
-    if (getState().stateManager.getUploadedLayers().length < 2) {
-      showNotification("Need at least 2 layers for swipe comparison", "error");
-      return;
-    }
+// async function toggleSwipe() {
+//   if (!activeWidgets.has("swipe")) {
+//     if (getState().stateManager.getUploadedLayers().length < 2) {
+//       showNotification("Need at least 2 layers for swipe comparison", "error");
+//       return;
+//     }
 
-    // Temporarily suppress console warnings for deprecated widget
-    const originalWarn = console.warn;
-    console.warn = () => {};
+//     // Temporarily suppress console warnings for deprecated widget
+//     const originalWarn = console.warn;
+//     console.warn = () => {};
 
-    try {
-      const [Swipe] = await Promise.all([loadModule("esri/widgets/Swipe")]);
+//     try {
+//       const [Swipe] = await Promise.all([loadModule("esri/widgets/Swipe")]);
 
-      const swipe = new Swipe({
-        view: getState().stateManager.getView(),
-        leadingLayers: [getState().stateManager.getUploadedLayers()[0]],
-        trailingLayers: [getState().stateManager.getUploadedLayers()[1]],
-        direction: "horizontal",
-        position: 50,
-      });
+//       const swipe = new Swipe({
+//         view: getState().stateManager.getView(),
+//         leadingLayers: [getState().stateManager.getUploadedLayers()[0]],
+//         trailingLayers: [getState().stateManager.getUploadedLayers()[1]],
+//         direction: "horizontal",
+//         position: 50,
+//       });
 
-      getState().stateManager.getView().ui.add(swipe);
-      activeWidgets.set("swipe", swipe);
-      showNotification("Swipe between first two layers", "info");
+//       getState().stateManager.getView().ui.add(swipe);
+//       activeWidgets.set("swipe", swipe);
+//       showNotification("Swipe between first two layers", "info");
 
-      // Update widget button state
-      document.querySelector('[onclick*="swipe"]').classList.add("active");
-    } finally {
-      // Restore console.warn
-      console.warn = originalWarn;
-    }
-  } else {
-    const swipe = activeWidgets.get("swipe");
-    view.ui.remove(swipe);
-    swipe.destroy();
-    activeWidgets.delete("swipe");
+//       // Update widget button state
+//       document.querySelector('[onclick*="swipe"]').classList.add("active");
+//     } finally {
+//       // Restore console.warn
+//       console.warn = originalWarn;
+//     }
+//   } else {
+//     const swipe = activeWidgets.get("swipe");
+//     view.ui.remove(swipe);
+//     swipe.destroy();
+//     activeWidgets.delete("swipe");
 
-    // Remove active state
-    document.querySelector('[onclick*="swipe"]').classList.remove("active");
-  }
-}
+//     // Remove active state
+//     document.querySelector('[onclick*="swipe"]').classList.remove("active");
+//   }
+// }
 
 // Update Print widget to handle the null value warnings better
 // Apply similar fix to togglePrint:
-async function togglePrint() {
-  const printDiv = document.getElementById("printWidget");
+// async function togglePrint() {
+//   const printDiv = document.getElementById("printWidget");
 
-  if (!activeWidgets.has("print") || printDiv.classList.contains("hidden")) {
-    const originalWarn = console.warn;
-    console.warn = (msg) => {
-      if (!msg.includes('The specified value "null"')) {
-        originalWarn(msg);
-      }
-    };
+//   if (!activeWidgets.has("print") || printDiv.classList.contains("hidden")) {
+//     const originalWarn = console.warn;
+//     console.warn = (msg) => {
+//       if (!msg.includes('The specified value "null"')) {
+//         originalWarn(msg);
+//       }
+//     };
 
-    try {
-      if (!activeWidgets.has("print")) {
-        const [Print] = await Promise.all([loadModule("esri/widgets/Print")]);
+//     try {
+//       if (!activeWidgets.has("print")) {
+//         const [Print] = await Promise.all([loadModule("esri/widgets/Print")]);
 
-        const print = new Print({
-          view: view,
-          container: "printContent",
-          printServiceUrl:
-            "https://utility.arcgisonline.com/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task",
-        });
+//         const print = new Print({
+//           view: view,
+//           container: "printContent",
+//           printServiceUrl:
+//             "https://utility.arcgisonline.com/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task",
+//         });
 
-        activeWidgets.set("print", print);
-      }
+//         activeWidgets.set("print", print);
+//       }
 
-      printDiv.classList.remove("hidden");
-      document.querySelector('[onclick*="print"]')?.classList.add("active");
-    } finally {
-      setTimeout(() => {
-        console.warn = originalWarn;
-      }, 1000);
-    }
-  } else {
-    printDiv.classList.add("hidden");
-    document.querySelector('[onclick*="print"]')?.classList.remove("active");
-  }
-}
+//       printDiv.classList.remove("hidden");
+//       document.querySelector('[onclick*="print"]')?.classList.add("active");
+//     } finally {
+//       setTimeout(() => {
+//         console.warn = originalWarn;
+//       }, 1000);
+//     }
+//   } else {
+//     printDiv.classList.add("hidden");
+//     document.querySelector('[onclick*="print"]')?.classList.remove("active");
+//   }
+// }
 
 // // Add this function to make toolbar draggable (optional)
 // function makeToolbarDraggable() {
@@ -5075,19 +5078,19 @@ async function togglePrint() {
 // window.exportData = exportData;
 
 // Heatmap Visualization System - declare as global
-window.heatmapEnabled = false;
-window.heatmapLayer = null;
-window.originalRenderers = new Map();
+// window.heatmapEnabled = false;
+// window.heatmapLayer = null;
+// window.originalRenderers = new Map();
 // Update the currentHeatmapSettings object
-window.currentHeatmapSettings = {
-  field: null,
-  radius: 10,
-  maxPixelIntensity: 100,
-  blurRadius: 15,
-  colorScheme: "default",
-  minDensity: 0, // Add this
-  maxDensity: 10, // Add this
-};
+// window.currentHeatmapSettings = {
+//   field: null,
+//   radius: 10,
+//   maxPixelIntensity: 100,
+//   blurRadius: 15,
+//   colorScheme: "default",
+//   minDensity: 0, // Add this
+//   maxDensity: 10, // Add this
+// };
 
 // Color schemes for heatmap
 // const heatmapColorSchemes = {
@@ -7106,9 +7109,9 @@ window.currentHeatmapSettings = {
 // }
 
 // Time-Aware Features System
-let timeSlider = null;
-let timeAnimation = null;
-let timeEnabledLayer = null;
+// let timeSlider = null;
+// let timeAnimation = null;
+// let timeEnabledLayer = null;
 
 // async function toggleTimeControls() {
 //   const toggle = document.getElementById("timeToggle");
@@ -7666,37 +7669,37 @@ let timeEnabledLayer = null;
 //   }
 // }
 
-function getAnalysisDrawSymbol(type) {
-  switch (type) {
-    case "point":
-      return {
-        type: "simple-marker",
-        style: "circle",
-        color: [0, 122, 255, 0.8],
-        size: 12,
-        outline: {
-          color: [255, 255, 255, 1],
-          width: 2,
-        },
-      };
-    case "polyline":
-      return {
-        type: "simple-line",
-        color: [0, 122, 255, 1],
-        width: 3,
-        cap: "round",
-      };
-    case "polygon":
-      return {
-        type: "simple-fill",
-        color: [0, 122, 255, 0.3],
-        outline: {
-          color: [0, 122, 255, 1],
-          width: 2,
-        },
-      };
-  }
-}
+// function getAnalysisDrawSymbol(type) {
+//   switch (type) {
+//     case "point":
+//       return {
+//         type: "simple-marker",
+//         style: "circle",
+//         color: [0, 122, 255, 0.8],
+//         size: 12,
+//         outline: {
+//           color: [255, 255, 255, 1],
+//           width: 2,
+//         },
+//       };
+//     case "polyline":
+//       return {
+//         type: "simple-line",
+//         color: [0, 122, 255, 1],
+//         width: 3,
+//         cap: "round",
+//       };
+//     case "polygon":
+//       return {
+//         type: "simple-fill",
+//         color: [0, 122, 255, 0.3],
+//         outline: {
+//           color: [0, 122, 255, 1],
+//           width: 2,
+//         },
+//       };
+//   }
+// }
 
 // Stop analysis drawing
 // function stopAnalysisDrawing() {
@@ -8070,7 +8073,7 @@ export {
   // resetClassification,
 
   // Toolbar functions (will be moved to toolbar-manager.js)
-  locateUser,
+  // locateUser,
 
   // Measurement functions (will be moved to measurement-manager.js)
   // toggleMeasurement,
@@ -8090,7 +8093,7 @@ export {
   // redirectToTabPlatform,
 
   // Widget functions (will be moved to widget-manager.js)
-  toggleWidget,
+  // toggleWidget,
 
   // Attribute table functions (will be moved to attribute-table.js)
   // toggleAttributeTable,
@@ -8104,8 +8107,8 @@ export {
   // exportData,
 
   // Zoom functions (will be moved to toolbar-manager.js or map-event-handler.js)
-  zoomIn,
-  zoomOut,
+  // zoomIn,
+  // zoomOut,
 
   // Analysis functions (will be moved to analysis-manager.js)
   // startBufferAnalysis,
@@ -8144,7 +8147,7 @@ export {
   // closeTourPopup,
 
   // ============================================================================
-  deleteBookmark,
+  // deleteBookmark,
 };
 
 // Global variables - These will be moved to StateManager

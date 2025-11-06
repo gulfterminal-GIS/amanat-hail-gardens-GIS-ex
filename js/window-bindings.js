@@ -51,21 +51,21 @@ export function bindWindowFunctions(managers) {
     countryInfo,
     mapEventHandler,
     coordinateDisplay,
+    widgetManager,
     // Future managers will be added here as they're created:
-    // widgetManager,
   } = managers;
 
   // ============================================================================
   // WIDGET MANAGEMENT
-  // Future module: js/widgets/widget-manager.js
+  // Module: js/widgets/widget-manager.js ✅
   // ============================================================================
   
   window.toggleWidget = (name) => {
-    return scriptFunctions.toggleWidget(name);
+    return widgetManager.toggleWidget(name);
   };
 
   window.deleteBookmark = (index) => {
-    return scriptFunctions.deleteBookmark(index);
+    return widgetManager.deleteBookmark(index);
   };
 
   // ============================================================================
@@ -135,15 +135,15 @@ export function bindWindowFunctions(managers) {
 
   // ============================================================================
   // ZOOM CONTROLS
-  // Future module: js/ui/toolbar-manager.js or js/events/map-event-handler.js
+  // Module: js/widgets/widget-manager.js ✅
   // ============================================================================
   
   window.zoomIn = () => {
-    return scriptFunctions.zoomIn();
+    return widgetManager.zoomIn();
   };
 
   window.zoomOut = () => {
-    return scriptFunctions.zoomOut();
+    return widgetManager.zoomOut();
   };
 
   // ============================================================================
