@@ -146,8 +146,8 @@ async function initializeApplication() {
     // Initialize tab system
     tabSystem.initializeMapTabs();
 
-    // Initialize search functionality
-    await searchManager.initialize();
+    // Initialize search functionality (Disabled: Header removed)
+    // await searchManager.initialize();
 
     // Initialize map event handlers
     mapEventHandler.initializeEventHandlers();
