@@ -3910,9 +3910,11 @@ async function toggleLegend() {
 // Bookmarks Widget
 async function toggleBookmarks() {
   const bookmarksDiv = document.getElementById("bookmarksWidget");
-
+  const btn = document.querySelector('[onclick*="bookmarks"]');
+  
   if (!activeWidgets.has("bookmarks")) {
     bookmarksDiv.classList.remove("hidden");
+    if (btn) btn.classList.add("active");
 
     // Remove any inline positioning styles
     bookmarksDiv.style.position = "";
@@ -3929,6 +3931,7 @@ async function toggleBookmarks() {
   } else {
     activeWidgets.delete("bookmarks");
     bookmarksDiv.classList.add("hidden");
+    if (btn) btn.classList.remove("active");
   }
 }
 

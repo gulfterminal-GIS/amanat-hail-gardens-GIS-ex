@@ -48,22 +48,6 @@ export class NotificationManager {
         backgroundColor = "#2196F3";
     }
 
-    // Add styles
-    notification.style.cssText = `
-      position: fixed;
-      top: ${topPosition}px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: ${backgroundColor};
-      color: white;
-      padding: 12px 24px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      z-index: 1000;
-      animation: slideIn 0.3s ease-out;
-      max-width: 90%;
-    `;
-
     document.body.appendChild(notification);
 
     // Add to active notifications
