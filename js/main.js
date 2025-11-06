@@ -23,9 +23,9 @@ import { TourManager } from "./features/tour-manager.js";
 import { CountryInfo } from "./features/country-info.js";
 import { MapEventHandler } from "./events/map-event-handler.js";
 import { CoordinateDisplay } from "./events/coordinate-display.js";
+import { WindowEventHandler } from "./events/window-event-handler.js";
 import { WidgetManager } from "./widgets/widget-manager.js";
 import { bindWindowFunctions } from "./window-bindings.js";
-import { initializeMap } from "../script.js";
 
 // Make CONFIG available globally for backward compatibility
 window.CONFIG = CONFIG;
@@ -93,6 +93,9 @@ const mapEventHandler = new MapEventHandler(stateManager, popupManager, countryI
 // Create CoordinateDisplay instance
 const coordinateDisplay = new CoordinateDisplay(stateManager, notificationManager);
 
+// Create WindowEventHandler instance
+const windowEventHandler = new WindowEventHandler(popupManager, panelManager);
+
 // Create WidgetManager instance
 const widgetManager = new WidgetManager(stateManager, notificationManager, panelManager, drawingManager, popupManager);
 
@@ -122,28 +125,22 @@ async function initializeApplication() {
     console.log("CountryInfo created and ready");
     console.log("MapEventHandler created and ready");
     console.log("CoordinateDisplay created and ready");
+    console.log("WindowEventHandler created and ready");
     console.log("WidgetManager created and ready");
 
-    // Initialize the map with injected dependencies
-    await initializeMap(
-      stateManager,
-      mapInitializer,
-      notificationManager,
-      panelManager,
-      toolbarManager,
-      layerManager,
-      uploadHandler,
-      basemapManager,
-      drawingManager,
-      analysisManager,
-      measurementManager,
-      visualizationManager,
-      popupManager,
-      attributeTable,
-      classificationManager,
-      tourManager,
-      countryInfo
-    );
+    // Initialize the map (mimics script.js initializeMap flow)
+    await mapInitializer.initializeMap();
+
+    // Initialize toolbar after map is ready (from script.js)
+    if (toolbarManager) {
+      console.log("Initializing ToolbarManager...");
+      toolbarManager.initialize();
+    }
+
+    // Register LayerManager callbacks for attribute table, heatmap, and analysis (from script.js)
+    if (layerManager) {
+      layerManager.setupCallbacks(attributeTable, visualizationManager, analysisManager);
+    }
 
     // Initialize tab system
     tabSystem.initializeMapTabs();
@@ -157,8 +154,14 @@ async function initializeApplication() {
     // Initialize coordinate display
     coordinateDisplay.initialize();
 
-    // Initialize widget manager fullscreen listener
+    // Initialize file upload (from script.js initializeUI)
+    uploadHandler.initializeFileUpload();
+
+    // Initialize widget manager fullscreen listener (from script.js initializeUI)
     widgetManager.initializeFullscreenListener();
+
+    // Initialize window event handlers
+    windowEventHandler.initialize();
 
     // Bind window functions for HTML event handlers (CRITICAL for inline onclick, onchange, etc.)
     bindWindowFunctions({
@@ -183,6 +186,7 @@ async function initializeApplication() {
       countryInfo,
       mapEventHandler,
       coordinateDisplay,
+      windowEventHandler,
       widgetManager,
       // Future managers will be added here as they're created
     });

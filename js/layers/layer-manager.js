@@ -50,6 +50,72 @@ export class LayerManager {
   }
 
   /**
+   * Setup callbacks for layer list updates
+   * This replaces the old registerLayerManagerCallbacks pattern from script.js
+   * @param {AttributeTable} attributeTable - AttributeTable instance
+   * @param {VisualizationManager} visualizationManager - VisualizationManager instance
+   * @param {AnalysisManager} analysisManager - AnalysisManager instance
+   */
+  setupCallbacks(attributeTable, visualizationManager, analysisManager) {
+    // Callback 1: Update attribute table layer select when layers change
+    this.onLayerListUpdate(() => {
+      const tableWidget = document.getElementById("attributeTableWidget");
+      if (tableWidget && !tableWidget.classList.contains("hidden")) {
+        if (attributeTable && typeof attributeTable.initializeTableLayerSelect === 'function') {
+          attributeTable.initializeTableLayerSelect();
+        }
+      }
+    });
+
+    // Callback 2: Update heatmap layer select when layers change
+    this.onLayerListUpdate(() => {
+      if (
+        window.heatmapEnabled &&
+        visualizationManager &&
+        typeof visualizationManager.updateHeatmapLayerSelect === 'function'
+      ) {
+        visualizationManager.updateHeatmapLayerSelect();
+      }
+    });
+
+    // Callback 3: Add analysis layer to layer list if it has graphics
+    this.onLayerListUpdate(() => {
+      if (analysisManager) {
+        const analysisLayer = analysisManager.getAnalysisLayer();
+        if (
+          analysisLayer &&
+          analysisLayer.graphics &&
+          analysisLayer.graphics.length > 0
+        ) {
+          const layerList = document.getElementById("layerList");
+          if (layerList) {
+            const analysisItem = document.createElement("div");
+            analysisItem.className = "layer-item";
+            analysisItem.innerHTML = `
+              <input type="checkbox" class="layer-checkbox" 
+                     ${analysisLayer.visible ? "checked" : ""} 
+                     onchange="analysisLayer.visible = this.checked">
+              <label class="layer-name">Analysis Results (${
+                analysisLayer.graphics.length
+              })</label>
+              <div class="layer-actions">
+                <button onclick="clearAnalysisResults()" title="Clear results">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            `;
+            layerList.appendChild(analysisItem);
+          }
+        }
+      }
+    });
+
+    console.log(
+      "✅ LayerManager callbacks registered (attribute table, heatmap, analysis)"
+    );
+  }
+
+  /**
    * Toggle layer visibility
    * @param {number} index - Index of the layer in uploadedLayers array
    */
