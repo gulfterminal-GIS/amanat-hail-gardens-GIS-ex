@@ -400,7 +400,6 @@
     - Create MapEventHandler class with event management methods
     - Comment out original event handling code in script.js
     - Update main.js to import and initialize MapEventHandler
-
     - _Requirements: 1.2, 1.5, 3.2_
   
   - [x] 10.2 Create js/events/coordinate-display.js for coordinate tracking

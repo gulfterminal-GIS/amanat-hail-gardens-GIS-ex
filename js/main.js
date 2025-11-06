@@ -174,6 +174,7 @@ async function initializeApplication() {
       tourManager,
       countryInfo,
       mapEventHandler,
+      coordinateDisplay,
       // Future managers will be added here as they're created
     });
 

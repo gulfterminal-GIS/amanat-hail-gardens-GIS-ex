@@ -48,11 +48,11 @@ export function bindWindowFunctions(managers) {
     attributeTable,
     classificationManager,
     tourManager,
+    countryInfo,
+    mapEventHandler,
+    coordinateDisplay,
     // Future managers will be added here as they're created:
-    // countryInfo,
     // widgetManager,
-    // mapEventHandler,
-    // coordinateDisplay,
   } = managers;
 
   // ============================================================================
