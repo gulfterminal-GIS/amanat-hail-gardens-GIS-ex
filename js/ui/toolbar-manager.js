@@ -17,11 +17,12 @@
 import { loadModule } from '../core/module-loader.js';
 
 export class ToolbarManager {
-  constructor(stateManager, panelManager, notificationManager, drawingManager) {
+  constructor(stateManager, panelManager, notificationManager, drawingManager, measurementManager) {
     this.stateManager = stateManager;
     this.panelManager = panelManager;
     this.notificationManager = notificationManager;
     this.drawingManager = drawingManager;
+    this.measurementManager = measurementManager;
 
     // Store references to toolbar elements
     this.mobileToggle = null;
@@ -93,10 +94,6 @@ export class ToolbarManager {
       classificationBtn.addEventListener("click", () => {
         classificationBtn.classList.toggle("active");
         this.panelManager.openSidePanel("Classification", "classificationPanelTemplate");
-        // Note: initializeClassificationPanel will be called by ClassificationManager in future
-        if (window.initializeClassificationPanel) {
-          window.initializeClassificationPanel();
-        }
       });
     }
 
@@ -175,10 +172,7 @@ export class ToolbarManager {
     const clearBtn = document.getElementById("clearBtn");
     if (clearBtn) {
       clearBtn.addEventListener("click", () => {
-        // Note: clearAll will be handled by DrawingManager in future
-        if (window.clearAll) {
-          window.clearAll();
-        }
+        this.drawingManager.clearAll();
       });
     }
 
@@ -205,10 +199,7 @@ export class ToolbarManager {
         this.panelManager.openSidePanel("Basemap", "basemapPanelTemplate");
         break;
       case "measure":
-        // Note: toggleMeasurement will be handled by MeasurementManager in future
-        if (window.toggleMeasurement) {
-          window.toggleMeasurement();
-        }
+        this.measurementManager.toggleMeasurement();
         break;
       case "draw":
         this.panelManager.openSidePanel("Drawing Tools", "drawingPanelTemplate");
@@ -225,10 +216,6 @@ export class ToolbarManager {
         break;
       case "classification":
         this.panelManager.openSidePanel("Classification", "classificationPanelTemplate");
-        // Note: initializeClassificationPanel will be handled by ClassificationManager in future
-        if (window.initializeClassificationPanel) {
-          window.initializeClassificationPanel();
-        }
         break;
       case "swipe":
         this.panelManager.openSidePanel("مقارنة الطبقات", "swipePanelTemplate");
@@ -260,10 +247,7 @@ export class ToolbarManager {
         sketchViewModel.cancel();
       }
       
-      // Note: resetDrawingTools will be handled by DrawingManager in future
-      if (window.resetDrawingTools) {
-        window.resetDrawingTools();
-      }
+      this.drawingManager.resetDrawingTools();
     } else {
       // Deactivate other tools
       const measureBtn = document.getElementById("measureBtn");

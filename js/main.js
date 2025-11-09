@@ -69,8 +69,11 @@ const countryInfo = new CountryInfo(stateManager, notificationManager);
 // Create MapInitializer instance
 const mapInitializer = new MapInitializer(stateManager, notificationManager, CONFIG, tourManager, layerManager, classificationManager);
 
+// Create MeasurementManager instance (depends on PanelManager and DrawingManager)
+const measurementManager = new MeasurementManager(stateManager, notificationManager, panelManager, drawingManager);
+
 // Create ToolbarManager instance
-const toolbarManager = new ToolbarManager(stateManager, panelManager, notificationManager, drawingManager);
+const toolbarManager = new ToolbarManager(stateManager, panelManager, notificationManager, drawingManager, measurementManager);
 
 // Create TabSystem instance
 const tabSystem = new TabSystem(notificationManager);
@@ -80,9 +83,6 @@ const searchManager = new SearchManager(stateManager, notificationManager);
 
 // Create AnalysisManager instance (depends on DrawingManager)
 const analysisManager = new AnalysisManager(stateManager, notificationManager, layerManager, drawingManager);
-
-// Create MeasurementManager instance (depends on PanelManager and DrawingManager)
-const measurementManager = new MeasurementManager(stateManager, notificationManager, panelManager, drawingManager);
 
 // Create VisualizationManager instance
 const visualizationManager = new VisualizationManager(stateManager, notificationManager, layerManager);

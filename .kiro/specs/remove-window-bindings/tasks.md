@@ -91,40 +91,46 @@ This implementation plan focuses on optimizing the current window bindings by:
     - **This fixes a bug** - panel was opening but never initializing
     - _Requirements: 5.3, 6.1, 6.2_
 
-- [ ] 3. Fix ToolbarManager to use direct manager references
-  
-  - [ ] 3.1 Update ToolbarManager constructor
+- [x] 3. Fix ToolbarManager to use direct manager references
+
+  - [x] 3.1 Update ToolbarManager constructor
+
     - Add `measurementManager` parameter to constructor (after drawingManager)
     - Store as instance property `this.measurementManager`
     - Update main.js to pass measurementManager when creating ToolbarManager
     - _Requirements: 3.1, 3.2, 5.2_
   
-  - [ ] 3.2 Remove window.initializeClassificationPanel calls
+  - [x] 3.2 Remove window.initializeClassificationPanel calls
+
     - Find all `window.initializeClassificationPanel()` calls in ToolbarManager
     - Remove these calls entirely (PanelManager now handles this)
     - Remove the `if (window.initializeClassificationPanel)` checks
     - _Requirements: 3.1, 3.2, 5.2_
   
-  - [ ] 3.3 Replace window.clearAll calls
+  - [x] 3.3 Replace window.clearAll calls
+
     - Find all `window.clearAll()` calls in ToolbarManager
     - Replace with `this.drawingManager.clearAll()`
     - Remove the `if (window.clearAll)` checks
     - _Requirements: 3.1, 3.2, 5.2_
   
-  - [ ] 3.4 Replace window.toggleMeasurement calls
+  - [x] 3.4 Replace window.toggleMeasurement calls
+
     - Find all `window.toggleMeasurement()` calls in ToolbarManager
     - Replace with `this.measurementManager.toggleMeasurement()`
     - Remove the `if (window.toggleMeasurement)` checks
     - _Requirements: 3.1, 3.2, 5.2_
   
-  - [ ] 3.5 Replace window.resetDrawingTools calls
+  - [x] 3.5 Replace window.resetDrawingTools calls
+
     - Find all `window.resetDrawingTools()` calls in ToolbarManager
     - Replace with `this.drawingManager.resetDrawingTools()`
     - Remove the `if (window.resetDrawingTools)` checks
     - **This fixes a bug** - window.resetDrawingTools was never set, so this never executed
     - _Requirements: 3.1, 3.2, 5.2_
   
-  - [ ] 3.6 Test toolbar functionality
+  - [x] 3.6 Test toolbar functionality
+
     - Test all toolbar buttons work correctly
     - Test clear all button works
     - Test measurement toggle works
