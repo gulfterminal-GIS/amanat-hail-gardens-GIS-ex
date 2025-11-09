@@ -138,9 +138,10 @@ This implementation plan focuses on optimizing the current window bindings by:
     - Verify no console errors
     - _Requirements: 5.3, 6.1, 6.2_
 
-- [ ] 4. Fix AnalysisManager event handler storage
-  
-  - [ ] 4.1 Add event handler properties to AnalysisManager constructor
+- [x] 4. Fix AnalysisManager event handler storage
+
+  - [x] 4.1 Add event handler properties to AnalysisManager constructor
+
     - Add `this.currentBufferHandler = null`
     - Add `this.intersectDrawHandler = null`
     - Add `this.distanceClickHandler = null`
@@ -148,37 +149,43 @@ This implementation plan focuses on optimizing the current window bindings by:
     - Add `this.analysisHandles = []`
     - _Requirements: 3.1, 3.2, 5.2_
   
-  - [ ] 4.2 Replace window.currentBufferHandler references
+  - [x] 4.2 Replace window.currentBufferHandler references
+
     - Find all `window.currentBufferHandler` references
     - Replace with `this.currentBufferHandler`
     - Update all assignments and checks
     - _Requirements: 3.1, 3.2, 5.2_
   
-  - [ ] 4.3 Replace window.intersectDrawHandler references
+  - [x] 4.3 Replace window.intersectDrawHandler references
+
     - Find all `window.intersectDrawHandler` references
     - Replace with `this.intersectDrawHandler`
     - Update all assignments and checks
     - _Requirements: 3.1, 3.2, 5.2_
   
-  - [ ] 4.4 Replace window.distanceClickHandler references
+  - [x] 4.4 Replace window.distanceClickHandler references
+
     - Find all `window.distanceClickHandler` references
     - Replace with `this.distanceClickHandler`
     - Update all assignments and checks
     - _Requirements: 3.1, 3.2, 5.2_
   
-  - [ ] 4.5 Replace window.distanceDrawHandler references
+  - [x] 4.5 Replace window.distanceDrawHandler references
+
     - Find all `window.distanceDrawHandler` references
     - Replace with `this.distanceDrawHandler`
     - Update all assignments and checks
     - _Requirements: 3.1, 3.2, 5.2_
   
-  - [ ] 4.6 Replace window.analysisHandles references
+  - [x] 4.6 Replace window.analysisHandles references
+
     - Find all `window.analysisHandles` references
     - Replace with `this.analysisHandles`
     - Update all assignments and checks
     - _Requirements: 3.1, 3.2, 5.2_
   
-  - [ ] 4.7 Test analysis tools
+  - [x] 4.7 Test analysis tools
+
     - Test buffer analysis with drawing
     - Test intersect analysis with drawing
     - Test distance analysis
@@ -186,46 +193,52 @@ This implementation plan focuses on optimizing the current window bindings by:
     - Verify no console errors
     - _Requirements: 5.3, 6.1, 6.2_
 
-- [ ] 5. Fix heatmap state access across modules and initialization order
+- [x] 5. Fix heatmap state access across modules and initialization order
   
-  - [ ] 5.1 Add getCurrentHeatmapSettings getter to VisualizationManager
+  - [x] 5.1 Add getCurrentHeatmapSettings getter to VisualizationManager
+
     - Add method `getCurrentHeatmapSettings()` that returns `this.currentHeatmapSettings`
     - Verify `isHeatmapEnabled()` and `getHeatmapLayer()` already exist
     - _Requirements: 3.1, 3.2, 5.2_
   
-  - [ ] 5.2 Fix initialization order in main.js
+  - [x] 5.2 Fix initialization order in main.js
     - Move VisualizationManager creation BEFORE MapInitializer
     - Current order: LayerManager → MapInitializer → VisualizationManager (WRONG)
     - New order: LayerManager → VisualizationManager → MapInitializer (CORRECT)
     - This allows MapInitializer to receive visualizationManager reference
     - _Requirements: 3.1, 3.2, 5.2, 7.2_
   
-  - [ ] 5.3 Update LayerManager to store VisualizationManager reference
+  - [x] 5.3 Update LayerManager to store VisualizationManager reference
+
     - In `setupCallbacks()` method, store visualizationManager parameter
     - Add `this.visualizationManager = visualizationManager` at start of setupCallbacks
     - No constructor changes needed (lazy initialization pattern)
     - _Requirements: 3.1, 3.2, 5.2_
   
-  - [ ] 5.4 Replace window.heatmapEnabled in LayerManager
+  - [x] 5.4 Replace window.heatmapEnabled in LayerManager
+
     - Find `window.heatmapEnabled` check in LayerManager.setupCallbacks()
     - Replace with `this.visualizationManager.isHeatmapEnabled()`
     - **This fixes a bug** - window.heatmapEnabled was never set
     - _Requirements: 3.1, 3.2, 5.2_
   
-  - [ ] 5.5 Update MapInitializer to use VisualizationManager
+  - [x] 5.5 Update MapInitializer to use VisualizationManager
+
     - Add `visualizationManager` parameter to MapInitializer constructor (after classificationManager)
     - Store as `this.visualizationManager`
     - Update main.js to pass visualizationManager when creating MapInitializer
     - _Requirements: 3.1, 3.2, 5.2_
   
-  - [ ] 5.6 Replace window heatmap globals in MapInitializer
+  - [x] 5.6 Replace window heatmap globals in MapInitializer
+
     - Find `window.heatmapEnabled` and replace with `this.visualizationManager.isHeatmapEnabled()`
     - Find `window.heatmapLayer` and replace with `this.visualizationManager.getHeatmapLayer()`
     - Find `window.currentHeatmapSettings` and replace with `this.visualizationManager.getCurrentHeatmapSettings()`
     - **This fixes a bug** - heatmap zoom adjustment now works
     - _Requirements: 3.1, 3.2, 5.2_
   
-  - [ ] 5.7 Test heatmap functionality
+  - [x] 5.7 Test heatmap functionality
+
     - Test enabling/disabling heatmap
     - Test heatmap settings changes
     - Test heatmap with zoom level changes (verify zoom adjustment works now)
@@ -233,19 +246,28 @@ This implementation plan focuses on optimizing the current window bindings by:
     - Verify no console errors
     - _Requirements: 5.3, 6.1, 6.2_
 
-- [ ] 6. Remove window.CONFIG from main.js
+- [-] 6. Remove window.CONFIG from main.js
+
+
+
   
-  - [ ] 6.1 Remove window.CONFIG assignment
+
+  - [x] 6.1 Remove window.CONFIG assignment
+
     - Remove `window.CONFIG = CONFIG;` from main.js
     - Keep the import statement `import { CONFIG } from "./core/config.js";`
     - _Requirements: 3.1, 3.2, 5.2_
   
+
+
   - [ ] 6.2 Verify no code accesses window.CONFIG
     - Search codebase for `window.CONFIG` references
     - Verify all modules import CONFIG directly if needed
+
     - _Requirements: 3.1, 5.2, 5.3_
   
   - [ ] 6.3 Test application initialization
+
     - Verify application starts correctly
     - Verify all modules have access to CONFIG
     - Verify no console errors about undefined CONFIG

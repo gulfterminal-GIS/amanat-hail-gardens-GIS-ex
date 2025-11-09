@@ -66,7 +66,7 @@ export class TabSystem {
             
             <p class="tab-message-text">${message}</p>
             
-            <button class="tab-action-button" onclick="window.redirectToTabPlatform('${tabType}')">
+            <button class="tab-action-button" onclick="redirectToTabPlatform('${tabType}')">
               <span>${buttonInfo.text}</span>
               <i class="fas fa-external-link-alt"></i>
             </button>

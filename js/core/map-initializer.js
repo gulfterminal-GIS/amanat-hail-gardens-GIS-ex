@@ -6,13 +6,15 @@
 import { loadModule, loadModules } from "./module-loader.js";
 
 export class MapInitializer {
-  constructor(stateManager, notificationManager, config, tourManager = null, layerManager = null, classificationManager = null) {
+  constructor(stateManager, notificationManager, config, tourManager = null, layerManager = null, classificationManager = null, visualizationManager = null, widgetManager = null) {
     this.stateManager = stateManager;
     this.notificationManager = notificationManager;
     this.config = config;
     this.tourManager = tourManager;
     this.layerManager = layerManager;
     this.classificationManager = classificationManager;
+    this.visualizationManager = visualizationManager;
+    this.widgetManager = widgetManager;
   }
 
   /**
@@ -80,16 +82,20 @@ export class MapInitializer {
       reactiveUtils.watch(
         () => view.zoom,
         (zoom) => {
-          if (window.heatmapEnabled && window.heatmapLayer) {
-            // Adjust radius based on zoom level for better visualization
-            const baseRadius = window.currentHeatmapSettings.radius;
-            const zoomFactor = Math.max(1, Math.min(3, zoom / 10));
+          if (this.visualizationManager && this.visualizationManager.isHeatmapEnabled()) {
+            const heatmapLayer = this.visualizationManager.getHeatmapLayer();
+            if (heatmapLayer) {
+              // Adjust radius based on zoom level for better visualization
+              const currentSettings = this.visualizationManager.getCurrentHeatmapSettings();
+              const baseRadius = currentSettings.radius;
+              const zoomFactor = Math.max(1, Math.min(3, zoom / 10));
 
-            if (
-              window.heatmapLayer.renderer &&
-              window.heatmapLayer.renderer.type === "heatmap"
-            ) {
-              window.heatmapLayer.renderer.radius = baseRadius * zoomFactor;
+              if (
+                heatmapLayer.renderer &&
+                heatmapLayer.renderer.type === "heatmap"
+              ) {
+                heatmapLayer.renderer.radius = baseRadius * zoomFactor;
+              }
             }
           }
         }
@@ -102,10 +108,10 @@ export class MapInitializer {
 
       // Check if it's the first visit and start tour
       const hasSeenTour = localStorage.getItem("gisStudioTourCompleted");
-      if (!hasSeenTour && window.startAppTour) {
+      if (!hasSeenTour && this.tourManager) {
         // Start tour after a short delay
         setTimeout(() => {
-          window.startAppTour();
+          this.tourManager.startAppTour();
           // Mark tour as seen
           localStorage.setItem("gisStudioTourCompleted", "true");
         }, 1500);
@@ -245,7 +251,9 @@ export class MapInitializer {
       })
       .finally(() => {
         loadingScreen.classList.add("fade-out");
-        window.toggleWidget("legend");
+        if (this.widgetManager) {
+          this.widgetManager.toggleWidget("legend");
+        }
       });
   }
 

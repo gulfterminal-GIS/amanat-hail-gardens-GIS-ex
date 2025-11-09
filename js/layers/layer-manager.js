@@ -58,6 +58,8 @@ export class LayerManager {
    * @param {SwipeManager} swipeManager - SwipeManager instance
    */
   setupCallbacks(attributeTable, visualizationManager, analysisManager, swipeManager) {
+    // Store visualizationManager reference for lazy initialization
+    this.visualizationManager = visualizationManager;
     // Callback 1: Update attribute table layer select when layers change
     this.onLayerListUpdate(() => {
       const tableWidget = document.getElementById("attributeTableWidget");
@@ -71,11 +73,11 @@ export class LayerManager {
     // Callback 2: Update heatmap layer select when layers change
     this.onLayerListUpdate(() => {
       if (
-        window.heatmapEnabled &&
-        visualizationManager &&
-        typeof visualizationManager.updateHeatmapLayerSelect === 'function'
+        this.visualizationManager &&
+        this.visualizationManager.isHeatmapEnabled() &&
+        typeof this.visualizationManager.updateHeatmapLayerSelect === 'function'
       ) {
-        visualizationManager.updateHeatmapLayerSelect();
+        this.visualizationManager.updateHeatmapLayerSelect();
       }
     });
 

@@ -16,6 +16,13 @@ export class AnalysisManager {
     this.analysisLayer = null;
     this.distanceMeasurementActive = false;
     this.distanceFeatures = [];
+    
+    // Event handler storage
+    this.currentBufferHandler = null;
+    this.intersectDrawHandler = null;
+    this.distanceClickHandler = null;
+    this.distanceDrawHandler = null;
+    this.analysisHandles = [];
   }
 
   /**
@@ -191,8 +198,8 @@ export class AnalysisManager {
     }
 
     // Clear previous handlers
-    if (window.currentBufferHandler) {
-      window.currentBufferHandler.remove();
+    if (this.currentBufferHandler) {
+      this.currentBufferHandler.remove();
     }
 
     // Set cursor
@@ -237,7 +244,7 @@ export class AnalysisManager {
     }
 
     // Set up event handler
-    window.currentBufferHandler = sketchViewModel.on("create", (event) => {
+    this.currentBufferHandler = sketchViewModel.on("create", (event) => {
       if (event.state === "complete") {
         console.log("Drawing complete:", event);
 
@@ -269,7 +276,7 @@ export class AnalysisManager {
 
         // Clean up
         this.stateManager.setAnalysisDrawing(false);
-        window.currentBufferHandler.remove();
+        this.currentBufferHandler.remove();
       }
     });
 
@@ -311,8 +318,8 @@ export class AnalysisManager {
       indicator.remove();
     }
 
-    if (window.currentBufferHandler) {
-      window.currentBufferHandler.remove();
+    if (this.currentBufferHandler) {
+      this.currentBufferHandler.remove();
     }
 
     // Reset button states
@@ -345,8 +352,8 @@ export class AnalysisManager {
     }
 
     // Clean up handlers
-    if (window.currentBufferHandler) {
-      window.currentBufferHandler.remove();
+    if (this.currentBufferHandler) {
+      this.currentBufferHandler.remove();
     }
 
     this.stopAnalysisDrawing();
@@ -670,12 +677,12 @@ export class AnalysisManager {
     `;
 
     // Clear previous handler
-    if (window.intersectDrawHandler) {
-      window.intersectDrawHandler.remove();
+    if (this.intersectDrawHandler) {
+      this.intersectDrawHandler.remove();
     }
 
     // Set up one-time event listener
-    window.intersectDrawHandler = sketchViewModel.on("create", (event) => {
+    this.intersectDrawHandler = sketchViewModel.on("create", (event) => {
       if (event.state === "complete") {
         // Remove drawing mode
         modal.classList.remove("drawing-active");
@@ -699,7 +706,7 @@ export class AnalysisManager {
         this.notificationManager.showNotification(`Polygon ${featureNum} drawn successfully`, "success");
 
         // Remove handler
-        window.intersectDrawHandler.remove();
+        this.intersectDrawHandler.remove();
       }
     });
 
@@ -724,8 +731,8 @@ export class AnalysisManager {
       indicator.remove();
     }
 
-    if (window.intersectDrawHandler) {
-      window.intersectDrawHandler.remove();
+    if (this.intersectDrawHandler) {
+      this.intersectDrawHandler.remove();
     }
   }
 
@@ -750,8 +757,8 @@ export class AnalysisManager {
     }
 
     // Clean up handlers
-    if (window.intersectDrawHandler) {
-      window.intersectDrawHandler.remove();
+    if (this.intersectDrawHandler) {
+      this.intersectDrawHandler.remove();
     }
 
     this.stopAnalysisDrawing();
@@ -1094,10 +1101,10 @@ export class AnalysisManager {
     const panelContent = panel.querySelector(".widget-content");
     panelContent.innerHTML = `
       <div class="button-group" style="margin-bottom: 12px;">
-        <button class="button-group-item active" onclick="window.setDistanceSource('select')">
+        <button class="button-group-item active" onclick="setDistanceSource('select')">
           <i class="fas fa-mouse-pointer"></i> Select Features
         </button>
-        <button class="button-group-item" onclick="window.setDistanceSource('draw')">
+        <button class="button-group-item" onclick="setDistanceSource('draw')">
           <i class="fas fa-map-marker-alt"></i> Draw Points
         </button>
       </div>
@@ -1112,12 +1119,12 @@ export class AnalysisManager {
     this.distanceFeatures = [];
 
     // Set up click handler for feature selection
-    if (window.distanceClickHandler) {
-      window.distanceClickHandler.remove();
+    if (this.distanceClickHandler) {
+      this.distanceClickHandler.remove();
     }
 
     const view = this.stateManager.getView();
-    window.distanceClickHandler = view.on("click", (event) => this.handleDistanceClick(event));
+    this.distanceClickHandler = view.on("click", (event) => this.handleDistanceClick(event));
     view.container.style.cursor = "crosshair";
   }
 
@@ -1154,8 +1161,8 @@ export class AnalysisManager {
         "Click on map to place two points for distance measurement";
 
       // Remove click handler for feature selection
-      if (window.distanceClickHandler) {
-        window.distanceClickHandler.remove();
+      if (this.distanceClickHandler) {
+        this.distanceClickHandler.remove();
       }
 
       // Initialize sketch for point drawing
@@ -1165,8 +1172,8 @@ export class AnalysisManager {
       }
 
       // Clear any previous distance drawing handler
-      if (window.distanceDrawHandler) {
-        window.distanceDrawHandler.remove();
+      if (this.distanceDrawHandler) {
+        this.distanceDrawHandler.remove();
       }
 
       let pointCount = 0;
@@ -1184,7 +1191,7 @@ export class AnalysisManager {
         },
       };
 
-      window.distanceDrawHandler = sketchViewModel.on("create", async (event) => {
+      this.distanceDrawHandler = sketchViewModel.on("create", async (event) => {
         if (event.state === "complete" && event.tool === "point") {
           tempPoints.push(event.graphic);
           pointCount++;
@@ -1199,7 +1206,7 @@ export class AnalysisManager {
             await this.calculateDistance();
 
             // Clean up
-            window.distanceDrawHandler.remove();
+            this.distanceDrawHandler.remove();
             view.container.style.cursor = "default";
             helpText.textContent = "Distance calculated";
           }
@@ -1212,15 +1219,15 @@ export class AnalysisManager {
       helpText.textContent = "Click on two features to measure distance";
 
       // Remove drawing handler
-      if (window.distanceDrawHandler) {
-        window.distanceDrawHandler.remove();
+      if (this.distanceDrawHandler) {
+        this.distanceDrawHandler.remove();
       }
 
       // Re-enable click handler for feature selection
-      if (window.distanceClickHandler) {
-        window.distanceClickHandler.remove();
+      if (this.distanceClickHandler) {
+        this.distanceClickHandler.remove();
       }
-      window.distanceClickHandler = view.on("click", (event) => this.handleDistanceClick(event));
+      this.distanceClickHandler = view.on("click", (event) => this.handleDistanceClick(event));
     }
   }
 
@@ -1481,9 +1488,9 @@ export class AnalysisManager {
     }
 
     // Remove event handlers
-    if (window.analysisHandles) {
-      window.analysisHandles.forEach((handle) => handle.remove());
-      window.analysisHandles = [];
+    if (this.analysisHandles) {
+      this.analysisHandles.forEach((handle) => handle.remove());
+      this.analysisHandles = [];
     }
 
     // Reset drawing tool buttons

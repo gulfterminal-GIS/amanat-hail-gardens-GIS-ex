@@ -610,4 +610,11 @@ export class VisualizationManager {
   getHeatmapLayer() {
     return this.heatmapLayer;
   }
+
+  /**
+   * Get current heatmap settings
+   */
+  getCurrentHeatmapSettings() {
+    return this.currentHeatmapSettings;
+  }
 }

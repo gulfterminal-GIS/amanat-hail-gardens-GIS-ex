@@ -29,16 +29,13 @@ import { WidgetManager } from "./widgets/widget-manager.js";
 import { bindWindowFunctions } from "./window-bindings.js";
 import "./ui/liquid-glass-effect.js"; // Custom element auto-registers
 
-// Make CONFIG available globally for backward compatibility
-window.CONFIG = CONFIG;
-
 // Create global StateManager instance
 const stateManager = new StateManager();
 
 // Create NotificationManager instance (FOUNDATION MODULE - used by all)
 const notificationManager = new NotificationManager();
 
-// Create LayerManager instance (needed by MapInitializer)
+// Create LayerManager instance (needed by MapInitializer and VisualizationManager)
 const layerManager = new LayerManager(stateManager, notificationManager);
 
 // Create BasemapManager instance (needed by PanelManager)
@@ -66,8 +63,14 @@ const tourManager = new TourManager(stateManager, notificationManager, popupMana
 // Create CountryInfo instance
 const countryInfo = new CountryInfo(stateManager, notificationManager);
 
+// Create VisualizationManager instance (needed by MapInitializer and LayerManager)
+const visualizationManager = new VisualizationManager(stateManager, notificationManager, layerManager);
+
+// Create WidgetManager instance (needed by MapInitializer)
+const widgetManager = new WidgetManager(stateManager, notificationManager, panelManager, drawingManager, popupManager);
+
 // Create MapInitializer instance
-const mapInitializer = new MapInitializer(stateManager, notificationManager, CONFIG, tourManager, layerManager, classificationManager);
+const mapInitializer = new MapInitializer(stateManager, notificationManager, CONFIG, tourManager, layerManager, classificationManager, visualizationManager, widgetManager);
 
 // Create MeasurementManager instance (depends on PanelManager and DrawingManager)
 const measurementManager = new MeasurementManager(stateManager, notificationManager, panelManager, drawingManager);
@@ -83,9 +86,6 @@ const searchManager = new SearchManager(stateManager, notificationManager);
 
 // Create AnalysisManager instance (depends on DrawingManager)
 const analysisManager = new AnalysisManager(stateManager, notificationManager, layerManager, drawingManager);
-
-// Create VisualizationManager instance
-const visualizationManager = new VisualizationManager(stateManager, notificationManager, layerManager);
 
 // Create SwipeManager instance
 const swipeManager = new SwipeManager(stateManager, notificationManager, panelManager);
@@ -113,9 +113,6 @@ const coordinateDisplay = new CoordinateDisplay(stateManager, notificationManage
 
 // Create WindowEventHandler instance
 const windowEventHandler = new WindowEventHandler(popupManager, panelManager);
-
-// Create WidgetManager instance
-const widgetManager = new WidgetManager(stateManager, notificationManager, panelManager, drawingManager, popupManager);
 
 
 // Initialize application
