@@ -173,15 +173,7 @@
   </div>
 
 
-  <img class="logo" src="images/hail_lg_dark_1.png" alt="" style="
-    position: fixed;
-    bottom: 38px;
-    right: 3rem;
-    z-index: 50;
-    height: auto;
-    width: 5rem;
-    font-size: 24px;
-">
+  <img class="logo" src="images/hail_lg_dark_1.png" alt="">
   
   <!-- Side Panel Container -->
   <div class="side-panel" id="sidePanel">
@@ -258,6 +250,7 @@
         <i class="fas fa-times"></i>
       </button>
     </div>
+
     <div class="mobile-menu-grid">
       <button class="mobile-menu-item" data-action="upload">
         <i class="fas fa-cloud-upload-alt"></i>
@@ -297,7 +290,6 @@
         <span>تصنيف</span>
       </button>
 
-
       <button class="mobile-menu-item" onclick="toggleAttributeTable()">
         <i class="fas fa-table"></i>
         <span>جدول البيانات</span>
@@ -318,7 +310,6 @@
   </div>
 
   <!-- Coordinates Display -->
-  <!-- Replace the existing coordinates display with this -->
   <div class="coordinates-display">
     <liquid-glass-effect>
       <img src="images/mdi--location.svg" alt="">
@@ -334,7 +325,6 @@
     <h3 id="countryName"></h3>
     <div id="countryDetails"></div>
   </div>
-
 
 
   <!-- Panel Templates (Hidden) -->
@@ -464,8 +454,9 @@
               <span class="slider-value">70%</span>
             </div>
           </div>
-          <button id="clearDrawings" class="action-btn danger">
-            <i class="fas fa-eraser"></i> Clear All Drawings
+          <button class="clear-drawings-btn" id="clearDrawings" type="button">
+            <i class="fas fa-eraser"></i> 
+            Clear All Drawings
           </button>
         </div>
       </div>
@@ -541,7 +532,7 @@
               <option value="">Select time-enabled layer...</option>
             </select>
             <div class="time-field-select" style="display: none;">
-              <label>Date Field:</label>
+              <label class="form-label">Date Field:</label>
               <select id="timeFieldSelect" class="select-input">
                 <option value="">Select date field...</option>
               </select>
@@ -610,9 +601,26 @@
     </liquid-glass-effect>
   </div>
 
+  <!-- Distance Panel -->
+  <div id="distancePanel" class="custom-widget distance-widget hidden" data-widget-name="Distance">
+    <div class="widget-header">
+      <h3><i class="fas fa-ruler-horizontal"></i> Distance Measurement</h3>
+      <button class="widget-close" onclick="closeDistancePanel()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="widget-content">
+      <p class="help-text">Click on two features to measure distance</p>
+      <div id="distanceResult" class="analysis-result"></div>
+      <button class="action-btn secondary" onclick="clearDistanceMeasurement()">
+        Clear Measurement
+      </button>
+    </div>
+  </div>
+
+
   <!-- Widget Containers -->
   <div class="widget-container" id="widgetContainer">
-
     <!-- Bookmarks Widget -->
     <div id="bookmarksWidget" class="custom-widget hidden" data-widget-name="Bookmarks">
       <div class="widget-header">
@@ -649,23 +657,6 @@
         </button>
       </div>
       <div id="measurementContent" class="widget-content"></div>
-    </div>
-
-    <!-- Distance Panel -->
-    <div id="distancePanel" class="custom-widget hidden" data-widget-name="Distance">
-      <div class="widget-header">
-        <h3><i class="fas fa-ruler-horizontal"></i> Distance Measurement</h3>
-        <button class="widget-close" onclick="closeDistancePanel()">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      <div class="widget-content">
-        <p class="help-text">Click on two features to measure distance</p>
-        <div id="distanceResult" class="analysis-result"></div>
-        <button class="action-btn secondary" onclick="clearDistanceMeasurement()">
-          Clear Measurement
-        </button>
-      </div>
     </div>
   </div>
 

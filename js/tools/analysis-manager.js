@@ -1323,7 +1323,7 @@ export class AnalysisManager {
       }
 
       document.getElementById("distanceResult").innerHTML = `
-        <strong>Distance:</strong> ${distanceText}
+        <strong>Distance:</strong> &nbsp; ${distanceText}
       `;
 
       // Clear previous distance lines

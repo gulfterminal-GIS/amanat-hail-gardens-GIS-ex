@@ -16,9 +16,11 @@ export class BookmarksWidget {
    */
   async toggle() {
     const bookmarksDiv = document.getElementById("bookmarksWidget");
+    const btn = document.querySelector('[onclick*="bookmarks"]');
 
     if (!this.isActive) {
       bookmarksDiv.classList.remove("hidden");
+      if (btn) btn.classList.add("active");
 
       // Remove any inline positioning styles
       bookmarksDiv.style.position = "";
@@ -35,6 +37,7 @@ export class BookmarksWidget {
     } else {
       this.isActive = false;
       bookmarksDiv.classList.add("hidden");
+      if (btn) btn.classList.remove("active");
     }
   }
 

@@ -98,7 +98,7 @@ body {
   background-color: #00172B;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  z-index: 10000;
   transition: opacity var(--transition-slow);
 
 }
@@ -147,6 +147,16 @@ body {
   justify-content: space-between;
   padding: 0 var(--spacing-md);
   z-index: var(--z-toolbar);
+}
+
+.logo {
+    position: fixed;
+    bottom: 38px;
+    right: 3rem;
+    z-index: 50;
+    height: auto;
+    width: 5rem;
+    font-size: 24px;
 }
 
 .brand {
@@ -395,7 +405,7 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--bg-primary);
+  background: rgba(0, 0, 0, 0.25);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   box-shadow: var(--shadow-xl);
   transform: translateY(100%);
@@ -413,23 +423,23 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-md);
-  border-bottom: 1px solid var(--border-color);
+  padding: var(--spacing-sm) var(--spacing-md);
+  /* border-bottom: 1px solid black; */
   position: sticky;
   top: 0;
-  background: var(--bg-primary);
+  background: rgba(0, 0, 0, 0.75);
 }
 
 .mobile-menu-header h3 {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: white;
 }
 
 .mobile-menu-close {
   background: none;
   border: none;
-  color: var(--text-secondary);
+  color: white;
   cursor: pointer;
   padding: var(--spacing-sm);
   font-size: 20px;
@@ -449,18 +459,18 @@ body {
   justify-content: center;
   gap: var(--spacing-xs);
   padding: var(--spacing-md);
-  background: var(--bg-secondary);
+  background: rgba(0, 0, 0, 0.5);
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all var(--transition-fast);
-  color: var(--text-secondary);
+  color: white;
 }
 
 .mobile-menu-item:hover,
 .mobile-menu-item.active {
-  background: var(--primary-color);
-  color: var(--text-white);
+  background: rgba(255, 255, 255, 0.75);
+  color: black;
   transform: translateY(-2px);
 }
 
@@ -658,13 +668,13 @@ body {
   text-align: center;
   transition: all var(--transition-normal);
   cursor: pointer;
-  background: var(--bg-secondary);
+  background: black;
 }
 
 .drop-zone:hover,
 .drop-zone.drag-over {
   border-color: var(--primary-color);
-  background: rgba(25, 118, 210, 0.05);
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .drop-zone-icon {
@@ -676,12 +686,12 @@ body {
 .drop-zone h3 {
   font-size: 18px;
   font-weight: 500;
-  color: var(--text-primary);
+  color: white;
   margin-bottom: var(--spacing-xs);
 }
 
 .drop-zone p {
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.7);
   margin-bottom: var(--spacing-md);
 }
 
@@ -704,6 +714,7 @@ body {
 .layer-list {
   max-height: 400px;
   overflow-y: auto;
+  padding-inline: 0.5em;
 }
 
 .layer-item {
@@ -712,12 +723,12 @@ body {
   padding: var(--spacing-md);
   border-radius: var(--radius-md);
   margin-bottom: var(--spacing-sm);
-  background: var(--bg-secondary);
+  background: rgba(0, 0, 0, 0.75);
   transition: all var(--transition-fast);
 }
 
 .layer-item:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: black;
   transform: translateX(4px);
 }
 
@@ -729,7 +740,7 @@ body {
 .layer-name {
   flex: 1;
   font-weight: 500;
-  color: var(--text-primary);
+  color: white;
 }
 
 .layer-actions {
@@ -762,6 +773,7 @@ body {
 .basemap-item {
   cursor: pointer;
   border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
   overflow: hidden;
   position: relative;
   transition: all var(--transition-fast);
@@ -831,12 +843,12 @@ body {
   justify-content: center;
   gap: var(--spacing-xs);
   padding: var(--spacing-md);
-  background: var(--bg-secondary);
+  background: rgba(0, 0, 0, 0.75);
   border: 2px solid transparent;
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all var(--transition-fast);
-  color: var(--text-secondary);
+  color: white;
 }
 
 .draw-tool-btn:hover {
@@ -861,7 +873,7 @@ body {
 
 /* Drawing Settings */
 .drawing-settings {
-  background: var(--bg-secondary);
+  background: rgba(0, 0, 0, 0.75);
   border-radius: var(--radius-md);
   padding: var(--spacing-md);
 }
@@ -882,7 +894,7 @@ body {
   align-items: center;
   gap: var(--spacing-sm);
   font-weight: 500;
-  color: var(--text-primary);
+  color: white;
 }
 
 .color-picker {
@@ -922,8 +934,23 @@ body {
 .slider-value {
   min-width: 40px;
   text-align: right;
-  color: var(--text-secondary);
+  color: white;
   font-weight: 500;
+}
+
+.clear-drawings-btn {
+  color: red;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  border-radius: 0.5em;
+  border: 1px solid red;
+  margin-top: 0.75em;
+}
+
+.clear-drawings-btn:hover {
+  background-color: black;
+  border-color: white;
 }
 
 /* Analysis Cards */
@@ -938,17 +965,17 @@ body {
   flex-direction: column;
   align-items: center;
   padding: var(--spacing-lg);
-  background: var(--bg-secondary);
+  background: rgba(0, 0, 0, 0.75);
   border: none;
   border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all var(--transition-fast);
   text-align: center;
+  color: var(--text-white);
 }
 
 .analysis-card:hover {
-  background: var(--primary-color);
-  color: var(--text-white);
+  background: black;
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
 }
@@ -976,7 +1003,7 @@ body {
 
 /* Visualization Options */
 .viz-option {
-  background: var(--bg-secondary);
+  background: rgba(0, 0, 0, 0.5);
   border-radius: var(--radius-md);
   padding: var(--spacing-md);
   margin-bottom: var(--spacing-md);
@@ -995,13 +1022,13 @@ body {
   gap: var(--spacing-sm);
   font-size: 16px;
   font-weight: 500;
-  color: var(--text-primary);
+  color: white;
 }
 
 .viz-controls {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-md);
 }
 
 /* Toggle Switch */
@@ -1025,7 +1052,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--border-color);
+  background: gray;
   transition: var(--transition-fast);
   border-radius: 24px;
 }
@@ -1061,21 +1088,23 @@ body {
 
 .form-label {
   display: block;
-  font-weight: 500;
+  font-weight: bold;
   color: var(--text-primary);
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+  color: white;
 }
 
 .input-field,
 .select-input {
   width: 100%;
   padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--bg-primary);
+  background: black;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   font-size: 14px;
-  color: var(--text-primary);
+  color: white;
   transition: var(--transition-fast);
+  letter-spacing: 0.25px;
 }
 
 .input-field:focus,
@@ -1100,7 +1129,7 @@ body {
   gap: var(--spacing-sm);
   cursor: pointer;
   font-weight: 500;
-  color: var(--text-primary);
+  color: white;
 }
 
 .checkbox-label input[type="checkbox"] {
@@ -1114,7 +1143,7 @@ body {
   justify-content: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-lg);
-  border: none;
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   font-size: 14px;
   font-weight: 500;
@@ -1124,20 +1153,18 @@ body {
 }
 
 .action-btn.primary {
-  background: var(--primary-color);
+  background: rgba(0, 133, 255, 0.6);
   color: var(--text-white);
 }
 
 .action-btn.primary:hover {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  background: var(--primary-color);
+  border-color: var(--primary-color);
 }
 
 .action-btn.secondary {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  background: black;
+  color: white;
 }
 
 .action-btn.secondary:hover {
@@ -1170,11 +1197,6 @@ body {
   border-radius: var(--radius-sm);
   transition: var(--transition-fast);
   font-size: 16px;
-}
-
-.icon-btn:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: var(--text-primary);
 }
 
 /* Button Groups */
@@ -1221,7 +1243,7 @@ body {
   flex-direction: column;
   gap: var(--spacing-md);
   max-width: 350px;
-  z-index: var(--z-widget);
+  z-index: 350;
 }
 
 .custom-widget {
@@ -1267,7 +1289,7 @@ body {
 
 .widget-content {
   padding: var(--spacing-md);
-  max-height: 400px;
+  max-height: 325px;
   overflow-y: auto;
   color: white !important;
 }
@@ -1282,11 +1304,19 @@ body {
 }
 
 .legend-widget .widget-content {
-  padding: 0.5rem 0 0;
+  padding-block: 0.5rem 0;
+  padding-inline: 0 0.5rem;
 }
 
 .legend-widget:hover .liquidGlass-wrapper {
   padding: 0.25rem;
+}
+
+.distance-widget {
+  position: fixed;
+  bottom: 7rem;
+  left: 5.5rem;
+  z-index: var(--z-widget);
 }
 
 /* Custom Popup */
@@ -1476,7 +1506,7 @@ body {
 
 .table-search {
   position: relative;
-  background: var(--bg-primary);
+  background: black;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 0 var(--spacing-sm);
@@ -1532,7 +1562,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.75);
   color: white;
   font-weight: 600;
   padding: var(--spacing-sm) var(--spacing-md);
@@ -1564,7 +1594,7 @@ body {
   white-space: nowrap;
 }
 
-.attribute-data-table tr:hover {
+.attribute-data-table tbody tr:hover {
   background: rgba(0, 0, 0, 0.8);
 }
 
@@ -1645,8 +1675,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-lg);
-  background: var(--bg-secondary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: black;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -1656,14 +1686,14 @@ body {
   gap: var(--spacing-sm);
   font-size: 20px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: white;
   margin: 0;
 }
 
 .modal-close {
   background: none;
   border: none;
-  color: var(--text-secondary);
+  color: white;
   cursor: pointer;
   padding: var(--spacing-sm);
   font-size: 20px;
@@ -1672,14 +1702,16 @@ body {
 }
 
 .modal-close:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: var(--text-primary);
+  /* background: rgba(0, 0, 0, 0.75); */
+  color: gray;
 }
 
 .modal-body {
   padding: var(--spacing-lg);
   overflow-y: auto;
   flex: 1;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.75);
 }
 
 /* Draw Tools Grid */
@@ -1727,7 +1759,7 @@ body {
 
 /* Feature Sections */
 .feature-section {
-  background: var(--bg-secondary);
+  background: rgba(0, 0, 0, 0.75);
   border-radius: var(--radius-md);
   padding: var(--spacing-md);
   margin-bottom: var(--spacing-md);
@@ -1736,7 +1768,7 @@ body {
 .section-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: white;
   margin-bottom: var(--spacing-md);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -1847,9 +1879,9 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-md);
   padding: var(--spacing-lg);
-  background: var(--bg-secondary);
+  background: rgba(0, 0, 0, 0.5);
   border: 2px solid var(--border-color);
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -1858,7 +1890,7 @@ body {
 
 .export-format-btn:hover {
   border-color: var(--primary-color);
-  background: var(--bg-primary);
+  background: black;
   transform: scale(1.05);
 }
 
@@ -1870,7 +1902,7 @@ body {
 .export-format-btn span {
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-primary);
+  color: white;
 }
 
 /* Time Controls */
@@ -1922,12 +1954,27 @@ body {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-sm);
-  background: rgba(25, 118, 210, 0.1);
+  padding: var(--spacing-xs);
+  /* background: rgba(0, 133, 255, 0.6); */
   border-radius: var(--radius-sm);
   font-size: 13px;
-  color: var(--primary-color);
+  color: white;
   margin-top: var(--spacing-sm);
+}
+
+/* Analysis Result */
+.analysis-result {
+  background: rgba(0, 133, 255, 0.6);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  font-size: 1.1rem;
+  color: white;
+  min-height: 40px;
+  /* font-weight: bold; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Empty States */
@@ -1953,34 +2000,21 @@ body {
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--bg-secondary);
+  background: black;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: var(--transition-fast);
   font-size: 14px;
-  color: var(--text-primary);
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: bold;
+  letter-spacing: 0.25px;
 }
 
 .settings-btn:hover {
   background: var(--bg-primary);
   border-color: var(--primary-color);
   color: var(--primary-color);
-}
-
-/* Analysis Result */
-.analysis-result {
-  background: rgba(25, 118, 210, 0.1);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-md);
-  margin: var(--spacing-md) 0;
-  font-size: 14px;
-  color: var(--text-primary);
-  min-height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 500;
 }
 
 /* Bookmarks List */
@@ -2032,6 +2066,10 @@ body {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   padding: var(--spacing-sm);
+}
+
+.esri-legend__layer {
+  margin: unset;
 }
 
 .esri-legend {
@@ -2681,7 +2719,7 @@ select:focus-visible {
 .modal-content {
   position: relative;
   z-index: 1;
-  background: var(--bg-primary);
+  background: transparent;
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl);
   width: 100%;
@@ -2913,7 +2951,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 }
 
 .field-stats {
-  background: var(--bg-secondary);
+  background: rgba(0, 0, 0, 0.8);
   border-radius: var(--radius-md);
   padding: var(--spacing-md);
   margin: var(--spacing-md) 0;
@@ -2922,6 +2960,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 .stats-content {
   font-size: 13px;
   line-height: 1.6;
+  color: white;
 }
 
 .stats-summary {
@@ -2935,7 +2974,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 .stats-values {
   max-height: 200px;
   overflow-y: auto;
-  background: var(--bg-primary);
+  background: black;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
 }
@@ -2955,7 +2994,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 
 .stat-value-name {
   font-weight: 500;
-  color: var(--text-primary);
+  color: white;
   max-width: 60%;
   word-break: break-word;
 }
@@ -3040,7 +3079,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 }
 
 .shepherd-header {
-  background: var(--primary-color);
+  background: transparent;
   padding: 1rem;
   position: relative;
 }
@@ -3071,7 +3110,7 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.5);
   pointer-events: none;
 }
 
@@ -3087,17 +3126,22 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 
 .shepherd-text {
   font-size: 14px;
+  color: white;
+  font-weight: bold;
+  letter-spacing: 0.25px;
   line-height: 1.6;
   padding: 1.5rem;
+  background-color: rgba(255, 255, 255, 0.25);
 }
 
 .shepherd-footer {
   padding: 0 1rem 1rem;
+  background-color: rgba(255, 255, 255, 0.25);
 }
 
 .shepherd-button {
-  background: var(--primary-color);
-  border: none;
+  background: black;
+  border: 1px solid black;
   border-radius: var(--radius-md);
   color: white;
   cursor: pointer;
@@ -3108,32 +3152,37 @@ CSS to your style.css (around line 720 after the quick-actions styles): */
 }
 
 .shepherd-button:hover {
-  background: var(--primary-dark);
+  background: white !important;
+  color: black !important;
   transform: translateY(-1px);
 }
 
 .shepherd-button-secondary {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.5) !important;
+  color: white !important;
+  border: 1px solid white !important;
 }
 
 .shepherd-button-secondary:hover {
   background: var(--bg-primary);
 }
 
-
+.shepherd-enabled.shepherd-element {
+  background-color: transparent !important;
+}
 
 /* Override Shepherd default gray background */
-.shepherd-has-title .shepherd-content .shepherd-header {
-  background: var(--primary-color) !important;
+/* .shepherd-has-title .shepherd-content .shepherd-header {
+  background: transparent !important;
   padding: 1rem !important;
-}
+} */
 
 /* Ensure consistent styling across all shepherd headers */
 .shepherd-element .shepherd-header,
 .shepherd-has-title .shepherd-content .shepherd-header {
-  background: var(--primary-color) !important;
-  background-color: var(--primary-color) !important;
+  background: rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  /* background-color: var(--primary-color) !important; */
 }
 
 /* Make sure the title and close button remain white */

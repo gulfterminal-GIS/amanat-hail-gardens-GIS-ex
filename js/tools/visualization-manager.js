@@ -75,7 +75,7 @@ export class VisualizationManager {
     if (this.heatmapEnabled) {
       // Show controls container
       if (controls) {
-        controls.style.display = "block";
+        controls.style.display = "flex";
       }
 
       this.updateHeatmapLayerSelect();
@@ -341,7 +341,7 @@ export class VisualizationManager {
     const panel = document.getElementById("timeControlsPanel");
 
     if (toggle.checked) {
-      panel.style.display = "block";
+      panel.style.display = "flex";
       this.initializeTimeLayerSelect();
     } else {
       panel.style.display = "none";

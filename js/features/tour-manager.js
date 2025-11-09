@@ -663,7 +663,7 @@ export class TourManager {
     const tourFeatures = this.stateManager.getTourFeatures();
 
     if (!tourFeatures || tourFeatures.length === 0) {
-      this.notificationManager.showNotification("No features available for tour");
+      this.notificationManager.showNotification("No features available for tour", "warning");
       return;
     }
 
@@ -671,6 +671,8 @@ export class TourManager {
 
     if (!this.stateManager.isFeatureTourActive()) {
       this.startFeatureTour();
+    } else {
+      this.closeTourControls();
     }
   }
 }

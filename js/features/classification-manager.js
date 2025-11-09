@@ -156,7 +156,7 @@ export class ClassificationManager {
     `;
 
     if (stats.uniqueCount <= 20) {
-      html += "<div><strong>Top Values:</strong></div>";
+      html += "<div><label class='form-label'>Top Values:</label></div>";
       html += '<div class="stats-values">';
 
       stats.sortedValues.forEach(([value, count]) => {
@@ -349,7 +349,7 @@ export class ClassificationManager {
       };
 
       // Create legend
-      this.createClassificationLegend(stats, colors, fieldName);
+      // this.createClassificationLegend(stats, colors, fieldName);
 
       // Close panel
       this.panelManager.closeSidePanel();

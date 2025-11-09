@@ -82,29 +82,28 @@ function loadModule(moduleName) {
 
 
 // Custom Element: Liquid Glass Effect
-// MOVED TO: js/ui/liquid-glass-effect.js
-// class LiquidGlassEffect extends HTMLElement {
-//   constructor() {
-//     super();
-//   }
+class LiquidGlassEffect extends HTMLElement {
+  constructor() {
+    super();
+  }
 
-//   connectedCallback() {
-//     const content = this.innerHTML;
+  connectedCallback() {
+    const content = this.innerHTML;
 
-//     this.innerHTML = `
-//       <div class="liquidGlass-wrapper">
-//         <div class="liquidGlass-effect"></div>
-//         <div class="liquidGlass-tint"></div>
-//         <div class="liquidGlass-shine"></div>
-//         <div class="liquidGlass-content">
-//             ${content}
-//         </div>
-//       </div>
-//     `;
-//   }
-// }
+    this.innerHTML = `
+      <div class="liquidGlass-wrapper">
+        <div class="liquidGlass-effect"></div>
+        <div class="liquidGlass-tint"></div>
+        <div class="liquidGlass-shine"></div>
+        <div class="liquidGlass-content">
+            ${content}
+        </div>
+      </div>
+    `;
+  }
+}
 
-// customElements.define('liquid-glass-effect', LiquidGlassEffect);
+customElements.define('liquid-glass-effect', LiquidGlassEffect);
 
 
 // Update initializeMap to store home extent
@@ -896,6 +895,8 @@ function manuallyStartTour() {
 
   if (!featureTourActive) {
     startFeatureTour();
+  } else {
+    closeTourControls();
   }
 }
 
@@ -5193,7 +5194,7 @@ window.toggleHeatmap = async function () {
   if (heatmapEnabled) {
     // Show controls container
     if (controls) {
-      controls.style.display = "block";
+      controls.style.display = "flex";
     }
 
     updateHeatmapLayerSelect();
@@ -5595,7 +5596,7 @@ function showClassificationStatistics(stats) {
   `;
 
   if (stats.uniqueCount <= 20) {
-    html += "<div><strong>Top Values:</strong></div>";
+    html += "<div><label class='form-label'>Top Values:</label></div>";
     html += '<div class="stats-values">';
 
     stats.sortedValues.forEach(([value, count]) => {
@@ -5781,7 +5782,7 @@ async function applyClassification() {
     };
 
     // Create legend
-    createClassificationLegend(stats, colors, fieldName);
+    // createClassificationLegend(stats, colors, fieldName);
 
     // Close panel
     closeSidePanel();
@@ -7208,7 +7209,7 @@ async function calculateDistance() {
     }
 
     document.getElementById("distanceResult").innerHTML = `
-      <strong>Distance:</strong> ${distanceText}
+      <strong>Distance:</strong> &nbsp; ${distanceText}
     `;
 
     // Clear previous distance lines
@@ -7352,7 +7353,7 @@ async function toggleTimeControls() {
   const panel = document.getElementById("timeControlsPanel");
 
   if (toggle.checked) {
-    panel.style.display = "block";
+    panel.style.display = "flex";
     initializeTimeLayerSelect();
   } else {
     panel.style.display = "none";
@@ -8255,4 +8256,3 @@ function startAppTour() {
 
 // Export the tour function
 window.startAppTour = startAppTour;
-
