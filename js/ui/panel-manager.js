@@ -6,10 +6,11 @@
 import { UploadHandler } from "../layers/upload-handler.js";
 
 export class PanelManager {
-  constructor(stateManager, notificationManager, basemapManager = null) {
+  constructor(stateManager, notificationManager, basemapManager = null, classificationManager = null) {
     this.stateManager = stateManager;
     this.notificationManager = notificationManager;
     this.basemapManager = basemapManager;
+    this.classificationManager = classificationManager;
     this.swipeManager = null; // Set via setSwipeManager() after initialization
     
     // Initialize panel close button event listener
@@ -44,6 +45,7 @@ export class PanelManager {
       analysisPanelTemplate: "analysisBtn",
       visualizationPanelTemplate: "visualizeBtn",
       swipePanelTemplate: "swipeBtn",
+      classificationPanelTemplate: "classificationBtn",
     };
 
     const btnId = buttonMap[templateId];
@@ -73,6 +75,11 @@ export class PanelManager {
         // Delegate to SwipeManager if available
         if (this.swipeManager) {
           this.swipeManager.initializeSwipePanel();
+        }
+      } else if (templateId === "classificationPanelTemplate") {
+        // Delegate to ClassificationManager if available
+        if (this.classificationManager) {
+          this.classificationManager.initializeClassificationPanel();
         }
       }
     }

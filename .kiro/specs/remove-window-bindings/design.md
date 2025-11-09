@@ -99,26 +99,33 @@ setMap(map) {
 
 **Problem**: Several modules use window bindings to call functions on other modules:
 
-1. **ToolbarManager** (`js/ui/toolbar-manager.js`):
-   - Uses `window.initializeClassificationPanel()` - should use `classificationManager.initializePanel()`
-   - Uses `window.clearAll()` - should use `drawingManager.clearAll()`
-   - Uses `window.toggleMeasurement()` - should use `measurementManager.toggleMeasurement()`
-   - Uses `window.resetDrawingTools()` - should use `drawingManager.resetDrawingTools()`
+1. **PanelManager** (`js/ui/panel-manager.js`):
+   - **BUG FIX**: Classification panel opens but never initializes (window.initializeClassificationPanel is never set)
+   - Should call `classificationManager.initializeClassificationPanel()` when opening classification panel
+   - Follows existing pattern (basemapManager, swipeManager)
 
-2. **AnalysisManager** (`js/tools/analysis-manager.js`):
+2. **ToolbarManager** (`js/ui/toolbar-manager.js`):
+   - Uses `window.clearAll()` - should use `drawingManager.clearAll()` (already has reference)
+   - Uses `window.toggleMeasurement()` - should use `measurementManager.toggleMeasurement()` (needs reference)
+   - Uses `window.resetDrawingTools()` - should use `drawingManager.resetDrawingTools()` (already has reference)
+   - **BUG FIX**: window.resetDrawingTools is never set, so this never executes
+
+3. **AnalysisManager** (`js/tools/analysis-manager.js`):
    - Uses `window.currentBufferHandler` - should be instance property `this.currentBufferHandler`
    - Uses `window.intersectDrawHandler` - should be instance property `this.intersectDrawHandler`
    - Uses `window.distanceClickHandler` - should be instance property `this.distanceClickHandler`
    - Uses `window.distanceDrawHandler` - should be instance property `this.distanceDrawHandler`
    - Uses `window.analysisHandles` - should be instance property `this.analysisHandles`
 
-3. **LayerManager** (`js/layers/layer-manager.js`):
-   - Uses `window.heatmapEnabled` - should use `visualizationManager.isHeatmapEnabled()`
+4. **LayerManager** (`js/layers/layer-manager.js`):
+   - **BUG FIX**: Uses `window.heatmapEnabled` which is never set, so heatmap layer list updates don't work
+   - Should use `visualizationManager.isHeatmapEnabled()` via lazy initialization in setupCallbacks()
 
-4. **MapInitializer** (`js/core/map-initializer.js`):
-   - Uses `window.heatmapEnabled` - should use `visualizationManager.isHeatmapEnabled()`
-   - Uses `window.heatmapLayer` - should use `visualizationManager.getHeatmapLayer()`
-   - Uses `window.currentHeatmapSettings` - should use `visualizationManager.getCurrentHeatmapSettings()`
+5. **MapInitializer** (`js/core/map-initializer.js`):
+   - **BUG FIX**: Uses `window.heatmapEnabled`, `window.heatmapLayer`, `window.currentHeatmapSettings` which are never set
+   - Heatmap zoom adjustment feature doesn't work
+   - Should use `visualizationManager.isHeatmapEnabled()`, `getHeatmapLayer()`, `getCurrentHeatmapSettings()`
+   - **REQUIRES**: VisualizationManager created before MapInitializer (initialization order change)
 
 5. **TabSystem** (`js/ui/tab-system.js`):
    - Uses `window.redirectToTabPlatform()` in HTML string - should use data attribute + event listener
@@ -132,12 +139,20 @@ setMap(map) {
 - Store event handlers as instance properties
 - Use direct method calls instead of window bindings
 - Remove `window.CONFIG` (modules import it directly)
+- Fix initialization order (create VisualizationManager before MapInitializer)
 
 **Impact**:
 - Removes ~10 unnecessary window bindings
+- **Fixes 4 bugs** where window globals were never set
 - Cleaner module dependencies
 - Better encapsulation
 - Easier to test and maintain
+
+**Bugs Fixed**:
+1. Classification panel now initializes correctly
+2. Drawing tools reset now works
+3. Heatmap layer list updates now work
+4. Heatmap zoom adjustment now works
 
 ### Phase 3: Add Getter Methods to VisualizationManager
 

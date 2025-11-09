@@ -1,19 +1,20 @@
 /**
  * StateManager - Centralized state management for the GIS application
  *
- * This class replaces all global variables from script.js with a centralized state management system.
+ * This class provides centralized state management for all application state.
  * It provides getters and setters for all application state, ensuring controlled access and modification.
+ * StateManager does NOT expose state on the window object - modules should access state through this class.
  *
- * Original global variables from script.js:
- * - displayMap, view, homeExtent
- * - uploadedLayers, drawLayer, countriesLayer, flashGraphicsLayer, tourLayer
- * - searchWidget, measurementWidget, sketchViewModel
- * - currentPopupFeature, activeNotifications
- * - featureTourActive, featureTourInterval, currentFeatureIndex, tourFeatures
- * - highlightHandle
- * - currentClassificationLayer, originalRenderers
- * - analysisDrawing, analysisDrawType, drawnFeatures
- * - countryInfoTimeout, activeDrawingTool
+ * Managed state includes:
+ * - Core map objects: map, view, homeExtent
+ * - Layers: uploadedLayers, drawLayer, countriesLayer, flashGraphicsLayer, tourLayer
+ * - Widgets and tools: searchWidget, measurementWidget, sketchViewModel, activeDrawingTool
+ * - Popup state: currentPopupFeature
+ * - Notification state: activeNotifications
+ * - Tour state: featureTourActive, featureTourInterval, currentFeatureIndex, tourFeatures, highlightHandle
+ * - Classification state: currentClassificationLayer, originalRenderers
+ * - Analysis state: analysisDrawing, analysisDrawType, drawnFeatures
+ * - Other state: countryInfoTimeout
  */
 
 export class StateManager {
@@ -76,10 +77,6 @@ export class StateManager {
 
   setMap(map) {
     this._map = map;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.displayMap = map;
-    }
   }
 
   getView() {
@@ -88,10 +85,6 @@ export class StateManager {
 
   setView(view) {
     this._view = view;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.view = view;
-    }
   }
 
   getHomeExtent() {
@@ -100,10 +93,6 @@ export class StateManager {
 
   setHomeExtent(extent) {
     this._homeExtent = extent;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.homeExtent = extent;
-    }
   }
 
   // ==================== Layers ====================
@@ -114,19 +103,11 @@ export class StateManager {
 
   addUploadedLayer(layer) {
     this._uploadedLayers.push(layer);
-    // Also update global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.uploadedLayers = this._uploadedLayers;
-    }
   }
 
   removeUploadedLayer(index) {
     if (index >= 0 && index < this._uploadedLayers.length) {
       this._uploadedLayers.splice(index, 1);
-      // Also update global for backward compatibility during transition
-      if (typeof window !== "undefined") {
-        window.uploadedLayers = this._uploadedLayers;
-      }
     }
   }
 
@@ -136,10 +117,6 @@ export class StateManager {
 
   setDrawLayer(layer) {
     this._drawLayer = layer;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.drawLayer = layer;
-    }
   }
 
   getCountriesLayer() {
@@ -148,10 +125,6 @@ export class StateManager {
 
   setCountriesLayer(layer) {
     this._countriesLayer = layer;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.countriesLayer = layer;
-    }
   }
 
   getFlashGraphicsLayer() {
@@ -160,10 +133,6 @@ export class StateManager {
 
   setFlashGraphicsLayer(layer) {
     this._flashGraphicsLayer = layer;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.flashGraphicsLayer = layer;
-    }
   }
 
   getTourLayer() {
@@ -172,10 +141,6 @@ export class StateManager {
 
   setTourLayer(layer) {
     this._tourLayer = layer;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.tourLayer = layer;
-    }
   }
 
   // ==================== Widgets and Tools ====================
@@ -186,10 +151,6 @@ export class StateManager {
 
   setSearchWidget(widget) {
     this._searchWidget = widget;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.searchWidget = widget;
-    }
   }
 
   getMeasurementWidget() {
@@ -198,10 +159,6 @@ export class StateManager {
 
   setMeasurementWidget(widget) {
     this._measurementWidget = widget;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.measurementWidget = widget;
-    }
   }
 
   getSketchViewModel() {
@@ -210,10 +167,6 @@ export class StateManager {
 
   setSketchViewModel(viewModel) {
     this._sketchViewModel = viewModel;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.sketchViewModel = viewModel;
-    }
   }
 
   // ==================== Drawing State ====================
@@ -224,10 +177,6 @@ export class StateManager {
 
   setActiveDrawingTool(tool) {
     this._activeDrawingTool = tool;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.activeDrawingTool = tool;
-    }
   }
 
   // ==================== Popup State ====================
@@ -238,10 +187,6 @@ export class StateManager {
 
   setCurrentPopupFeature(feature) {
     this._currentPopupFeature = feature;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.currentPopupFeature = feature;
-    }
   }
 
   // ==================== Notification State ====================
@@ -252,28 +197,16 @@ export class StateManager {
 
   addNotification(notification) {
     this._activeNotifications.push(notification);
-    // Also update global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.activeNotifications = this._activeNotifications;
-    }
   }
 
   removeNotification(notificationId) {
     this._activeNotifications = this._activeNotifications.filter(
       (n) => n.id !== notificationId
     );
-    // Also update global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.activeNotifications = this._activeNotifications;
-    }
   }
 
   clearAllNotifications() {
     this._activeNotifications = [];
-    // Also update global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.activeNotifications = this._activeNotifications;
-    }
   }
 
   // ==================== Tour State ====================
@@ -284,10 +217,6 @@ export class StateManager {
 
   setFeatureTourActive(active) {
     this._featureTourActive = active;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.featureTourActive = active;
-    }
   }
 
   getFeatureTourInterval() {
@@ -296,10 +225,6 @@ export class StateManager {
 
   setFeatureTourInterval(interval) {
     this._featureTourInterval = interval;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.featureTourInterval = interval;
-    }
   }
 
   getCurrentFeatureIndex() {
@@ -308,10 +233,6 @@ export class StateManager {
 
   setCurrentFeatureIndex(index) {
     this._currentFeatureIndex = index;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.currentFeatureIndex = index;
-    }
   }
 
   getTourFeatures() {
@@ -320,10 +241,6 @@ export class StateManager {
 
   setTourFeatures(features) {
     this._tourFeatures = features;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.tourFeatures = features;
-    }
   }
 
   getHighlightHandle() {
@@ -332,10 +249,6 @@ export class StateManager {
 
   setHighlightHandle(handle) {
     this._highlightHandle = handle;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.highlightHandle = handle;
-    }
   }
 
 
@@ -350,10 +263,6 @@ export class StateManager {
 
   setCurrentClassificationLayer(layer) {
     this._currentClassificationLayer = layer;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.currentClassificationLayer = layer;
-    }
   }
 
   getOriginalRenderers() {
@@ -362,10 +271,6 @@ export class StateManager {
 
   setOriginalRenderer(layerId, renderer) {
     this._originalRenderers.set(layerId, renderer);
-    // Also update global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.originalRenderers = this._originalRenderers;
-    }
   }
 
   getOriginalRenderer(layerId) {
@@ -374,10 +279,6 @@ export class StateManager {
 
   clearOriginalRenderers() {
     this._originalRenderers.clear();
-    // Also update global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.originalRenderers = this._originalRenderers;
-    }
   }
 
   // ==================== Analysis State ====================
@@ -388,10 +289,6 @@ export class StateManager {
 
   setAnalysisDrawing(drawing) {
     this._analysisDrawing = drawing;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.analysisDrawing = drawing;
-    }
   }
 
   getAnalysisDrawType() {
@@ -400,10 +297,6 @@ export class StateManager {
 
   setAnalysisDrawType(type) {
     this._analysisDrawType = type;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.analysisDrawType = type;
-    }
   }
 
   getDrawnFeatures() {
@@ -412,34 +305,18 @@ export class StateManager {
 
   setDrawnFeatures(features) {
     this._drawnFeatures = features;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.drawnFeatures = features;
-    }
   }
 
   addBufferFeature(feature) {
     this._drawnFeatures.buffer.push(feature);
-    // Also update global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.drawnFeatures = this._drawnFeatures;
-    }
   }
 
   setIntersectFeature1(feature) {
     this._drawnFeatures.intersect1 = feature;
-    // Also update global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.drawnFeatures = this._drawnFeatures;
-    }
   }
 
   setIntersectFeature2(feature) {
     this._drawnFeatures.intersect2 = feature;
-    // Also update global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.drawnFeatures = this._drawnFeatures;
-    }
   }
 
   clearDrawnFeatures() {
@@ -448,10 +325,6 @@ export class StateManager {
       intersect1: null,
       intersect2: null,
     };
-    // Also update global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.drawnFeatures = this._drawnFeatures;
-    }
   }
 
   // ==================== Other State ====================
@@ -462,20 +335,12 @@ export class StateManager {
 
   setCountryInfoTimeout(timeout) {
     this._countryInfoTimeout = timeout;
-    // Also set global for backward compatibility during transition
-    if (typeof window !== "undefined") {
-      window.countryInfoTimeout = timeout;
-    }
   }
 
   clearCountryInfoTimeout() {
     if (this._countryInfoTimeout) {
       clearTimeout(this._countryInfoTimeout);
       this._countryInfoTimeout = null;
-      // Also clear global for backward compatibility during transition
-      if (typeof window !== "undefined") {
-        window.countryInfoTimeout = null;
-      }
     }
   }
 

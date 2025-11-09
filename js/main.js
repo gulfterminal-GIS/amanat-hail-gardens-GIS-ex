@@ -47,14 +47,18 @@ const basemapManager = new BasemapManager(stateManager, notificationManager);
 // Create DrawingManager instance
 const drawingManager = new DrawingManager(stateManager, notificationManager);
 
-// Create PanelManager instance
-const panelManager = new PanelManager(stateManager, notificationManager, basemapManager);
-
 // Create PopupManager instance (needed by TourManager and ClassificationManager)
 const popupManager = new PopupManager(stateManager, notificationManager);
 
-// Create ClassificationManager instance (needed by MapInitializer)
-const classificationManager = new ClassificationManager(stateManager, notificationManager, panelManager, popupManager);
+// Create ClassificationManager instance (needed by PanelManager and MapInitializer)
+// Note: PanelManager reference will be set after PanelManager is created
+const classificationManager = new ClassificationManager(stateManager, notificationManager, null, popupManager);
+
+// Create PanelManager instance
+const panelManager = new PanelManager(stateManager, notificationManager, basemapManager, classificationManager);
+
+// Set PanelManager reference in ClassificationManager
+classificationManager.panelManager = panelManager;
 
 // Create TourManager instance (needed by MapInitializer)
 const tourManager = new TourManager(stateManager, notificationManager, popupManager);

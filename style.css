@@ -152,7 +152,7 @@ body {
 .logo {
     position: fixed;
     bottom: 38px;
-    right: 3rem;
+    right: 2%;
     z-index: 50;
     height: auto;
     width: 5rem;
