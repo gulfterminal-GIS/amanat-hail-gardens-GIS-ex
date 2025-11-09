@@ -55,8 +55,9 @@ export class LayerManager {
    * @param {AttributeTable} attributeTable - AttributeTable instance
    * @param {VisualizationManager} visualizationManager - VisualizationManager instance
    * @param {AnalysisManager} analysisManager - AnalysisManager instance
+   * @param {SwipeManager} swipeManager - SwipeManager instance
    */
-  setupCallbacks(attributeTable, visualizationManager, analysisManager) {
+  setupCallbacks(attributeTable, visualizationManager, analysisManager, swipeManager) {
     // Callback 1: Update attribute table layer select when layers change
     this.onLayerListUpdate(() => {
       const tableWidget = document.getElementById("attributeTableWidget");
@@ -110,8 +111,16 @@ export class LayerManager {
       }
     });
 
+    // Callback 4: Update swipe panel layer selects when layers change
+    this.onLayerListUpdate(() => {
+      const swipePanel = document.querySelector("#sidePanelContent #swipeLayer1Select");
+      if (swipePanel && swipeManager && typeof swipeManager.updateSwipeLayerSelects === 'function') {
+        swipeManager.updateSwipeLayerSelects();
+      }
+    });
+
     console.log(
-      "✅ LayerManager callbacks registered (attribute table, heatmap, analysis)"
+      "✅ LayerManager callbacks registered (attribute table, heatmap, analysis, swipe)"
     );
   }
 

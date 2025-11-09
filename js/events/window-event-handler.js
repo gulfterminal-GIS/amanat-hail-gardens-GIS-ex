@@ -5,6 +5,7 @@
  * - Window resize events
  * - Responsive UI adjustments
  * - Popup management on resize
+ * - Keyboard shortcuts (Ctrl/Cmd + S for swipe)
  * 
  * Extracted from script.js as part of the modularization effort.
  */
@@ -21,6 +22,24 @@ export class WindowEventHandler {
    */
   initialize() {
     window.addEventListener("resize", () => this.handleResize());
+    this.initializeKeyboardShortcuts();
+  }
+
+  /**
+   * Initialize keyboard shortcuts (from script.js line 2710)
+   * @private
+   */
+  initializeKeyboardShortcuts() {
+    document.addEventListener('keydown', (e) => {
+      // Ctrl/Cmd + S for swipe
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        const swipeBtn = document.getElementById("swipeBtn");
+        if (swipeBtn) {
+          swipeBtn.click();
+        }
+      }
+    });
   }
 
   /**

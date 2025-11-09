@@ -108,6 +108,15 @@ export class ToolbarManager {
         // Note: toggleAttributeTable will be handled by AttributeTable module in future
       });
     }
+
+    // Swipe button
+    const swipeBtn = document.getElementById("swipeBtn");
+    if (swipeBtn) {
+      swipeBtn.addEventListener("click", () => {
+        swipeBtn.classList.toggle("active");
+        this.panelManager.openSidePanel("مقارنة الطبقات", "swipePanelTemplate");
+      });
+    }
   }
 
   /**
@@ -220,6 +229,9 @@ export class ToolbarManager {
         if (window.initializeClassificationPanel) {
           window.initializeClassificationPanel();
         }
+        break;
+      case "swipe":
+        this.panelManager.openSidePanel("مقارنة الطبقات", "swipePanelTemplate");
         break;
       default:
         console.warn(`Unknown toolbar action: ${action}`);

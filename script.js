@@ -14,6 +14,13 @@ let activeDrawingTool = null;
 // Store initial extent for home button
 let homeExtent = null;
 
+
+// Swipe variables
+let swipeWidget = null;
+let swipeMode = 'layers'; // 'layers' or 'basemap-layer'
+let swipeDirection = 'horizontal';
+
+
 // Add these global variables for country feature
 let countriesLayer = null;
 let countryInfoTimeout = null;
@@ -985,6 +992,10 @@ function initializeUI() {
         case "visualize":
           openSidePanel("Visualization", "visualizationPanelTemplate");
           break;
+        case "swipe":
+          openSidePanel("مقارنة الطبقات", "swipePanelTemplate");
+          initializeSwipePanel();
+          break;
         case "classification":
           openSidePanel("Classification", "classificationPanelTemplate");
           initializeClassificationPanel();
@@ -1020,6 +1031,14 @@ function initializeUI() {
       this.classList.toggle("active");
       openSidePanel("Visualization", "visualizationPanelTemplate");
     });
+
+
+  document.getElementById("swipeBtn").addEventListener("click", function() {
+    this.classList.toggle("active");
+    openSidePanel("مقارنة الطبقات", "swipePanelTemplate");
+    initializeSwipePanel();
+  });
+
 
   document
     .getElementById("classificationBtn")
@@ -2296,6 +2315,11 @@ function clearAll() {
       sketchViewModel.cancel();
     }
     resetDrawingTools();
+    // Remove swipe widget
+    if (swipeWidget) {
+      removeSwipe();
+    }
+
   }
 }
 
@@ -2681,6 +2705,16 @@ function initializeEventHandlers() {
       console.error("Error in click handler:", error);
     }
   });
+
+  // Add keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  // Ctrl/Cmd + S for swipe
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    document.getElementById("swipeBtn")?.click();
+  }
+});
+
 
   // Search functionality
   initializeSearch();
@@ -3856,6 +3890,14 @@ async function toggleWidget(widgetName) {
         break;
       case "fullscreen":
         await toggleFullscreen();
+        break;
+      case "swipe":
+        if (uploadedLayers.length === 0) {
+          showNotification("يجب رفع طبقة واحدة على الأقل لاستخدام المقارنة", "error");
+          return;
+        }
+        openSidePanel("مقارنة الطبقات", "swipePanelTemplate");
+        initializeSwipePanel();
         break;
       case "swipe":
         await toggleSwipe();
@@ -7623,6 +7665,14 @@ updateLayerList = function () {
     `;
     layerList.appendChild(analysisItem);
   }
+
+  // Update swipe panel if it's open
+  const swipePanel = document.querySelector("#sidePanelContent #swipeLayerSelect1");
+  if (swipePanel) {
+    updateSwipeLayerSelects();
+  }
+
+
 };
 
 // Clear analysis results
@@ -7949,6 +7999,295 @@ function stopAnalysisDrawing() {
     .querySelectorAll(".draw-mini-btn")
     .forEach((btn) => btn.classList.remove("active"));
 }
+
+
+
+
+
+
+
+// Initialize swipe panel
+function initializeSwipePanel() {
+
+  // Add tooltips
+const layer1Select = document.getElementById("swipeLayer1Select");
+const layer2Select = document.getElementById("swipeLayer2Select");
+
+layer1Select.title = "اختر الطبقة التي ستظهر على الجانب الأيسر";
+layer2Select.title = "اختر الطبقة التي ستظهر على الجانب الأيمن";
+
+// Add aria labels
+layer1Select.setAttribute('aria-label', 'الطبقة الأولى للمقارنة');
+layer2Select.setAttribute('aria-label', 'الطبقة الثانية للمقارنة');
+
+
+  updateSwipeLayerSelects();
+  
+  // Initialize position slider
+  const positionSlider = document.getElementById("swipePosition");
+  const positionValue = document.getElementById("swipePositionValue");
+  
+  positionSlider.addEventListener("input", (e) => {
+    positionValue.textContent = e.target.value + "%";
+    if (swipeWidget) {
+      swipeWidget.position = parseInt(e.target.value);
+    }
+  });
+}
+
+// Update layer selects for swipe
+function updateSwipeLayerSelects() {
+  const layer1Select = document.getElementById("swipeLayer1Select");
+  const layer2Select = document.getElementById("swipeLayer2Select");
+  
+  // Clear existing options
+  layer1Select.innerHTML = '<option value="">اختر طبقة...</option><option value="_basemap">خريطة الأساس</option>';
+  layer2Select.innerHTML = '<option value="">اختر طبقة...</option><option value="_basemap">خريطة الأساس</option>';
+  
+  // Add uploaded layers
+  uploadedLayers.forEach((layer, index) => {
+    const option1 = document.createElement("option");
+    option1.value = index;
+    option1.textContent = layer.title;
+    layer1Select.appendChild(option1);
+    
+    const option2 = document.createElement("option");
+    option2.value = index;
+    option2.textContent = layer.title;
+    layer2Select.appendChild(option2);
+  });
+  
+  // Add analysis layer if it has graphics
+  if (analysisLayer && analysisLayer.graphics.length > 0) {
+    const option1 = document.createElement("option");
+    option1.value = "_analysis";
+    option1.textContent = "نتائج التحليل";
+    layer1Select.appendChild(option1);
+    
+    const option2 = document.createElement("option");
+    option2.value = "_analysis";
+    option2.textContent = "نتائج التحليل";
+    layer2Select.appendChild(option2);
+  }
+  
+  // Add draw layer if it has graphics
+  if (drawLayer && drawLayer.graphics.length > 0) {
+    const option1 = document.createElement("option");
+    option1.value = "_draw";
+    option1.textContent = "الرسومات";
+    layer1Select.appendChild(option1);
+    
+    const option2 = document.createElement("option");
+    option2.value = "_draw";
+    option2.textContent = "الرسومات";
+    layer2Select.appendChild(option2);
+  }
+}
+
+// Set swipe mode
+// Set swipe mode
+window.setSwipeMode = function(mode) {
+  swipeMode = mode;
+  
+  // Find the mode buttons more reliably
+  const modeGroups = document.querySelectorAll("#sidePanelContent .button-group");
+  let modeButtons = null;
+  
+  modeGroups.forEach(group => {
+    const buttons = group.querySelectorAll(".button-group-item");
+    if (buttons.length === 2 && buttons[0].innerHTML.includes("fa-layer-group")) {
+      modeButtons = buttons;
+    }
+  });
+  
+  if (modeButtons) {
+    modeButtons[0].classList.toggle("active", mode === "layers");
+    modeButtons[1].classList.toggle("active", mode === "basemap-layer");
+  }
+  
+  const layer1Select = document.getElementById("swipeLayer1Select");
+  const layer2Section = document.getElementById("swipeLayer2Section");
+  
+  if (mode === "basemap-layer") {
+    layer2Section.style.display = "none";
+    // Reset selection and update label
+    layer1Select.value = "";
+    const label = layer1Select.closest('.form-group').querySelector('.form-label');
+    if (label) {
+      label.textContent = "اختر الطبقة للمقارنة مع خريطة الأساس";
+    }
+  } else {
+    layer2Section.style.display = "block";
+    const label = layer1Select.closest('.form-group').querySelector('.form-label');
+    if (label) {
+      label.textContent = "الطبقة الأولى (يسار)";
+    }
+  }
+};
+
+
+// Set swipe direction
+window.setSwipeDirection = function(direction) {
+  swipeDirection = direction;
+  
+  // Find the direction button group more reliably
+  const directionGroups = document.querySelectorAll("#sidePanelContent .button-group");
+  let directionButtons = null;
+  
+  // Find the button group that contains the direction buttons
+  directionGroups.forEach(group => {
+    const buttons = group.querySelectorAll(".button-group-item");
+    if (buttons.length === 2 && buttons[0].innerHTML.includes("fa-arrows-alt-h")) {
+      directionButtons = buttons;
+    }
+  });
+  
+  if (directionButtons) {
+    directionButtons[0].classList.toggle("active", direction === "horizontal");
+    directionButtons[1].classList.toggle("active", direction === "vertical");
+  }
+};
+
+// Apply swipe configuration
+window.applySwipe = async function() {
+  try {
+    // Temporarily suppress console warnings for deprecated widget
+    const originalWarn = console.warn;
+    console.warn = (msg) => {
+      if (!msg.includes('deprecated')) {
+        originalWarn(msg);
+      }
+    };
+
+    const [Swipe] = await Promise.all([
+      loadModule("esri/widgets/Swipe")
+    ]);
+    
+    // Remove existing swipe widget
+    if (swipeWidget) {
+      view.ui.remove(swipeWidget);
+      swipeWidget.destroy();
+      swipeWidget = null;
+    }
+    
+    let leadingLayers = [];
+    let trailingLayers = [];
+    
+    if (swipeMode === "layers") {
+      const layer1Value = document.getElementById("swipeLayer1Select").value;
+      const layer2Value = document.getElementById("swipeLayer2Select").value;
+      
+      if (!layer1Value || !layer2Value) {
+        showNotification("الرجاء اختيار طبقتين للمقارنة", "error");
+        console.warn = originalWarn;
+        return;
+      }
+      
+      // Get leading layers
+      if (layer1Value === "_basemap") {
+        // Don't include basemap layers directly, leave empty for basemap
+        leadingLayers = [];
+      } else if (layer1Value === "_analysis") {
+        leadingLayers = [analysisLayer];
+      } else if (layer1Value === "_draw") {
+        leadingLayers = [drawLayer];
+      } else {
+        leadingLayers = [uploadedLayers[parseInt(layer1Value)]];
+      }
+      
+      // Get trailing layers
+      if (layer2Value === "_basemap") {
+        // For basemap, include all non-basemap layers
+        trailingLayers = [...uploadedLayers];
+        if (drawLayer && drawLayer.graphics.length > 0) {
+          trailingLayers.push(drawLayer);
+        }
+        if (analysisLayer && analysisLayer.graphics.length > 0) {
+          trailingLayers.push(analysisLayer);
+        }
+      } else if (layer2Value === "_analysis") {
+        trailingLayers = [analysisLayer];
+      } else if (layer2Value === "_draw") {
+        trailingLayers = [drawLayer];
+      } else {
+        trailingLayers = [uploadedLayers[parseInt(layer2Value)]];
+      }
+    } else {
+      // Basemap vs Layer mode
+      const layerValue = document.getElementById("swipeLayer1Select").value;
+      
+      if (!layerValue) {
+        showNotification("الرجاء اختيار طبقة للمقارنة مع خريطة الأساس", "error");
+        console.warn = originalWarn;
+        return;
+      }
+      
+      // For basemap comparison, put selected layer on one side, everything else on the other
+      if (layerValue === "_analysis") {
+        leadingLayers = [analysisLayer];
+      } else if (layerValue === "_draw") {
+        leadingLayers = [drawLayer];
+      } else {
+        leadingLayers = [uploadedLayers[parseInt(layerValue)]];
+      }
+      
+      // Trailing will show basemap (empty array means basemap shows through)
+      trailingLayers = [];
+    }
+    
+    // Create swipe widget
+    swipeWidget = new Swipe({
+      view: view,
+      leadingLayers: leadingLayers.filter(layer => layer != null), // Remove null layers
+      trailingLayers: trailingLayers.filter(layer => layer != null), // Remove null layers
+      direction: swipeDirection,
+      position: parseInt(document.getElementById("swipePosition").value),
+      mode: "simple" // Use simple mode for better basemap handling
+    });
+    
+    // Add to view
+    view.ui.add(swipeWidget);
+    
+    // Close panel and show remove button
+    closeSidePanel();
+    document.getElementById("removeSwipeBtn").style.display = "block";
+    
+    showNotification("تم تطبيق المقارنة بنجاح", "success");
+    
+    // Restore console.warn
+    setTimeout(() => {
+      console.warn = originalWarn;
+    }, 1000);
+    
+  } catch (error) {
+    console.error("Error creating swipe:", error);
+    showNotification("حدث خطأ في إنشاء المقارنة", "error");
+  }
+};
+
+// Remove swipe widget
+window.removeSwipe = function() {
+  if (swipeWidget) {
+    view.ui.remove(swipeWidget);
+    swipeWidget.destroy();
+    swipeWidget = null;
+    
+    document.getElementById("removeSwipeBtn").style.display = "none";
+    showNotification("تم إزالة المقارنة", "success");
+  }
+};
+
+window.debugSwipeButtons = function() {
+  console.log("=== Swipe Button Debug ===");
+  const groups = document.querySelectorAll("#sidePanelContent .button-group");
+  groups.forEach((group, index) => {
+    console.log(`Group ${index}:`, group);
+    console.log("Buttons:", group.querySelectorAll(".button-group-item"));
+  });
+};
+
+
+
 
 // App Tour Function
 function startAppTour() {

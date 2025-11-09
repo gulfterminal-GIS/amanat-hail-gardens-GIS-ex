@@ -10,9 +10,21 @@ export class PanelManager {
     this.stateManager = stateManager;
     this.notificationManager = notificationManager;
     this.basemapManager = basemapManager;
+    this.swipeManager = null; // Set via setSwipeManager() after initialization
     
     // Initialize panel close button event listener
     this.initializePanelCloseButton();
+  }
+
+  /**
+   * Set the swipe manager instance (called after SwipeManager is created)
+   * This is needed because SwipeManager is created after PanelManager,
+   * but PanelManager needs to call SwipeManager.initializeSwipePanel() when opening the swipe panel
+   * 
+   * @param {SwipeManager} swipeManager - The swipe manager instance
+   */
+  setSwipeManager(swipeManager) {
+    this.swipeManager = swipeManager;
   }
 
   /**
@@ -31,6 +43,7 @@ export class PanelManager {
       drawingPanelTemplate: "drawBtn",
       analysisPanelTemplate: "analysisBtn",
       visualizationPanelTemplate: "visualizeBtn",
+      swipePanelTemplate: "swipeBtn",
     };
 
     const btnId = buttonMap[templateId];
@@ -55,6 +68,11 @@ export class PanelManager {
         // Delegate to BasemapManager if available
         if (this.basemapManager) {
           this.basemapManager.initializeBasemapPanel();
+        }
+      } else if (templateId === "swipePanelTemplate") {
+        // Delegate to SwipeManager if available
+        if (this.swipeManager) {
+          this.swipeManager.initializeSwipePanel();
         }
       }
     }

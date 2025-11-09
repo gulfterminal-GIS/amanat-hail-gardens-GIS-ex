@@ -16,6 +16,7 @@ import { DrawingManager } from "./tools/drawing-manager.js";
 import { AnalysisManager } from "./tools/analysis-manager.js";
 import { MeasurementManager } from "./tools/measurement-manager.js";
 import { VisualizationManager } from "./tools/visualization-manager.js";
+import { SwipeManager } from "./tools/swipe-manager.js";
 import { PopupManager } from "./features/popup-manager.js";
 import { AttributeTable } from "./features/attribute-table.js";
 import { ClassificationManager } from "./features/classification-manager.js";
@@ -82,6 +83,18 @@ const measurementManager = new MeasurementManager(stateManager, notificationMana
 // Create VisualizationManager instance
 const visualizationManager = new VisualizationManager(stateManager, notificationManager, layerManager);
 
+// Create SwipeManager instance
+const swipeManager = new SwipeManager(stateManager, notificationManager, panelManager);
+
+// Set SwipeManager reference in PanelManager for panel initialization
+panelManager.setSwipeManager(swipeManager);
+
+// Set SwipeManager reference in DrawingManager for clearAll functionality
+drawingManager.setSwipeManager(swipeManager);
+
+// Set AnalysisManager reference in SwipeManager for accessing analysis layer
+swipeManager.setAnalysisManager(analysisManager);
+
 // Create AttributeTable instance
 const attributeTable = new AttributeTable(stateManager, notificationManager, popupManager);
 
@@ -119,6 +132,7 @@ async function initializeApplication() {
     console.log("AnalysisManager created and ready");
     console.log("MeasurementManager created and ready");
     console.log("VisualizationManager created and ready");
+    console.log("SwipeManager created and ready");
     console.log("PopupManager created and ready");
     console.log("AttributeTable created and ready");
     console.log("ClassificationManager created and ready");
@@ -138,9 +152,9 @@ async function initializeApplication() {
       toolbarManager.initialize();
     }
 
-    // Register LayerManager callbacks for attribute table, heatmap, and analysis (from script.js)
+    // Register LayerManager callbacks for attribute table, heatmap, analysis, and swipe (from script.js)
     if (layerManager) {
-      layerManager.setupCallbacks(attributeTable, visualizationManager, analysisManager);
+      layerManager.setupCallbacks(attributeTable, visualizationManager, analysisManager, swipeManager);
     }
 
     // Initialize tab system
@@ -180,6 +194,7 @@ async function initializeApplication() {
       analysisManager,
       measurementManager,
       visualizationManager,
+      swipeManager,
       popupManager,
       attributeTable,
       classificationManager,

@@ -43,7 +43,15 @@ export class WidgetManager {
           await this.toggleFullscreen();
           break;
         case "swipe":
-          await this.toggleSwipe();
+          // Open swipe configuration panel instead of simple toggle
+          if (this.stateManager.getUploadedLayers().length === 0) {
+            this.notificationManager.showNotification(
+              "يجب رفع طبقة واحدة على الأقل لاستخدام المقارنة",
+              "error"
+            );
+            return;
+          }
+          this.panelManager.openSidePanel("مقارنة الطبقات", "swipePanelTemplate");
           break;
         default:
           console.warn(`Unknown widget: ${widgetName}`);
@@ -248,6 +256,8 @@ export class WidgetManager {
 
   /**
    * Toggle Swipe widget for layer comparison
+   * @deprecated This method is no longer used. Use SwipeManager via the swipe panel instead.
+   * Kept for reference only - the swipe functionality now uses SwipeManager with full configuration panel.
    */
   async toggleSwipe() {
     if (!this.activeWidgets.has("swipe")) {

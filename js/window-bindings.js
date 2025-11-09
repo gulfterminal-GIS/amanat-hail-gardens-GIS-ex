@@ -41,6 +41,7 @@ export function bindWindowFunctions(managers) {
     mapEventHandler,
     coordinateDisplay,
     widgetManager,
+    swipeManager,
     // Future managers will be added here as they're created:
   } = managers;
 
@@ -333,6 +334,31 @@ export function bindWindowFunctions(managers) {
 
   window.startDrawingWithTool = (tool) => {
     return drawingManager.startDrawingWithTool(tool);
+  };
+
+  // ============================================================================
+  // SWIPE COMPARISON
+  // Module: js/tools/swipe-manager.js ✅
+  // ============================================================================
+  
+  window.setSwipeMode = (mode) => {
+    return swipeManager.setSwipeMode(mode);
+  };
+
+  window.setSwipeDirection = (direction) => {
+    return swipeManager.setSwipeDirection(direction);
+  };
+
+  window.applySwipe = () => {
+    return swipeManager.applySwipe();
+  };
+
+  window.removeSwipe = () => {
+    return swipeManager.removeSwipe();
+  };
+
+  window.debugSwipeButtons = () => {
+    return swipeManager.debugSwipeButtons();
   };
 
   console.log('✅ Window bindings initialized - All HTML event handlers connected');

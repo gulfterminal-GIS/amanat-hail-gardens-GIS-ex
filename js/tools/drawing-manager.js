@@ -17,6 +17,18 @@ export class DrawingManager {
   constructor(stateManager, notificationManager) {
     this.stateManager = stateManager;
     this.notificationManager = notificationManager;
+    this.swipeManager = null; // Set via setSwipeManager() after initialization
+  }
+
+  /**
+   * Set the swipe manager instance (called after SwipeManager is created)
+   * This is needed because SwipeManager is created after DrawingManager,
+   * but DrawingManager needs to call SwipeManager.removeSwipe() in clearAll()
+   * 
+   * @param {SwipeManager} swipeManager - The swipe manager instance
+   */
+  setSwipeManager(swipeManager) {
+    this.swipeManager = swipeManager;
   }
 
   /**
@@ -463,6 +475,11 @@ export class DrawingManager {
         sketchViewModel.cancel();
       }
       this.resetDrawingTools();
+
+      // Remove swipe widget if active
+      if (this.swipeManager) {
+        this.swipeManager.removeSwipe();
+      }
     }
   }
 
