@@ -169,32 +169,6 @@ export class PanelManager {
     });
   }
 
-  // COMMENTED OUT - Moved to js/layers/basemap-manager.js
-  // /**
-  //  * Initialize basemap panel functionality when opened
-  //  * Sets up basemap selection and switching
-  //  */
-  // initializeBasemapPanel() {
-  //   const basemapItems = document.querySelectorAll(
-  //     "#sidePanelContent .basemap-item"
-  //   );
-
-  //   basemapItems.forEach((item) => {
-  //     item.addEventListener("click", () => {
-  //       const basemap = item.dataset.basemap;
-  //       const map = this.stateManager.getMap();
-  //       
-  //       if (map) {
-  //         map.basemap = basemap;
-
-  //         // Update active state
-  //         basemapItems.forEach((b) => b.classList.remove("active"));
-  //         item.classList.add("active");
-  //       }
-  //     });
-  //   });
-  // }
-
   /**
    * Initialize panel close button event listener
    */
