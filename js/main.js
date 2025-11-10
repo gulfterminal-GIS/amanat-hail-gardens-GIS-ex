@@ -1,7 +1,6 @@
 // Main entry point for the GIS application
 // This file orchestrates the loading and initialization of all modules
 
-import { CONFIG } from "./core/config.js";
 import { StateManager } from "./core/state-manager.js";
 import { NotificationManager } from "./ui/notification-manager.js";
 import { MapInitializer } from "./core/map-initializer.js";
@@ -70,7 +69,7 @@ const visualizationManager = new VisualizationManager(stateManager, notification
 const widgetManager = new WidgetManager(stateManager, notificationManager, panelManager, drawingManager, popupManager);
 
 // Create MapInitializer instance
-const mapInitializer = new MapInitializer(stateManager, notificationManager, CONFIG, tourManager, layerManager, classificationManager, visualizationManager, widgetManager);
+const mapInitializer = new MapInitializer(stateManager, notificationManager, tourManager, layerManager, classificationManager, visualizationManager, widgetManager);
 
 // Create MeasurementManager instance (depends on PanelManager and DrawingManager)
 const measurementManager = new MeasurementManager(stateManager, notificationManager, panelManager, drawingManager);

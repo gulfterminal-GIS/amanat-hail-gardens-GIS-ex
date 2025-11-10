@@ -363,18 +363,3 @@ export function bindWindowFunctions(managers) {
 
   console.log('✅ Window bindings initialized - All HTML event handlers connected');
 }
-
-/**
- * Unbind all window functions (useful for cleanup or testing)
- */
-// export function unbindWindowFunctions() {
-//   const functionsToUnbind = [];
-
-//   functionsToUnbind.forEach(funcName => {
-//     if (window[funcName]) {
-//       delete window[funcName];
-//     }
-//   });
-
-//   console.log('🧹 Window bindings cleaned up');
-// }

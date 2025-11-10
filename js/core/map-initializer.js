@@ -3,13 +3,13 @@
  * Dependencies: StateManager, NotificationManager, module-loader
  */
 
-import { loadModule, loadModules } from "./module-loader.js";
+import { loadModule } from "./module-loader.js";
+import { CONFIG } from "./config.js";
 
 export class MapInitializer {
-  constructor(stateManager, notificationManager, config, tourManager = null, layerManager = null, classificationManager = null, visualizationManager = null, widgetManager = null) {
+  constructor(stateManager, notificationManager, tourManager = null, layerManager = null, classificationManager = null, visualizationManager = null, widgetManager = null) {
     this.stateManager = stateManager;
     this.notificationManager = notificationManager;
-    this.config = config;
     this.tourManager = tourManager;
     this.layerManager = layerManager;
     this.classificationManager = classificationManager;
@@ -32,17 +32,17 @@ export class MapInitializer {
           loadModule("esri/core/reactiveUtils"),
         ]);
 
-      esriConfig.apiKey = this.config.ARCGIS_API_KEY;
+      esriConfig.apiKey = CONFIG.ARCGIS_API_KEY;
 
       const displayMap = new Map({
-        basemap: this.config.DEFAULT_BASEMAP || "hybrid",
+        basemap: CONFIG.DEFAULT_BASEMAP || "hybrid",
       });
 
       const view = new MapView({
-        center: this.config.DEFAULT_CENTER || [-95.7129, 37.0902],
+        center: CONFIG.DEFAULT_CENTER || [-95.7129, 37.0902],
         container: "displayMap",
         map: displayMap,
-        zoom: this.config.DEFAULT_ZOOM || 4,
+        zoom: CONFIG.DEFAULT_ZOOM || 4,
         highlightOptions: {
           color: "#39ff14",
           haloOpacity: 0.9,

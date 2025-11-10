@@ -246,11 +246,7 @@ This implementation plan focuses on optimizing the current window bindings by:
     - Verify no console errors
     - _Requirements: 5.3, 6.1, 6.2_
 
-- [-] 6. Remove window.CONFIG from main.js
-
-
-
-  
+- [x] 6. Remove window.CONFIG from main.js
 
   - [x] 6.1 Remove window.CONFIG assignment
 
@@ -258,15 +254,13 @@ This implementation plan focuses on optimizing the current window bindings by:
     - Keep the import statement `import { CONFIG } from "./core/config.js";`
     - _Requirements: 3.1, 3.2, 5.2_
   
+  - [x] 6.2 Verify no code accesses window.CONFIG
 
-
-  - [ ] 6.2 Verify no code accesses window.CONFIG
     - Search codebase for `window.CONFIG` references
     - Verify all modules import CONFIG directly if needed
-
     - _Requirements: 3.1, 5.2, 5.3_
   
-  - [ ] 6.3 Test application initialization
+  - [x] 6.3 Test application initialization
 
     - Verify application starts correctly
     - Verify all modules have access to CONFIG

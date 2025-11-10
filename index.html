@@ -602,6 +602,66 @@
         </div>
       </div>
     </div>
+
+    <!-- Swipe Panel Template -->
+    <div id="swipePanelTemplate">
+      <div class="panel-section">
+        <div class="swipe-config">
+          <div class="form-group">
+            <label class="form-label">نوع المقارنة</label>
+            <div class="button-group">
+              <button class="button-group-item active" onclick="setSwipeMode('layers')">
+                <i class="fas fa-layer-group"></i> بين الطبقات
+              </button>
+              <button class="button-group-item" onclick="setSwipeMode('basemap-layer')">
+                <i class="fas fa-map"></i> خريطة الأساس والطبقة
+              </button>
+            </div>
+          </div>
+
+          <div id="swipeLayersSection" class="form-group">
+            <label class="form-label">الطبقة الأولى (يسار)</label>
+            <select id="swipeLayer1Select" class="select-input">
+              <option value="">اختر طبقة...</option>
+              <option value="_basemap">خريطة الأساس</option>
+            </select>
+          </div>
+
+          <div id="swipeLayer2Section" class="form-group">
+            <label class="form-label">الطبقة الثانية (يمين)</label>
+            <select id="swipeLayer2Select" class="select-input">
+              <option value="">اختر طبقة...</option>
+              <option value="_basemap">خريطة الأساس</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">اتجاه المقارنة</label>
+            <div class="button-group">
+              <button class="button-group-item active" onclick="setSwipeDirection('horizontal')">
+                <i class="fas fa-arrows-alt-h"></i> أفقي
+              </button>
+              <button class="button-group-item" onclick="setSwipeDirection('vertical')">
+                <i class="fas fa-arrows-alt-v"></i> عمودي
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">موضع المقارنة: <span id="swipePositionValue">50%</span></label>
+            <input type="range" id="swipePosition" min="0" max="100" value="50" class="slider-input">
+          </div>
+
+          <button class="action-btn primary full-width" onclick="applySwipe()">
+            <i class="fas fa-check"></i> تطبيق المقارنة
+          </button>
+
+          <button class="action-btn secondary full-width mt-2" onclick="removeSwipe()" style="display: none;" id="removeSwipeBtn">
+            <i class="fas fa-times"></i> إزالة المقارنة
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Legend Widget -->
@@ -627,68 +687,6 @@
       </button>
     </div>
   </div>
-
-  <!-- Swipe Panel Template -->
-  <div id="swipePanelTemplate">
-    <div class="panel-section">
-      <div class="swipe-config">
-        <div class="form-group">
-          <label class="form-label">نوع المقارنة</label>
-          <div class="button-group">
-            <button class="button-group-item active" onclick="setSwipeMode('layers')">
-              <i class="fas fa-layer-group"></i> بين الطبقات
-            </button>
-            <button class="button-group-item" onclick="setSwipeMode('basemap-layer')">
-              <i class="fas fa-map"></i> خريطة الأساس والطبقة
-            </button>
-          </div>
-        </div>
-
-        <div id="swipeLayersSection" class="form-group">
-          <label class="form-label">الطبقة الأولى (يسار)</label>
-          <select id="swipeLayer1Select" class="select-input">
-            <option value="">اختر طبقة...</option>
-            <option value="_basemap">خريطة الأساس</option>
-          </select>
-        </div>
-
-        <div id="swipeLayer2Section" class="form-group">
-          <label class="form-label">الطبقة الثانية (يمين)</label>
-          <select id="swipeLayer2Select" class="select-input">
-            <option value="">اختر طبقة...</option>
-            <option value="_basemap">خريطة الأساس</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">اتجاه المقارنة</label>
-          <div class="button-group">
-            <button class="button-group-item active" onclick="setSwipeDirection('horizontal')">
-              <i class="fas fa-arrows-alt-h"></i> أفقي
-            </button>
-            <button class="button-group-item" onclick="setSwipeDirection('vertical')">
-              <i class="fas fa-arrows-alt-v"></i> عمودي
-            </button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">موضع المقارنة: <span id="swipePositionValue">50%</span></label>
-          <input type="range" id="swipePosition" min="0" max="100" value="50" class="slider-input">
-        </div>
-
-        <button class="action-btn primary full-width" onclick="applySwipe()">
-          <i class="fas fa-check"></i> تطبيق المقارنة
-        </button>
-
-        <button class="action-btn secondary full-width mt-2" onclick="removeSwipe()" style="display: none;" id="removeSwipeBtn">
-          <i class="fas fa-times"></i> إزالة المقارنة
-        </button>
-      </div>
-    </div>
-  </div>
-
-
 
   <!-- Widget Containers -->
   <div class="widget-container" id="widgetContainer">
