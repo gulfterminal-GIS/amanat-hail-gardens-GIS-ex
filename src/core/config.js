@@ -9,6 +9,8 @@ export const CONFIG = {
   DEFAULT_ZOOM: 4,
   
   // Default GeoJSON Layer
+  DEFAULT_GEOJSON_TITLE: "حدائق حائل",
+  DEFAULT_GEOJSON_FIELD_NAME: "GARDENSTATUS",
   DEFAULT_GEOJSON_URL: (typeof document !== "undefined")
       ? new URL("assets/data/Gardens.geojson", document.baseURI).href
       : "assets/data/Gardens.geojson",

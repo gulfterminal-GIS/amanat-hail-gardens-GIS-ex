@@ -137,20 +137,22 @@ export class MapInitializer {
       // Create the GeoJSON layer
       const geojsonLayer = new GeoJSONLayer({
         url: CONFIG.DEFAULT_GEOJSON_URL,
-        title: "حدائق حائل",
+        title: CONFIG.DEFAULT_GEOJSON_TITLE || "حدائق حائل",
         outFields: ["*"],
-        renderer: {
-          type: "simple",
-          symbol: {
-            type: "simple-fill",
-            color: [34, 139, 34, 0.4], // Forest green with transparency
-            outline: {
-              color: [0, 100, 0, 1], // Dark green outline
-              width: 2,
-            },
-          },
-        },
       });
+
+      // Wait for layer to load
+      await geojsonLayer.load();
+
+      // Detect geometry type and apply appropriate renderer
+      const geometryType = geojsonLayer.geometryType;
+      console.log("Detected geometry type:", geometryType);
+
+      // Create renderer based on geometry type
+      const renderer = this.handleLayerRenderType(geometryType);
+      
+      // Apply the renderer
+      geojsonLayer.renderer = renderer;
 
       // Add to map
       displayMap.add(geojsonLayer);
@@ -161,8 +163,6 @@ export class MapInitializer {
       // Store for tour via StateManager
       this.stateManager.setTourLayer(geojsonLayer);
 
-      // Wait for layer to load
-      await geojsonLayer.load();
 
       // Zoom to the layer extent
       if (geojsonLayer.fullExtent) {
@@ -180,15 +180,82 @@ export class MapInitializer {
       }
 
       console.log("Default GeoJSON layer loaded successfully");
+      console.log("Geometry type:", geometryType);
+      console.log("Feature count:", geojsonLayer.source?.length || "unknown");
+
 
       // Apply classification automatically on GARDENSTATUS
-      if (this.classificationManager) {
-        await this.classificationManager.autoApplyDefaultClassification(geojsonLayer, "GARDENSTATUS");
+      if (this.classificationManager && CONFIG.DEFAULT_GEOJSON_FIELD_NAME) {
+        await this.classificationManager.autoApplyDefaultClassification(geojsonLayer, CONFIG.DEFAULT_GEOJSON_FIELD_NAME);
       }
     } catch (error) {
       console.error("Error loading default GeoJSON:", error);
       // Don't show error to user since this is a default layer
     }
+  }
+
+  handleLayerRenderType(geometryType) {
+    let renderer;
+    switch (geometryType) {
+      case "point":
+        renderer = {
+          type: "simple",
+          symbol: {
+            type: "simple-marker",
+            style: "circle",
+            color: [0, 112, 255, 0.8], // Blue color
+            size: 8,
+            outline: {
+              color: [255, 255, 255, 1],
+              width: 1
+            }
+          }
+        };
+        break;
+
+      case "polyline":
+        renderer = {
+          type: "simple",
+          symbol: {
+            type: "simple-line",
+            color: [0, 112, 255, 1], // Blue color
+            width: 3,
+            style: "solid",
+            cap: "round",
+            join: "round"
+          }
+        };
+        break;
+
+      case "polygon":
+        renderer = {
+          type: "simple",
+          symbol: {
+            type: "simple-fill",
+            color: [34, 139, 34, 0.4], // Forest green with transparency
+            outline: {
+              color: [0, 100, 0, 1], // Dark green outline
+              width: 2
+            }
+          }
+        };
+        break;
+
+      default:
+        console.warn("Unknown geometry type:", geometryType, "Using default renderer");
+        renderer = {
+          type: "simple",
+          symbol: {
+            type: "simple-fill",
+            color: [128, 128, 128, 0.5],
+            outline: {
+              color: [64, 64, 64, 1],
+              width: 1
+            }
+          }
+        };
+    }
+    return renderer;
   }
 
   /**
