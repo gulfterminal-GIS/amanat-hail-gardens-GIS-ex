@@ -9,5 +9,7 @@ export const CONFIG = {
   DEFAULT_ZOOM: 4,
   
   // Default GeoJSON Layer
-  DEFAULT_GEOJSON_URL: "amanat-hail-gardens-GIS-ex/assets/data/Gardens.geojson",
+  DEFAULT_GEOJSON_URL: (typeof document !== "undefined")
+      ? new URL("assets/data/Gardens.geojson", document.baseURI).href
+      : "assets/data/Gardens.geojson",
 };
