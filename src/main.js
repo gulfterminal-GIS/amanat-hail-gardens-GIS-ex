@@ -141,12 +141,13 @@ const classificationManager = new ClassificationManager(
   popupManager
 );
 
-// Create PanelManager (depends on ClassificationManager)
+// Create PanelManager (depends on ClassificationManager and UploadHandler)
 const panelManager = new PanelManager(
   stateManager,
   notificationManager,
   basemapManager,
-  classificationManager
+  classificationManager,
+  uploadHandler
 );
 
 // CIRCULAR DEPENDENCY RESOLUTION: ClassificationManager ↔ PanelManager

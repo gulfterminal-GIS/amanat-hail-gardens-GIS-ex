@@ -3,14 +3,13 @@
  * Handles opening/closing panels, toolbar states, and panel-specific initialization
  */
 
-import { UploadHandler } from "../layers/upload-handler.js";
-
 export class PanelManager {
-  constructor(stateManager, notificationManager, basemapManager = null, classificationManager = null) {
+  constructor(stateManager, notificationManager, basemapManager = null, classificationManager = null, uploadHandler = null) {
     this.stateManager = stateManager;
     this.notificationManager = notificationManager;
     this.basemapManager = basemapManager;
     this.classificationManager = classificationManager;
+    this.uploadHandler = uploadHandler;
     this.swipeManager = null; // Set via setSwipeManager() after initialization
     
     // Initialize panel close button event listener
@@ -153,7 +152,9 @@ export class PanelManager {
       (e) => {
         const dt = e.dataTransfer;
         const files = dt.files;
-        UploadHandler.handleFiles(files);
+        if (this.uploadHandler) {
+          this.uploadHandler.handleFiles(files);
+        }
       },
       false
     );
@@ -165,7 +166,9 @@ export class PanelManager {
 
     // Handle file input change
     fileInput.addEventListener("change", (e) => {
-      UploadHandler.handleFiles(e.target.files);
+      if (this.uploadHandler) {
+        this.uploadHandler.handleFiles(e.target.files);
+      }
     });
   }
 

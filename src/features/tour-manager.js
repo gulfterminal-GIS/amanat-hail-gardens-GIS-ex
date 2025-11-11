@@ -423,7 +423,7 @@ export class TourManager {
     const tourFeatures = this.stateManager.getTourFeatures();
 
     if (!tourFeatures || tourFeatures.length === 0) {
-      this.notificationManager.showNotification("No features to tour");
+      this.notificationManager.showNotification("No features to tour", "warning");
       return;
     }
 
