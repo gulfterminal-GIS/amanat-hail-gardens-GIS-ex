@@ -136,7 +136,7 @@ export class MapInitializer {
 
       // Create the GeoJSON layer
       const geojsonLayer = new GeoJSONLayer({
-        url: "Gardens.geojson",
+        url: CONFIG.DEFAULT_GEOJSON_URL,
         title: "حدائق حائل",
         outFields: ["*"],
         renderer: {
@@ -244,7 +244,7 @@ export class MapInitializer {
     wait(0)
       .then(() => {
         loadingContent.innerHTML = `
-          <img class="loaded-gif" src="images/map-loading.gif" alt="">
+          <img class="loaded-gif" src="assets/images/map-loading.gif" alt="">
           <div class="loading-text">جاري مسح الخريطة...</div>
         `;
         return wait(3000);
