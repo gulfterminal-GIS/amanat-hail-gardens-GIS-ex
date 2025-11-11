@@ -405,7 +405,7 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.5);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   box-shadow: var(--shadow-xl);
   transform: translateY(100%);
@@ -448,7 +448,7 @@ body {
 .mobile-menu-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
   padding: var(--spacing-md);
 }
 
@@ -2185,20 +2185,20 @@ body {
   }
 }
 
-@media (max-width: 768px) {
-
-  /* Hide desktop elements */
-  /* Hide main toolbar on mobile */
+@media (max-width: 992px) {
   .main-toolbar {
     display: none;
   }
 
-  /* Mobile toolbar at bottom */
-  .main-toolbar {
-    bottom: 60px;
-    /* Account for mobile UI */
+  .coordinates-display {
+    bottom: 30px;
+    /* Higher on mobile due to toolbar */
+    font-size: 11px;
+    padding: var(--spacing-xs) var(--spacing-sm);
   }
+}
 
+@media (max-width: 768px) {
   .brand span {
     display: none;
   }
@@ -2235,9 +2235,7 @@ body {
   /* Adjust quick actions to be more compact */
   .quick-actions {
     position: fixed;
-    bottom: var(--spacing-lg);
-    left: var(--spacing-lg);
-    /* Move to left side */
+    bottom: 6rem;
     right: auto;
     display: flex;
     flex-direction: column;
@@ -2255,11 +2253,7 @@ body {
     top: 70px;
     left: var(--spacing-md);
     right: var(--spacing-md);
-    max-width: none;
-  }
-
-  .custom-widget {
-    width: 100%;
+    /* max-width: none; */
   }
 
   /* Adjust popups */
@@ -2287,14 +2281,6 @@ body {
   /* Adjust analysis grid */
   .analysis-grid {
     grid-template-columns: 1fr;
-  }
-
-  /* Adjust coordinates for mobile with bottom toolbar */
-  .coordinates-display {
-    bottom: 30px;
-    /* Higher on mobile due to toolbar */
-    font-size: 11px;
-    padding: var(--spacing-xs) var(--spacing-sm);
   }
 
   /* Adjust table controls */
@@ -2367,7 +2353,7 @@ body {
     order: 4;
     width: 100%;
     margin-top: var(--spacing-xs);
-    background: var(--bg-secondary);
+    /* background: var(--bg-secondary); */
     border: 1px solid var(--border-color);
   }
 
@@ -2405,7 +2391,7 @@ body {
   .attribute-data-table td:first-child {
     position: sticky;
     left: 0;
-    background: var(--bg-secondary);
+    /* background: var(--bg-secondary); */
     z-index: 5;
     min-width: 30px;
     width: 40px;
@@ -2452,7 +2438,6 @@ body {
   /* Further mobile adjustments */
   .mobile-menu-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-sm);
   }
 
   .export-formats {
@@ -2710,10 +2695,6 @@ select:focus-visible {
 .search-suggestions {
   z-index: 150;
   /* Higher than toolbar */
-}
-
-.main-toolbar {
-  z-index: 100;
 }
 
 /* Drawing indicators */
