@@ -9,5 +9,5 @@ export const CONFIG = {
   DEFAULT_ZOOM: 4,
   
   // Default GeoJSON Layer
-  DEFAULT_GEOJSON_URL: "data/Gardens.geojson",
+  DEFAULT_GEOJSON_URL: "../../assets/data/Gardens.geojson",
 };
