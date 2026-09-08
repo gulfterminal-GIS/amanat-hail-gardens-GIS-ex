@@ -308,14 +308,7 @@ export class MapInitializer {
     }
 
     console.log("Starting loading sequence...");
-    wait(0)
-      .then(() => {
-        loadingContent.innerHTML = `
-          <img class="loaded-gif" src="assets/images/map-loading.gif" alt="">
-          <div class="loading-text">جاري مسح الخريطة...</div>
-        `;
-        return wait(3000);
-      })
+    wait(3000)
       .finally(() => {
         loadingScreen.classList.add("fade-out");
         if (this.widgetManager) {
